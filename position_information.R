@@ -1,5 +1,7 @@
 # Function for extracting performance data
+
 wk_num = 2
+position = "QB"
 
 position_stats <- function(position,wk) {
   
@@ -7,10 +9,6 @@ position_stats <- function(position,wk) {
   library(stringr)
   library(rvest)
   
-  ### Defensive links
-  team_d_url <- 
-  drive_d_url <- 
-
 # Previous Week Data ------------------------------------------------------
 
   wk_data <- paste("http://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2019&year_max=2019&season_start=1&season_end=-1&age_min=0&pos=0&league_id=&team_id=&opp_id=&career_game_num_min=0&career_game_num_max=499&game_num_min=0&game_num_max=99&week_num_min=",
@@ -179,22 +177,47 @@ position_stats <- function(position,wk) {
   
 
 # Year to Date Stats ------------------------------------------------------
-
+  
+  ytd_data <- "http://www.pro-football-reference.com/years/2019/passing.htm" %>%
+              read_html() %>%
+              html_table(fill = T) %>%
+              .[[1]] %>%
+              .[,-1] %>%
+              subset(Pos == position) %>%
+              select(-Age, -GS, -QBrec, -Lng, -Yds.1)
+              
+              
+  # Converting data into numeric
+  ytd_data[,c(4:length(ytd_data))] <- apply(ytd_data[,c(4:length(ytd_data))], 
+                                            2, 
+                                            function(x) as.numeric(as.character(x)))
+  
+  ## TODO: subset > 2 (when possible) ytd <- subset(ytd, passing.G > 2)
+  
+  # Fixing Column names
+  ytd_names <- colnames(ytd_data) %>%
+    str_to_lower() %>%
+    str_replace_all("%","_per") %>%
+    str_replace_all("cmp","comp") %>%
+    str_replace("any/a", "avg_net_yds_per_att") %>%
+    str_replace("ay/a", "avg_yds_per_att") %>%
+    str_replace("ny/a", "net_yds_per_att") %>%
+    str_replace("y/a", "yds_per_att") %>%
+    str_replace("y/g", "yds_per_gm") %>%
+    str_replace("y/c", "yds_per_completion")
+  
+  colnames(ytd_data) <- paste("ytd", ytd_names, sep = "_")  
+  
+  # Making a few columns per game
+  ytd_data <- ytd_data %>%
+              mutate(ytd_comp = ytd_comp / ytd_g,
+                     ytd_att = ytd_att / ytd_g,
+                     ytd_yds = ytd_yds / ytd_g,
+                     ytd_td = ytd_td / ytd_g,
+                     ytd_int = ytd_int / ytd_g)
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+ 
   # 
   # # Modify DF to be able to be appended
   # total.d[,c(2:26)] <- apply(total.d[,c(2:26)], 2, function(x) as.numeric(as.character(x)))
@@ -215,22 +238,6 @@ position_stats <- function(position,wk) {
   #                                                                      ifelse(total_d$total_Tm == "New England Patriots", "NWE", total_d$total_Tm))))))))
   # total_d$total_Tm <- sapply(total_d$total_Tm, function(x) toupper(substring(x,1,3))) # Prepping for merge (4ffor4 uses abbreviations)
   # total_d <- sapply(total_d, as.numeric )
-  
-  
-  ##########################################################################################
-  ###### Year to Date Stats 
-  ##########################################################################################
-  ytd_url <- GET("http://www.pro-football-reference.com/years/2018/passing.htm")
-  ytd <- as.data.frame(readHTMLTable(rawToChar(ytd_url$content))) %>% 
-    .[,c(2,6,9:11, 13:16, 18:23, 26:27)] %>% 
-    .[!(.$passing. ==""),]
-  
-  ytd[,c(2:length(ytd))] <- apply(ytd[,c(2:length(ytd))], 2, function(x) as.numeric(as.character(x)))
-  ytd <- subset(ytd, passing.G > 2)
-  ytd[,c(3:4,6,8)] <- apply(ytd[,c(3:4,6,8)], 2, function(x) x/ytd$passing.G)
-  
-  names(ytd) <- c("Player","ytdGames","ytdP.Comp","ytdP.Att","ytdComp.Per","ytdP.TD","ytdP.TD.Per","ytdINT","ytdINT.Per",
-                  "ytdYds.Att","ytdAdj.Yds.Att","ytdYd.Compl","ytdYds.Game","ytdPRat","ytdQBR","ytdNetYd.Att","ytdAdjNetYd.Att") 
   
   ######
   ###### Create Large File (to be added into cumulative stats)
