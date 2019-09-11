@@ -86,7 +86,25 @@ ui <- fluidPage(
          column(12,
            DT::dataTableOutput("fanduel")
         )
-    )
+    ),
+    
+    fluidRow(
+        column(3,
+               selectInput("y_axis",
+                           h3("Y Axis"),
+                           choices = list("FDSal","ProjectedOwn","CashOdds","GPPOdds","FDLEV","FFPts","Points_Per_1k"),
+                           selected = "FDSal")),
+        column(3,
+               selectInput("x_axis",
+                           h3("X Axis"),
+                           choices = list("FDSal","ProjectedOwn","CashOdds","GPPOdds","FDLEV","FFPts","Points_Per_1k"),
+                           selected = "FDSal")),
+        column(6,
+               plotOutput('plot', height = 500))
+    ),
+    
+    fluidRow(column(12,
+                    DT::dataTableOutput("dat")))
 )
 
 # Define server logic required to draw a histogram
@@ -110,9 +128,37 @@ server <- function(input, output) {
                                Points_Per_1k >= input$value[1] & Points_Per_1k <= input$value[2] &
                                FDLEV >= input$lev[1] & FDLEV <= input$lev[2] &    
                                Pos == input$Position)
-        datatable(render_table, rownames = FALSE)
+        datatable(render_table, rownames = F)
 
        })
+    
+    
+    # Graph Output
+    dat <- reactive({
+        
+        s1 <- input$fanduel_rows_selected
+        
+        test <- filter(d_all, Pos == input$Position) %>%
+                .[s1,] 
+        
+        #        select(Player, input$x_axis, input$y_axis)
+        
+        return(test) #datatable(test, rownames = F)
+    })
+    
+    output$plot = renderPlot({
+        
+        plot_data <- dat()
+        ggplot(plot_data, aes(x = plot_data[[input$x_axis]], plot_data[[input$y_axis]])) +
+              xlab(input$x_axis) + 
+              ylab(input$y_axis) +
+              geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
+              geom_text(aes(label = Player), hjust = 0, vjust = -1) +
+              theme_bw() +
+              theme(
+                axis.title = element_text(size = 12, face = "bold")
+              )
+    })
 }
 
 # Run the application 
