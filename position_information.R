@@ -9,6 +9,19 @@ position_stats <- function(position,wk) {
   library(stringr)
   library(rvest)
   
+  # Reading in team name chart
+  tm_names <- readxl::read_xlsx("~/ff_shiny_app/data/team_names.xlsx")
+  
+  #function for use later
+  find_names <- function(x,col) {
+    
+    # Get name
+    d <- filter(tm_names, tm_names[[col]] == x) %>%
+         .[["pfr_abbreviation"]]
+    
+    return(d)
+  }
+  
 # Previous Week Data ------------------------------------------------------
 
   wk_data <- paste("http://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2019&year_max=2019&season_start=1&season_end=-1&age_min=0&pos=0&league_id=&team_id=&opp_id=&career_game_num_min=0&career_game_num_max=499&game_num_min=0&game_num_max=99&week_num_min=",
@@ -172,9 +185,10 @@ position_stats <- function(position,wk) {
   ## Merging into one dataframe
   all_d_data <- inner_join(team_d, conversion_d, by = "tm") %>%
                 inner_join(rush_d, by = c("tm" = "rush_tm")) %>%
-                inner_join(pass_d, by = c("tm" = "pass_tm"))
+                inner_join(pass_d, by = c("tm" = "pass_tm")) 
   
-  
+  # Making abbreviations
+  all_d_data[["tm"]] <- sapply(all_d_data[["tm"]], function(x) find_names(x, "full_name"))
 
 # Year to Date Stats ------------------------------------------------------
   
@@ -216,81 +230,34 @@ position_stats <- function(position,wk) {
                      ytd_td = ytd_td / ytd_g,
                      ytd_int = ytd_int / ytd_g)
   
+
+# Merging all data --------------------------------------------------------
   
- 
+  all_data <- inner_join(wk_data, ytd_data, by = c("player"= "ytd_player", 
+                                                   "tm" = "ytd_tm",
+                                                   "position" = "ytd_pos")) %>%
+              inner_join(rz_data, by = c("player","tm")) %>%
+              inner_join(all_d_data, by = c("opponent" = "tm"))
+  
+
+# Current Week Projections ------------------------------------------------
+
+  proj_dfs <- read.csv(paste("~/ff_shiny_app/data/4for4_W",wk_num,"_projections.csv", sep = "")) %>% 
+              subset(Pos == position)
+  
+  # %>% .[,c(4,7:8,10:17,40:41,52:54)] %>% 
+  #   subset(FanDuel..Projected.points. >1) %>%
+  #   mutate(Field = ifelse(substr(Opp,1,1) == "@", 2,1),
+  #          Opp = as.character(Opp),
+  #          Opp = ifelse(substr(Opp,1,1) == "@", substr(Opp,2,4), Opp),
+  #          Cmp.Per = (Pass.Comp/Pass.Att)*100,
+  #          Adj.Yds.Att = (Pass.Yds+(20*Pass.TD)-(45*INT))/Pass.Att,
+  #          Yds.Att = Pass.Yds/Pass.Att,
+  #          Rush.Avg = Rush.Yds/Rush.Att) 
   # 
-  # # Modify DF to be able to be appended
-  # total.d[,c(2:26)] <- apply(total.d[,c(2:26)], 2, function(x) as.numeric(as.character(x)))
-  # total.d[,c(3:4,6,8,15:16,21:22)] <- apply(total.d[,c(3:4,6,8,15:16,21:22)], 2, function(x) x / total.d$passing.G) # Converting some stats into per game stats
-  # names(total.d) <- c("Team","Games","dAverage.Completions","dAverage.Attempts","dCompletion.Percentage","dAverage.TD","dTDPerAtt",
-  #                     "Average.Int","dIntPer","dYdsAtt","dAdjYdsAtt","dYdsCompletion","dYdsGame","dPassRating","dSack",
-  #                     "dSackYds","dNetGainAtt","dAdjNetYdsAtt","SackPer","dExpectedPts","dDrivesPerGame","dPlaysPerGame","dPerOffScore",
-  #                     "dPerTurnover","dPlaysPerDrive","dAvgPtsPerDrive")
-  # 
-  # total_d$total_Tm <- as.character(total_d$total_Tm)
-  # total_d$total_Tm <- ifelse(total_d$total_Tm == "New York Jets", "NYJ", 
-  #                            ifelse(total_d$total_Tm == "San Diego Chargers", "SDG", 
-  #                                   ifelse(total_d$total_Tm == "New York Giants", "NYG", 
-  #                                          ifelse(total_d$total_Tm == "New Orleans Saints", "NOR",
-  #                                                 ifelse(total_d$total_Tm == "Jacksonville Jaguars", "JAX",
-  #                                                        ifelse(total_d$total_Tm == "Los Angeles Rams", "LAR",
-  #                                                               ifelse(total_d$total_Tm == "San Francisco 49ers", "SFO", 
-  #                                                                      ifelse(total_d$total_Tm == "New England Patriots", "NWE", total_d$total_Tm))))))))
-  # total_d$total_Tm <- sapply(total_d$total_Tm, function(x) toupper(substring(x,1,3))) # Prepping for merge (4ffor4 uses abbreviations)
-  # total_d <- sapply(total_d, as.numeric )
-  
-  ######
-  ###### Create Large File (to be added into cumulative stats)
-  ######
-  
-  all_qb <- merge(wk, total_d, by.x = "Opponent", by.y = "total_Tm") %>%
-    merge(ytd, by.x = "Player", by.y = "Player")
-  
-  yearly <- read.csv("~/Dropbox/fantasyFootball/newQBYearly.csv") %>% .[,-1]
-  
-  all.qb <- rbind(yearly, all.qb)
-  
-  ###### MAKE SURE YOU ARE READY TO WRITE write.csv(all.qb, "C:/Users/Matt/OneDrive/fantasyFootball/newQBYearly.csv")
-  write.csv(all_qb,"C:/Users/mattw/Google Drive/fantasyFootball/qb_2018.csv")
-  
-  #####
-  ##### Current week projections, combine with red zone and defense
-  #####
-  
-  qb.dfs <- read.csv(paste("~/Dropbox/fantasyFootball/DFS_Wk",as.character(wk.num),".csv", sep = "")) %>% 
-    subset(Pos == "QB") %>% .[,c(4,7:8,10:17,40:41,52:54)] %>% 
-    subset(FanDuel..Projected.points. >1) %>%
-    mutate(Field = ifelse(substr(Opp,1,1) == "@", 2,1),
-           Opp = as.character(Opp),
-           Opp = ifelse(substr(Opp,1,1) == "@", substr(Opp,2,4), Opp),
-           Cmp.Per = (Pass.Comp/Pass.Att)*100,
-           Adj.Yds.Att = (Pass.Yds+(20*Pass.TD)-(45*INT))/Pass.Att,
-           Yds.Att = Pass.Yds/Pass.Att,
-           Rush.Avg = Rush.Yds/Rush.Att) 
-  
-  names(qb.dfs) <- c("Player","Opp","aFPA","Pass.Comp","Pass.Att","Pass.Yds","Pass.TD","INT","Rush.Att",
-                     "Rush.Yds","Rush.TD","FanDuel..Projected.Points.","FanDeul..Price.","O.U","Total",
-                     "Team.O.U","Field","Cmp.Per","Adj.Yds.Att","Yds.Att","Rush.Avg") 
-  
-  qb.dfs$Opp <- ifelse(qb.dfs$Opp == "KC", "KAN", 
-                       ifelse(qb.dfs$Opp == "LA", "LAR", 
-                              ifelse(qb.dfs$Opp == "KC", "KAN",
-                                     ifelse(qb.dfs$Opp == "SD", "SDG",
-                                            ifelse(qb.dfs$Opp == "NO", "NOR",
-                                                   ifelse(qb.dfs$Opp == "TB", "TAM", 
-                                                          ifelse(qb.dfs$Opp == "SF", "SFO",
-                                                                 ifelse(qb.dfs$Opp == "NE", "NWE",
-                                                                        ifelse(qb.dfs$Opp == "GB", "GRE", qb.dfs$Opp)))))))))
-  
-  qb.dfs <- merge(qb.dfs, total.d, by.x = "Opp", by.y = "Team")
-  qb.dfs <- merge(qb.dfs, rz, by.x = "Player", by.y = "Player")
-  qb.dfs <- merge(qb.dfs, ytd, by.x = "Player", by.y = "Player")
-  
-  
-  
-  
-  
-  
+  # names(qb.dfs) <- c("Player","Opp","aFPA","Pass.Comp","Pass.Att","Pass.Yds","Pass.TD","INT","Rush.Att",
+  #                    "Rush.Yds","Rush.TD","FanDuel..Projected.Points.","FanDeul..Price.","O.U","Total",
+  #                    "Team.O.U","Field","Cmp.Per","Adj.Yds.Att","Yds.Att","Rush.Avg") 
   
   
 }
