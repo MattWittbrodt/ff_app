@@ -1,6 +1,5 @@
 
 # DFS 2019 PreProcessing for Shiny App
-
 library(tidyverse)
 
 # Vegas Lines
