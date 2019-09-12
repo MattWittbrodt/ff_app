@@ -12,9 +12,10 @@ library(tidyverse)
 library(DT)
 
 #Importing Data
-leverage <- read.csv("~/ff_shiny_app/data/4for4-fantasy-football-gpp-leverage-scores-table.csv")
-projections <- read.csv("~/ff_shiny_app/data/4for4_W1_projections.csv") %>% 
-               select(-Team,-Opp,-FG,-XP,-Pos,-PID,-Week,-Season,-Fum,
+leverage <- read.csv("/data/4for4-fantasy-football-gpp-leverage-scores-table_wk2.csv") %>%
+            select(-Opp)
+projections <- read.csv("/data/4for4_W2_projections.csv") %>% 
+               select(-Team,-FG,-XP,-Pos,-PID,-Week,-Season,-Fum,
                       -Comp, -Pass.Att, -Pass.Yds, -Pass.TD, -INT, -Rush.Att, -Rush.Yds, 
                       -Rush.TD, -Rec, -Rec.Yds, -Rec.TD)
 
