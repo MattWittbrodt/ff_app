@@ -29,7 +29,9 @@ vegas_lines <- function() {
          mutate(home_or_away = str_remove(home_or_away, "_team"),
                 favorite = ifelse(team == favorite, 1, 0),
                 line = ifelse(favorite == 1, as.numeric(line)*-1, as.numeric(line)),
-                implied_total = (as.numeric(total)/2)+((line*-1)/2))
+                implied_total = (as.numeric(total)/2)+((line*-1)/2),
+                total = as.numeric(total),
+                team = as.character(team))
   
   return(df3)
   
