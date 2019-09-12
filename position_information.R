@@ -44,44 +44,75 @@ position_stats <- function(position,wk) {
                     sep = "") %>%                
              read_html() %>%
              html_table(fill = T) %>%
-            .[[1]] 
+            .[[1]]
   
   # Getting actual column names
-  colnames(wk_data) <- wk_data[1,]
+  wk_names <- paste(colnames(wk_data), wk_data[1,]) %>%
+              str_to_lower() %>%
+              str_remove_all("^\\s+") %>%
+              str_remove_all("[.]\\d+") %>%
+              str_remove_all("^\\s+") %>%
+              str_remove("ing") %>%
+              str_replace("y/r","yds_per_rec") %>%
+              str_replace("y/a","yds_per_att") %>%
+              str_replace("y/tgt","yds_per_tgt") %>%
+              str_replace_all("cmp","comp") %>%
+              str_replace_all("%","_per") %>%
+              str_replace_all("\\s+","_")
+  wk_names[8] <- 'field'
+  
+  colnames(wk_data) <- wk_names
   
   # Columns to include based on position
   columns <- switch(position,
-                    QB = c())
+                    QB = c(2,3,7:9,14:28,39),
+                    RB = c(2,3,7:9,25:35,39),
+                    WR = c(2,3,7:9,29:35,39),
+                    TE = c(2,3,7:9,29:35,39))
   
   # Selecting relevant columns
-  wk_data <- wk_data[-1,c(2,3,7:9,14:28,32:36)] %>%
-             subset(Player != 'Player')
-  
-  # Fixing a few column names
-  colnames(wk_data) <- c("player","position", "tm","field","opponent","pass_comp","pass_att","comp_percentage",
-                         "pass_yd","pass_td","int","qb_rating","sack","sk_yds","yds_per_att","adj_yds_att",
-                         "rush_att","rush_yd","rush_yds_att","rush_td","fd_pts","rec","rec_yds","rec_td","fum") 
+  wk_data <- wk_data[-1,columns] %>%
+             subset(player != 'Player')
   
   # Making Home field = 1, visitor = 2
-  wk_data$field <- ifelse(wk_data$field == "@",2,1)
+  wk_data[['field']] <- ifelse(wk_data[['field']] == "@",2,1)
   
 
 # Red Zone Stats ----------------------------------------------------------
-
-  # Reading in Red Zone stats
-  rz_data <- "http://www.pro-football-reference.com/years/2018/redzone-passing.htm" %>%
-             read_html() %>%
-             html_table(fill = T) %>%
-             .[[1]]
+  
+  
+  
+  
+  
+  
+  
+  
+  # Reading in Red Zone stats from all disciplines
+  rz_pass <- "http://www.pro-football-reference.com/years/2019/redzone-passing.htm" %>%
+              read_html() %>%
+              html_table(fill = T) %>%
+              .[[1]]
+  
+  rz_rec <- "http://www.pro-football-reference.com/years/2019/redzone-receiving.htm" %>%
+                read_html() %>%
+                html_table(fill = T) %>%
+                .[[1]]
+  
+  rz_rush <- "http://www.pro-football-reference.com/years/2019/redzone-rushing.htm" %>%
+              read_html() %>%
+              html_table(fill = T) %>%
+              .[[1]] 
   
   # Fixing column names
-  rz_names <- paste(colnames(rz_data), rz_data[1,]) %>%
+  rz_names <- paste(colnames(rz_pass), rz_pass[1,]) %>%
               str_to_lower() %>%
               str_remove_all("inside") %>%
               str_remove_all("^\\s+") %>%
-              str_replace_all("%","_per") %>%
               str_replace_all("20","twenty") %>%
               str_replace_all("10","ten") %>%
+              str_replace_all("5","five") %>%
+              str_replace_all("(?<=\\w)%","_per") %>%
+              str_replace_all("%(?=\\w)","per_") %>%
               str_replace_all("\\s+","_") %>%
               str_replace_all("cmp","comp")
   
