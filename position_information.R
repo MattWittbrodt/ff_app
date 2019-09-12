@@ -1,7 +1,7 @@
 # Function for extracting performance data
 
-wk_num = 2
-position = "QB"
+#wk_num = 2
+#position = "QB"
 
 position_stats <- function(position,wk) {
   
@@ -10,31 +10,48 @@ position_stats <- function(position,wk) {
   library(rvest)
   
   # Reading in team name chart
-  tm_names <- readxl::read_xlsx("~/ff_shiny_app/data/team_names.xlsx")
+  tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
   
   #function for use later
   find_names <- function(x,col) {
     
-    # Get name
-    d <- filter(tm_names, tm_names[[col]] == x) %>%
-         .[["pfr_abbreviation"]]
+    # Checking if the opponent is listed as '@' - or away
+    if(str_detect(x,"^@") == T) {
     
+      # Get name
+      d <- filter(tm_names, tm_names[[col]] == str_extract(x,"(?<=@)\\w+")) %>%
+           .[["pfr_abbreviation"]]
+      d <- paste("@",d,sep = "") # Adding back the away
+    } 
+    else
+    {
+      # Get name
+      d <- filter(tm_names, tm_names[[col]] == x) %>%
+           .[["pfr_abbreviation"]]
+    } 
     return(d)
   }
   
 # Previous Week Data ------------------------------------------------------
 
-  wk_data <- paste("http://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2019&year_max=2019&season_start=1&season_end=-1&age_min=0&pos=0&league_id=&team_id=&opp_id=&career_game_num_min=0&career_game_num_max=499&game_num_min=0&game_num_max=99&week_num_min=",
-                  as.character(wk_num-1), 
-                  "&week_num_max=",
-                  as.character(wk_num-1), 
-                  "&stadium_id=&game_day_of_week=&game_month=&c1stat=pass_att&c1comp=gt&c1val=1&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4comp=gt&c5comp=choose&c5gtlt=lt&c6mult=1.0&c6comp=choose&order_by=pass_rating", sep = "") %>% 
-            read_html() %>%
-            html_table(fill = T) %>%
+  wk_data <-  paste("https://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2019&year_max=2019&season_start=1&season_end=-1&pos%5B%5D=",
+                   position,
+                   "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=",
+                    as.character(wk_num - 1),
+                    "&week_num_max=",
+                    as.character(wk_num -1),
+                    "&c1stat=rush_att&c1comp=gt&c1val=0&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c4val=0&c5val=1.0&order_by=pass_rating",
+                    sep = "") %>%                
+             read_html() %>%
+             html_table(fill = T) %>%
             .[[1]] 
   
   # Getting actual column names
   colnames(wk_data) <- wk_data[1,]
+  
+  # Columns to include based on position
+  columns <- switch(position,
+                    QB = c())
   
   # Selecting relevant columns
   wk_data <- wk_data[-1,c(2,3,7:9,14:28,32:36)] %>%
@@ -242,22 +259,33 @@ position_stats <- function(position,wk) {
 
 # Current Week Projections ------------------------------------------------
 
-  proj_dfs <- read.csv(paste("~/ff_shiny_app/data/4for4_W",wk_num,"_projections.csv", sep = "")) %>% 
-              subset(Pos == position)
+  proj_data <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4_W",wk_num,"_projections.csv", sep = "")) %>% 
+              subset(Pos == position) %>%
+              select(-PID,-Season,-XP,-Fum,-FG,-Grade,-Pa1D,-Ru1D,-Rec1D) %>%
+              mutate(Player = as.character(Player),
+                     Pos = as.character(Pos),
+                     Team = as.character(Team),
+                     Opp = as.character(Opp)) 
   
-  # %>% .[,c(4,7:8,10:17,40:41,52:54)] %>% 
-  #   subset(FanDuel..Projected.points. >1) %>%
-  #   mutate(Field = ifelse(substr(Opp,1,1) == "@", 2,1),
-  #          Opp = as.character(Opp),
-  #          Opp = ifelse(substr(Opp,1,1) == "@", substr(Opp,2,4), Opp),
-  #          Cmp.Per = (Pass.Comp/Pass.Att)*100,
-  #          Adj.Yds.Att = (Pass.Yds+(20*Pass.TD)-(45*INT))/Pass.Att,
-  #          Yds.Att = Pass.Yds/Pass.Att,
-  #          Rush.Avg = Rush.Yds/Rush.Att) 
-  # 
-  # names(qb.dfs) <- c("Player","Opp","aFPA","Pass.Comp","Pass.Att","Pass.Yds","Pass.TD","INT","Rush.Att",
-  #                    "Rush.Yds","Rush.TD","FanDuel..Projected.Points.","FanDeul..Price.","O.U","Total",
-  #                    "Team.O.U","Field","Cmp.Per","Adj.Yds.Att","Yds.Att","Rush.Avg") 
+  # Column Processing
+  proj_names <- colnames(proj_data) %>%
+                str_to_lower() %>%
+                str_replace("[.]","_") %>%
+                str_replace("team", "tm")
   
+  colnames(proj_data) <- paste("proj", proj_names, sep = "_") 
   
+  # Making abbreviations
+  proj_data[["proj_tm"]] <- sapply(proj_data[["proj_tm"]], function(x) find_names(x, "fff_abbreviation"))
+  proj_data[["proj_opp"]] <- sapply(proj_data[["proj_opp"]], function(x) find_names(x, "fff_abbreviation"))
+  
+  # Adding to full dataframe
+  all_data <- inner_join(all_data, proj_data, by = c("player"= "proj_player", 
+                                                   "tm" = "proj_tm",
+                                                   "position" = "proj_pos"))
+  
+
+# Return ------------------------------------------------------------------
+
+  return(all_data)  
 }
