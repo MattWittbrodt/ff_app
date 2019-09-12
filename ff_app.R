@@ -47,9 +47,13 @@ d_all <- inner_join(d_all, vegas, by = c("Tm" = "team"))
 # Define UI for application that draws a histogram
 # Fluidpage adjusts to window size
 ui <- fluidPage(
+    
+    tabsetPanel(type = "tabs",
+                
+                tabPanel("DFS FanDuel",
 
     # Application title
-    titlePanel("DFS FanDuel Predictions"),
+    #titlePanel(h4("DFS FanDuel Predictions")),
     
     fluidRow(
         column(3, 
@@ -132,7 +136,9 @@ ui <- fluidPage(
     
     fluidRow(column(12,
                     DT::dataTableOutput("dat")))
-)
+),
+
+tabPanel("Data")))
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
