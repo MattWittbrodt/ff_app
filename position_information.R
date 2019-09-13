@@ -80,48 +80,52 @@ position_stats <- function(position,wk) {
 
 # Red Zone Stats ----------------------------------------------------------
   
+  rz_types <- list("passing","rushing","receiving")
   
+  rz_df <- lapply(rz_types,
+                    function(x) {
+                      
+                      # Reading in Data
+                      d <- paste("http://www.pro-football-reference.com/years/2019/redzone-",
+                                 x,
+                                 ".htm",
+                                 sep = "") %>%
+                            read_html() %>%
+                            html_table(fill = T) %>%
+                            .[[1]]
+                      
+                      # Ammending names
+                      rz_names <- paste(colnames(d), d[1,]) %>%
+                        str_to_lower() %>%
+                        str_remove_all("inside") %>%
+                        str_remove_all("^\\s+") %>%
+                        str_replace_all("20","twenty") %>%
+                        str_replace_all("10","ten") %>%
+                        str_replace_all("5","five") %>%
+                        str_replace_all("(?<=\\w)%","_per") %>%
+                        str_replace_all("%(?=\\w)","per_") %>%
+                        str_replace_all("\\s+","_") %>%
+                        str_replace_all("cmp","comp")
+                      
+                      
+                      # Adding into new columns
+                      colnames(d) <- paste(x,rz_names,sep = "_")
+                      
+                      # Final few cleaning steps
+                      d <- d %>%
+                        subset(.[[paste(x,"player",sep = "_")]] != "Player") %>%
+                        select(-contains("link"))
+                      
+                    })
   
-  
-  
-  
-  
-  
-  # Reading in Red Zone stats from all disciplines
-  rz_pass <- "http://www.pro-football-reference.com/years/2019/redzone-passing.htm" %>%
-              read_html() %>%
-              html_table(fill = T) %>%
-              .[[1]]
-  
-  rz_rec <- "http://www.pro-football-reference.com/years/2019/redzone-receiving.htm" %>%
-                read_html() %>%
-                html_table(fill = T) %>%
-                .[[1]]
-  
-  rz_rush <- "http://www.pro-football-reference.com/years/2019/redzone-rushing.htm" %>%
-              read_html() %>%
-              html_table(fill = T) %>%
-              .[[1]] 
-  
-  # Fixing column names
-  rz_names <- paste(colnames(rz_pass), rz_pass[1,]) %>%
-              str_to_lower() %>%
-              str_remove_all("inside") %>%
-              str_remove_all("^\\s+") %>%
-              str_replace_all("20","twenty") %>%
-              str_replace_all("10","ten") %>%
-              str_replace_all("5","five") %>%
-              str_replace_all("(?<=\\w)%","_per") %>%
-              str_replace_all("%(?=\\w)","per_") %>%
-              str_replace_all("\\s+","_") %>%
-              str_replace_all("cmp","comp")
-  
-  # Adding into new columns
-  colnames(rz_data) <- rz_names
-  
-  rz_data <- rz_data %>%
-             subset(player != "Player") %>%
-             select(-link)
+  # Creating the appropriate output for each position
+  rz_data <- switch(position,
+                    QB = as.data.frame(rz_df[[1]]),
+                    WR = as.data.frame(rz_df[[3]]),
+                    TE = as.data.frame(rz_df[[3]]),
+                    RB = left_join(as.data.frame(rz_df[[2]]), 
+                                   as.data.frame(rz_df[[3]]),
+                                   by = c("rushing_player" = "receiving_player")))
   
 
 # Team Defense Integration ------------------------------------------------
@@ -240,43 +244,111 @@ position_stats <- function(position,wk) {
 
 # Year to Date Stats ------------------------------------------------------
   
-  ytd_data <- "http://www.pro-football-reference.com/years/2019/passing.htm" %>%
-              read_html() %>%
-              html_table(fill = T) %>%
-              .[[1]] %>%
-              .[,-1] %>%
-              subset(Pos == position) %>%
-              select(-Age, -GS, -QBrec, -Lng, -Yds.1)
-              
-              
-  # Converting data into numeric
-  ytd_data[,c(4:length(ytd_data))] <- apply(ytd_data[,c(4:length(ytd_data))], 
-                                            2, 
-                                            function(x) as.numeric(as.character(x)))
+  ytd_types <- list("passing","rushing","receiving")
   
-  ## TODO: subset > 2 (when possible) ytd <- subset(ytd, passing.G > 2)
+  ytd_df <- lapply(ytd_types,
+                   rz_df <- lapply(rz_types,
+                                   function(x) {
+                                     
+                                     # Reading in Data
+                                     d <- paste("http://www.pro-football-reference.com/years/2019/",
+                                                x,
+                                                ".htm",
+                                                sep = "") %>%
+                                       read_html() %>%
+                                       html_table(fill = T) %>%
+                                       .[[1]] %>%
+                                       .[,-1] %>%
+                                       subset(Pos == position) %>%
+                                       select(-Age, -GS, -Lng)
+                                     
+                                     # Ammending names
+                                     d_names <- colnames(d) %>%
+                                       str_to_lower() %>%
+                                       str_replace_all("%","_per") %>%
+                                       str_replace_all("cmp","comp") %>%
+                                       str_replace("any/a", "avg_net_yds_per_att") %>%
+                                       str_replace("ay/a", "avg_yds_per_att") %>%
+                                       str_replace("ny/a", "net_yds_per_att") %>%
+                                       str_replace("y/a", "yds_per_att") %>%
+                                       str_replace("y/g", "yds_per_gm") %>%
+                                       str_replace("y/c", "yds_per_completion") %>%
+                                       str_replace("tgt", "target") %>%
+                                       str_replace("r/g", "rec_per_gm") %>%
+                                       str_replace("y/g", "yds_per_gm") %>%
+                                       str_replace("y/r", "yds_per_rec") %>%
+                                       str_replace("y/target", "yds_per_target")
+                                     
+                                     colnames(d) <- paste("ytd", d_names, sep = "_")
+                                     
+                                     # Converting the catch % into numeric
+                                     if(position == "WR" | position == "RB" | position == "TE") {
+                                       d[["ytd_ctch_per"]] <- as.numeric(sapply(d[["ytd_ctch_per"]],
+                                                                          function(x) str_remove(x, '%')))
+                                     }
+                                     
+                                     # Making Columns numeric
+                                     d[,c(4:length(d))] <- apply(d[,c(4:length(d))], 
+                                                                 2, 
+                                                                 function(x) as.numeric(as.character(x)))
+                                     
+                                     # Making a few columns per game
+                                     
+                                       if(position == "QB") {
+                                         d <- mutate(d,
+                                                     ytd_comp = ytd_comp / ytd_g,
+                                                     ytd_att = ytd_att / ytd_g,
+                                                     ytd_yds = ytd_yds / ytd_g,
+                                                     ytd_td = ytd_td / ytd_g,
+                                                     ytd_int = ytd_int / ytd_g)
+                                        } else {
+                                        d <- mutate(d,
+                                                    ytd_target = ytd_target / ytd_g,
+                                                    ytd_rec = ytd_rec / ytd_g,
+                                                    ytd_yds = ytd_yds / ytd_g,
+                                                    ytd_td = ytd_td / ytd_g)
+                                       }
+                                     
+                                   }))
   
-  # Fixing Column names
-  ytd_names <- colnames(ytd_data) %>%
-    str_to_lower() %>%
-    str_replace_all("%","_per") %>%
-    str_replace_all("cmp","comp") %>%
-    str_replace("any/a", "avg_net_yds_per_att") %>%
-    str_replace("ay/a", "avg_yds_per_att") %>%
-    str_replace("ny/a", "net_yds_per_att") %>%
-    str_replace("y/a", "yds_per_att") %>%
-    str_replace("y/g", "yds_per_gm") %>%
-    str_replace("y/c", "yds_per_completion")
   
-  colnames(ytd_data) <- paste("ytd", ytd_names, sep = "_")  
-  
-  # Making a few columns per game
-  ytd_data <- ytd_data %>%
-              mutate(ytd_comp = ytd_comp / ytd_g,
-                     ytd_att = ytd_att / ytd_g,
-                     ytd_yds = ytd_yds / ytd_g,
-                     ytd_td = ytd_td / ytd_g,
-                     ytd_int = ytd_int / ytd_g)
+  # ytd_data <- "http://www.pro-football-reference.com/years/2019/passing.htm" %>%
+  #             read_html() %>%
+  #             html_table(fill = T) %>%
+  #             .[[1]] %>%
+  #             .[,-1] %>%
+  #             subset(Pos == position) %>%
+  #             select(-Age, -GS, -QBrec, -Lng, -Yds.1)
+  #             
+  #             
+  # # Converting data into numeric
+  # ytd_data[,c(4:length(ytd_data))] <- apply(ytd_data[,c(4:length(ytd_data))], 
+  #                                           2, 
+  #                                           function(x) as.numeric(as.character(x)))
+  # 
+  # ## TODO: subset > 2 (when possible) ytd <- subset(ytd, passing.G > 2)
+  # 
+  # # Fixing Column names
+  # ytd_names <- colnames(ytd_data) %>%
+  #   str_to_lower() %>%
+  #   str_replace_all("%","_per") %>%
+  #   str_replace_all("cmp","comp") %>%
+  #   str_replace("any/a", "avg_net_yds_per_att") %>%
+  #   str_replace("ay/a", "avg_yds_per_att") %>%
+  #   str_replace("ny/a", "net_yds_per_att") %>%
+  #   str_replace("y/a", "yds_per_att") %>%
+  #   str_replace("y/g", "yds_per_gm") %>%
+  #   str_replace("y/c", "yds_per_completion")
+  # 
+  # colnames(ytd_data) <- paste("ytd", ytd_names, sep = "_")  
+  # 
+  # # Making a few columns per game
+  # ytd_data <- ytd_data %>%
+  #             mutate(ytd_comp = ytd_comp / ytd_g,
+  #                    ytd_att = ytd_att / ytd_g,
+  #                    ytd_yds = ytd_yds / ytd_g,
+  #                    ytd_td = ytd_td / ytd_g,
+  #                    ytd_int = ytd_int / ytd_g)
   
 
 # Merging all data --------------------------------------------------------
