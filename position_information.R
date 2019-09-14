@@ -33,6 +33,7 @@ position_stats <- function(position, wk_num) {
               str_remove_all("^\\s+") %>%
               str_remove_all("[.]\\d+") %>%
               str_remove_all("^\\s+") %>%
+              str_replace("receiving", "rec") %>%
               str_remove("ing") %>%
               str_replace("y/r","yds_per_rec") %>%
               str_replace("y/a","yds_per_att") %>%
@@ -58,6 +59,30 @@ position_stats <- function(position, wk_num) {
   # Making Home field = 1, visitor = 2
   wk_data[['field']] <- ifelse(wk_data[['field']] == "@",2,1)
   
+  # Column cleaning - removing sacks and sack yds
+  if(position == "QB") {
+      cols_to_delete <- c(13,14)
+      wk_dat <- wk_data[,-cols_to_delete]}
+  
+  # Removing the '%' from columns
+  if(position != "QB") {
+     wk_data[["rec_ctch_per"]] <- as.numeric(sapply(wk_data[["rec_ctch_per"]],
+                                                    function(x) str_remove(x, '%')))}
+  # converting into numeric
+  wk_data[,c(6:length(wk_data))] <- apply(wk_data[,c(6:length(wk_data))], 
+                              2, 
+                              function(x) as.numeric(as.character(x)))
+  
+  # Doing some subsetting to remove players without any data
+  if(position == "QB") {
+    wk_data <- filter(wk_data, pass_att > 5)
+  } else {
+    if(position == "RB") {
+    wk_data <- filter(wk_data, rush_att > 4)
+    } else {
+      wk_data <- filter(wk_data, rec_tgt > 1)
+    }
+  }
 
 # Red Zone Stats ----------------------------------------------------------
   
