@@ -389,7 +389,8 @@ position_stats <- function(position, wk_num) {
   # Adding to full dataframe
   all_data <- inner_join(all_data, proj_data, by = c("player"= "proj_player", 
                                                    "tm" = "proj_tm",
-                                                   "pos" = "proj_pos"))
+                                                   "pos" = "proj_pos")) %>%
+              mutate(week = wk_num)
   
 
 # Return ------------------------------------------------------------------
