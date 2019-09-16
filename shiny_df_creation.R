@@ -1,4 +1,7 @@
 # DFS 2019 PreProcessing for Shiny App
+
+shiny_df <- function() {
+  
 library(tidyverse)
 
 # Reading in team name chart
@@ -8,9 +11,7 @@ source("~/ff_shiny_app/ff_app/find_names.R")
 # Vegas Lines -------------------------------------------------------------
 source("~/ff_shiny_app/ff_app/vegas_lines.R")
 vegas <- vegas_lines()
-
 vegas[["team"]] <- sapply(vegas[["team"]], function(x) find_names(x, "vegas"))
-
 
 # DVOA Data ---------------------------------------------------------------
 source("~/ff_shiny_app/ff_app/dvoa.R")
@@ -48,3 +49,5 @@ all_positions <- merge(qb,rb, all = TRUE) %>%
 
 # Adding Dvoc
 #writexl::write_xlsx(all_positions, "~/ff_shiny_app/all_data_wk_2.xlsx")
+
+}
