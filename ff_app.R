@@ -12,6 +12,10 @@ library(tidyverse)
 library(DT)
 
 
+# Getting full dataframe --------------------------------------------------
+source("~/ff_shiny_app/ff_app/shiny_df_creation.R")
+df <- shiny_df()
+
 # Importing and Preprocessing Data ----------------------------------------
 
 leverage <- read.csv("data/4for4-fantasy-football-gpp-leverage-scores-table_wk2.csv") %>%
