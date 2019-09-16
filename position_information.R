@@ -131,8 +131,36 @@ position_stats <- function(position, wk_num) {
                     TE = as.data.frame(rz_df[[3]]),
                     RB = left_join(as.data.frame(rz_df[[2]]), 
                                    as.data.frame(rz_df[[3]]),
-                                   by = c("rushing_player" = "receiving_player")))
+                                   by = c("rushing_player" = "receiving_player"))) %>%
+             select(-contains("tm"))
   
+  # Subsetting for relevant information
+  if(position == "RB") {
+    rz_data <- select(rz_data, -contains("_ctch_per")) %>%
+               mutate(rushing_twenty_per_rush = as.numeric(sapply(rushing_twenty_per_rush,
+                                                     function(x) str_remove(x, '%'))),
+                      rushing_ten_per_rush = as.numeric(sapply(rushing_ten_per_rush,
+                                              function(x) str_remove(x, '%'))),
+                      rushing_five_per_rush = as.numeric(sapply(rushing_five_per_rush,
+                                                function(x) str_remove(x, '%'))),
+                      receiving_twenty_per_tgt = as.numeric(sapply(receiving_twenty_per_tgt,
+                                                function(x) str_remove(x, '%'))),
+                      receiving_ten_per_tgt = as.numeric(sapply(receiving_ten_per_tgt,
+                                                  function(x) str_remove(x, '%'))))
+  } else {
+      if(position == "WR" | position == "TE") {
+        rz_data <- select(rz_data, -contains("_ctch_per")) %>%
+          mutate(receiving_twenty_per_tgt = as.numeric(sapply(receiving_twenty_per_tgt,
+                                                              function(x) str_remove(x, '%'))),
+                 receiving_ten_per_tgt = as.numeric(sapply(receiving_ten_per_tgt,
+                                                           function(x) str_remove(x, '%'))))
+      } 
+  }
+  
+  # Making columns numeric
+  rz_data[,c(2:length(rz_data))] <- apply(rz_data[,c(2:length(rz_data))], 
+                                          2, 
+                                          function(x) as.numeric(as.character(x)))
 
 # Team Defense Integration ------------------------------------------------
   
@@ -163,15 +191,26 @@ position_stats <- function(position, wk_num) {
     str_replace_all("\\s+","_") %>%
     str_replace_all("cmp","comp") %>%
     str_replace_all("(1std|1stpy)","first_dn") %>%
-    str_remove("ing")
+    str_remove("ing") %>%
+    str_replace_all("%","_per")
   
   colnames(team_d) <- team_d_names
   
   # Removing first row with column name information
   team_d <- team_d[-1,] %>%
             subset(tm != "Avg Team" & tm != "League Total" & tm != "Avg Tm/G") %>%
-            select(-starts_with("rush"),-starts_with("pass"))
+            select(-starts_with("rush"),
+                   -starts_with("pass"),
+                   -tot_fl,
+                   -tot_ply,
+                   -penalties_first_dn,
+                   -penalties_yds)
   
+  # Making columns numeric
+  team_d[,c(2:length(team_d))] <- apply(team_d[,c(2:length(team_d))], 
+                                          2, 
+                                          function(x) as.numeric(as.character(x)))
+
   #
   # Conversions Against
   #
@@ -197,8 +236,12 @@ position_stats <- function(position, wk_num) {
   # Removing first row with column name information
   conversion_d <- conversion_d[-1,] %>%
             subset(tm != "Avg Team" & tm != "League Total" & tm != "Avg Tm/G") %>%
-            select(-g)
-    
+            select(-g,-contains("datt"),-contains("dconv"),-red_zone_att) %>%
+            mutate(third_d_per = as.numeric(sapply(third_d_per, function(x) str_remove(x, '%'))),
+                   fourth_d_per = as.numeric(sapply(fourth_d_per, function(x) str_remove(x, '%'))),
+                   red_zone_pct = as.numeric(sapply(red_zone_pct, function(x) str_remove(x, '%'))),
+                   red_zone_td = as.numeric(red_zone_td))
+  
   #
   # Rushing D
   #
@@ -212,7 +255,9 @@ position_stats <- function(position, wk_num) {
   
   colnames(rush_d) <- paste("rush", rush_d_names, sep = "_")
   
-  rush_d <- rush_d %>% subset(rush_tm != "Avg Team" & rush_tm != "League Total" & rush_tm != "Avg Tm/G")
+  rush_d <- rush_d %>% 
+            subset(rush_tm != "Avg Team" & rush_tm != "League Total" & rush_tm != "Avg Tm/G") %>%
+            select(-rush_att, -rush_yds)
   
   #
   # Passing D
@@ -237,7 +282,14 @@ position_stats <- function(position, wk_num) {
   
   colnames(pass_d) <- paste("pass", pass_d_names, sep = "_")  
   
-  pass_d <- pass_d %>% subset(pass_tm != "Avg Team" & pass_tm != "League Total" & pass_tm != "Avg Tm/G")
+  pass_d <- pass_d %>% 
+            subset(pass_tm != "Avg Team" & pass_tm != "League Total" & pass_tm != "Avg Tm/G") %>%
+            select(-pass_comp,
+                   -pass_att,
+                   -pass_qbhits,
+                   -pass_tfl,
+                   -pass_sack_yds,
+                   -pass_sacks_per)
   
   
   ## Merging into one dataframe
@@ -363,9 +415,18 @@ position_stats <- function(position, wk_num) {
     all_data <- inner_join(wk_data, ytd_data, by = c("player"= "ytd_pass_player", 
                                                      "tm" = "ytd_pass_tm",
                                                      "pos" = "ytd_pass_pos")) %>%
-                inner_join(rz_data, by = c("player" = "passing_player",
-                                           "tm" = "passing_tm")) %>%
-                inner_join(all_d_data, by = c("opp" = "def_tm"))
+                inner_join(rz_data, by = c("player" = "passing_player")) %>%
+                inner_join(all_d_data, by = c("opp" = "def_tm")) %>%
+                select(-ytd_pass_qbrec,
+                       -ytd_pass_g,
+                       -ytd_pass_comp,
+                       -ytd_pass_att,
+                       -ytd_pass_yds,
+                       -ytd_pass_sk,
+                       -ytd_pass_yds.1,
+                       -ytd_pass_sk_per,
+                       -ytd_pass_4qc,
+                       -ytd_pass_gwd)
     
   } else {
     if(position == "RB") {
@@ -373,8 +434,7 @@ position_stats <- function(position, wk_num) {
       all_data <- left_join(wk_data, ytd_data, by = c("player" = "ytd_rush_player",
                                                        "tm" = "ytd_rush_tm",
                                                        "pos" = "ytd_rush_pos")) %>%
-                  left_join(rz_data, by = c("player" = "rushing_player",
-                                   "tm" = "rushing_tm")) %>%
+                  left_join(rz_data, by = c("player" = "rushing_player")) %>%
                   left_join(all_d_data, by = c("opp" = "def_tm"))
       
     } else {
@@ -382,8 +442,7 @@ position_stats <- function(position, wk_num) {
       all_data <- left_join(wk_data, ytd_data, by = c("player"= "ytd_rec_player", 
                                                        "tm" = "ytd_rec_tm",
                                                        "pos" = "ytd_rec_pos")) %>%
-                  left_join(rz_data, by = c("player" = "receiving_player",
-                                   "tm" = "receiving_tm")) %>%
+                  left_join(rz_data, by = c("player" = "receiving_player")) %>%
                   left_join(all_d_data, by = c("opp" = "def_tm"))
       
       }
