@@ -1,6 +1,5 @@
 #
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
+# DFs Shiny
 #
 
 
@@ -13,33 +12,40 @@ library(DT)
 # tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
 # 
 # # Getting full dataframe --------------------------------------------------
-# source("~/ff_shiny_app/ff_app/shiny_df_creation.R")
-# df <- shiny_df(2)
+source("~/ff_shiny_app/ff_app/shiny_df_creation.R")
+t <- Sys.time()
+df <- shiny_df(2)
+t2 <- Sys.time()
+t2-t
+    
 # 
 # # DFS Specific Data
-# dfs_df <- select(df,
-#                  player, 
-#                  pos, 
-#                  tm, 
-#                  field, 
-#                  opp, 
-#                  fd_sal,
-#                  projected_own,
-#                  cash_odds,
-#                  gpp_odds,
-#                  implied_own,
-#                  fd_lev,
-#                  proj_ffpts,
-#                  proj_afpa,
-#                  proj_afpa_rk,
-#                  line,
-#                  total,
-#                  implied_total) %>%
-#             filter(fd_sal > 0) %>%
-#             mutate(points_per_1k = round(proj_ffpts / (fd_sal/1000),2))
 
-df <- readxl::read_xlsx("~/ff_shiny_app/all_data_wk_2.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/all_data_wk_2.xlsx")
 
+dfs_df <- select(df,
+                 player,
+                 pos,
+                 tm,
+                 field,
+                 opp,
+                 fd_sal,
+                 projected_own,
+                 cash_odds,
+                 gpp_odds,
+                 implied_own,
+                 fd_lev,
+                 proj_ffpts,
+                 proj_afpa,
+                 proj_afpa_rk,
+                 line,
+                 total,
+                 implied_total) %>%
+            filter(fd_sal > 0) %>%
+            mutate(points_per_1k = round(proj_ffpts / (fd_sal/1000),2),
+                   opp = ifelse(field == 2, paste("@",opp, sep = ""), opp)) %>%
+            select(-field)
+            
 
 #qb <- 
 
@@ -119,8 +125,8 @@ ui <- fluidPage(
         column(3,
                sliderInput("line",
                            "Line",
-                           min = min(dfs_df[["line"]]),
-                           max = max(dfs_df[["line"]]),
+                           min = min(dfs_df[["line"]], na.rm = T),
+                           max = max(dfs_df[["line"]], na.rm = T),
                            value = c(min,max)
                ))),
 
