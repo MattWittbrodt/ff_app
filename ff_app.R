@@ -2,51 +2,77 @@
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
 #
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+
 
 library(shiny)
 library(tidyverse)
 library(DT)
 
+# Sourcing team name changes
+source("~/ff_shiny_app/ff_app/find_names.R")
+tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
 
 # Getting full dataframe --------------------------------------------------
 source("~/ff_shiny_app/ff_app/shiny_df_creation.R")
-df <- shiny_df()
+df <- shiny_df(2)
+
+# DFS Specific Data
+dfs_df <- select(df,
+                 player, 
+                 pos, 
+                 tm, 
+                 field, 
+                 opp, 
+                 fd_sal,
+                 projected_own,
+                 cash_odds,
+                 gpp_odds,
+                 implied_own,
+                 fd_lev,
+                 proj_ffpts,
+                 proj_afpa,
+                 proj_afpa_rk,
+                 line,
+                 total,
+                 implied_total) %>%
+            filter(fd_sal > 0)
+
+
+
+qb <- 
+
 
 # Importing and Preprocessing Data ----------------------------------------
-
-leverage <- read.csv("data/4for4-fantasy-football-gpp-leverage-scores-table_wk2.csv") %>%
-            select(-Opp)
-projections <- read.csv("data/4for4_W2_projections.csv") %>% 
-               select(-Team,-FG,-XP,-Pos,-PID,-Week,-Season,-Fum,
-                      -Comp, -Pass.Att, -Pass.Yds, -Pass.TD, -INT, -Rush.Att, -Rush.Yds, 
-                      -Rush.TD, -Rec, -Rec.Yds, -Rec.TD)
+# leverage <- read.csv("data/4for4-fantasy-football-gpp-leverage-scores-table_wk2.csv") %>%
+#             select(-Opp)
+# projections <- read.csv("data/4for4_W2_projections.csv") %>% 
+#                select(-Team,-FG,-XP,-Pos,-PID,-Week,-Season,-Fum,
+#                       -Comp, -Pass.Att, -Pass.Yds, -Pass.TD, -INT, -Rush.Att, -Rush.Yds, 
+#                       -Rush.TD, -Rec, -Rec.Yds, -Rec.TD)
 
 # Vegas lines
-source("vegas_lines.R")
-vegas <- vegas_lines() %>%
-         select(team, line, total, implied_total)
+# source("vegas_lines.R")
+# vegas <- vegas_lines() %>%
+#          select(team, line, total, implied_total)
 
 # Removing some of the irrelevant columns
-d_all <- merge(leverage, projections, by = "Player") %>%
-         select(-Pa1D, -Ru1D, -Rec1D, -Grade) %>%
-         mutate(Cash.Odds = as.numeric(gsub("\\%", "", Cash.Odds)),
-                GPP.Odds = as.numeric(gsub("\\%", "", GPP.Odds)),
-                Implied.Own. = as.numeric(gsub("\\%", "", Implied.Own.)),
-                Projected.Own. = as.numeric(gsub("\\%", "", Projected.Own.)),
-                Points_Per_1k = round(FFPts / (FD.Sal../1000),2),
-                Tm = as.character(Tm))
-         
-d_names <- colnames(d_all) %>%
-           str_remove_all("[.]")
+# d_all <- merge(leverage, projections, by = "Player") %>%
+#          select(-Pa1D, -Ru1D, -Rec1D, -Grade) %>%
+#          mutate(Cash.Odds = as.numeric(gsub("\\%", "", Cash.Odds)),
+#                 GPP.Odds = as.numeric(gsub("\\%", "", GPP.Odds)),
+#                 Implied.Own. = as.numeric(gsub("\\%", "", Implied.Own.)),
+#                 Projected.Own. = as.numeric(gsub("\\%", "", Projected.Own.)),
+#                 Points_Per_1k = round(FFPts / (FD.Sal../1000),2),
+#                 Tm = as.character(Tm))
+#          
+# d_names <- colnames(d_all) %>%
+#            str_remove_all("[.]")
 
-colnames(d_all) <- d_names
+# colnames(d_all) <- d_names
 
 # Merging total dataset and vegas lines
-d_all <- inner_join(d_all, vegas, by = c("Tm" = "team"))
+# d_all <- inner_join(d_all, vegas, by = c("Tm" = "team"))
+
 
 # Define UI for application that draws a histogram
 # Fluidpage adjusts to window size
@@ -57,8 +83,6 @@ ui <- fluidPage(
                 tabPanel("DFS FanDuel",
 
     # Application title
-    #titlePanel(h4("DFS FanDuel Predictions")),
-    
     fluidRow(
         column(3, 
                selectInput("Position",
