@@ -12,16 +12,16 @@ library(DT)
 # tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
 # 
 # # Getting full dataframe --------------------------------------------------
-source("~/ff_shiny_app/ff_app/shiny_df_creation.R")
-t <- Sys.time()
-df <- shiny_df(2)
-t2 <- Sys.time()
-t2-t
+# source("~/ff_shiny_app/ff_app/shiny_df_creation.R")
+# t <- Sys.time()
+# df <- shiny_df(2)
+# t2 <- Sys.time()
+# t2-t
     
 # 
 # # DFS Specific Data
 
-#df <- readxl::read_xlsx("~/ff_shiny_app/all_data_wk_2.xlsx")
+df <- readxl::read_xlsx("~/ff_shiny_app/all_data_wk_2.xlsx")
 
 dfs_df <- select(df,
                  player,
@@ -135,43 +135,43 @@ ui <- fluidPage(
          column(12,
            DT::dataTableOutput("fanduel")
         )
-    )#,
+    ),
     
-    # fluidRow(
-    #     column(3,
-    #            selectInput("y_axis",
-    #                        h3("Y Axis"),
-    #                        choices = list("FDSal",
-    #                                       "ProjectedOwn",
-    #                                       "CashOdds",
-    #                                       "GPPOdds",
-    #                                       "FDLEV",
-    #                                       "FFPts",
-    #                                       "Points_Per_1k",
-    #                                       "line",
-    #                                       "total",
-    #                                       "implied_total"),
-    #                        selected = "FDSal")),
-    #     column(3,
-    #            selectInput("x_axis",
-    #                        h3("X Axis"),
-    #                        choices = list("FDSal",
-    #                                       "ProjectedOwn",
-    #                                       "CashOdds",
-    #                                       "GPPOdds",
-    #                                       "FDLEV",
-    #                                       "FFPts",
-    #                                       "Points_Per_1k",
-    #                                       "line",
-    #                                       "total",
-    #                                       "implied_total"),
-    #                        selected = "GPPOdds")),
-    #     column(6,
-    #            plotOutput('plot', height = 500))
-    # ),
-    # 
-    # fluidRow(column(12,
-    #                  DT::dataTableOutput("dat")))
+    fluidRow(
+        column(3,
+               selectInput("y_axis",
+                           h3("Y Axis"),
+                           choices = list("fd_sal",
+                                          "projected_own",
+                                          "cash_odds",
+                                          "gpp_odds",
+                                          "fd_lev",
+                                          "proj_ffpts",
+                                          "points_per_1k",
+                                          "line",
+                                          "total",
+                                          "implied_total"),
+                           selected = "fd_sal")),
+        column(3,
+               selectInput("x_axis",
+                           h3("X Axis"),
+                           choices = list("fd_sal",
+                                          "projected_own",
+                                          "cash_odds",
+                                          "gpp_odds",
+                                          "fd_lev",
+                                          "proj_ffpts",
+                                          "points_per_1k",
+                                          "line",
+                                          "total",
+                                          "implied_total"),
+                           selected = "gpp_odds")),
+        column(6,
+               plotOutput('plot', height = 500))
+    ),
+
+    fluidRow(column(12,
+                     DT::dataTableOutput("dat")))
 )))
 
 #tabPanel("Data")))
@@ -200,39 +200,40 @@ server <- function(input, output) {
     
     
     # Graph Output
-    # dat <- reactive({
-    #     
-    #     s1 <- input$fanduel_rows_selected
-    #     
-    #     render_table <- subset(d_all, 
-    #                            FDSal >= input$salary[1] & FDSal <= input$salary[2] &
-    #                                Points_Per_1k >= input$value[1] & Points_Per_1k <= input$value[2] &
-    #                                FDLEV >= input$lev[1] & FDLEV <= input$lev[2] & 
-    #                                line >= input$line[1] & line <= input$line[2] &
-    #                                Pos == input$Position) %>% select(-ImpliedOwn) %>%
-    #                     .[s1,]
-    #     
-    #     # test <- filter(d_all, Pos == input$Position) %>%
-    #     #         .[s1,] 
-    #     
-    #     #        select(Player, input$x_axis, input$y_axis)
-    #     
-    #     return(render_table) #datatable(test, rownames = F)
-    # })
-    # 
-    # output$plot = renderPlot({
-    #     
-    #     plot_data <- dat()
-    #     ggplot(plot_data, aes(x = plot_data[[input$x_axis]], plot_data[[input$y_axis]])) +
-    #           xlab(input$x_axis) + 
-    #           ylab(input$y_axis) +
-    #           geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
-    #           geom_text(aes(label = Player), hjust = 0, vjust = -1) +
-    #           theme_bw() +
-    #           theme(
-    #             axis.title = element_text(size = 12, face = "bold")
-    #           )
-    #})
+    dat <- reactive({
+
+        s1 <- input$fanduel_rows_selected
+
+        render_table <- subset(dfs_df,
+                               fd_sal >= input$salary[1] & fd_sal <= input$salary[2] &
+                                   points_per_1k >= input$value[1] & points_per_1k <= input$value[2] &
+                                   fd_lev >= input$lev[1] & fd_lev <= input$lev[2] &
+                                   line >= input$line[1] & line <= input$line[2] &
+                                   pos == input$pos) %>% 
+                        select(-implied_own) %>%
+                        .[s1,]
+
+        # test <- filter(d_all, Pos == input$Position) %>%
+        #         .[s1,]
+
+        #        select(Player, input$x_axis, input$y_axis)
+
+        return(render_table) #datatable(test, rownames = F)
+    })
+    
+    output$plot = renderPlot({
+
+        plot_data <- dat()
+        ggplot(plot_data, aes(x = plot_data[[input$x_axis]], plot_data[[input$y_axis]])) +
+              xlab(input$x_axis) +
+              ylab(input$y_axis) +
+              geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
+              geom_text(aes(label = player), hjust = 0, vjust = -1) +
+              theme_bw() +
+              theme(
+                axis.title = element_text(size = 12, face = "bold")
+              )
+    })
 }
 
 # Run the application 
