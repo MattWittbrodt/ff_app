@@ -3,7 +3,7 @@
 #wk_num = 2
 #position = "QB"
 
-position_stats <- function(position, wk_num) {
+position_stats <- function(position, wk_num, data) {
   
   library(tidyverse)
   library(stringr)
@@ -14,115 +14,125 @@ position_stats <- function(position, wk_num) {
   source("~/ff_shiny_app/ff_app/find_names.R")
   
 # Previous Week Data ------------------------------------------------------
-
-  wk_data <-  paste("https://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2019&year_max=2019&season_start=1&season_end=-1&pos%5B%5D=",
-                   position,
-                   "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=",
-                   as.character(wk_num - 1),
-                   "&week_num_max=",
-                   as.character(wk_num -1),
-                   "&c1stat=rush_att&c1comp=gt&c1val=0&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c4val=0&c5val=1.0&order_by=pass_rating",
-                   sep = "") %>%                
-             read_html() %>%
-             html_table(fill = T) %>%
-            .[[1]]
+  # wk_data <-  paste("https://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2019&year_max=2019&season_start=1&season_end=-1&pos%5B%5D=",
+  #                  position,
+  #                  "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=",
+  #                  as.character(wk_num - 1),
+  #                  "&week_num_max=",
+  #                  as.character(wk_num -1),
+  #                  "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=1&week_num_max=1&c1stat=rush_att&c1comp=gt&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c5val=1.0&order_by=player",
+  #                  #"&c1stat=rush_att&c1comp=gt&c1val=0&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c4val=0&c5val=1.0&order_by=pass_rating",
+  #                  sep = "") %>%                
+  #            read_html() %>%
+  #            html_table(fill = T) %>%
+  #           .[[1]]
   
-  # Getting actual column names
-  wk_names <- paste(colnames(wk_data), wk_data[1,]) %>%
-              str_to_lower() %>%
-              str_remove_all("^\\s+") %>%
-              str_remove_all("[.]\\d+") %>%
-              str_remove_all("^\\s+") %>%
-              str_replace("receiving", "rec") %>%
-              str_remove("ing") %>%
-              str_replace("y/r","yds_per_rec") %>%
-              str_replace("y/a","yds_per_att") %>%
-              str_replace("y/tgt","yds_per_tgt") %>%
-              str_replace_all("cmp","comp") %>%
-              str_replace_all("%","_per") %>%
-              str_replace_all("\\s+","_")
-  wk_names[8] <- 'field'
+  wk_data <- lapply(data$wk_data, function(x) {
   
-  colnames(wk_data) <- wk_names
+              # Getting actual column names
+              wkdf <- x
+              wk_names <- paste(colnames(wkdf), wkdf[1,]) %>%
+                          str_to_lower() %>%
+                          str_remove_all("^\\s+") %>%
+                          str_remove_all("[.]\\d+") %>%
+                          str_remove_all("^\\s+") %>%
+                          str_replace("receiving", "rec") %>%
+                          str_remove("ing") %>%
+                          str_replace("y/r","yds_per_rec") %>%
+                          str_replace("y/a","yds_per_att") %>%
+                          str_replace("y/tgt","yds_per_tgt") %>%
+                          str_replace_all("cmp","comp") %>%
+                          str_replace_all("%","_per") %>%
+                          str_replace_all("\\s+","_")
+              wk_names[8] <- 'field'
+              
+              colnames(wkdf) <- paste("prev_wk", wk_names, sep = "_")
+              
+              return(wkdf)
+              })
   
-  # Columns to include based on position
-  columns <- switch(position,
-                    QB = c(2,3,7:9,14:28,39),
-                    RB = c(2,3,7:9,25:35,39),
-                    WR = c(2,3,7:9,29:35,39),
-                    TE = c(2,3,7:9,29:35,39))
+  # Columns to include based on position, remove first column, then remove the 'Player' column
+  wk_data2 <- switch(position,
+                    QB = wk_data[[1]][,c(2,3,7:9,14:17,28:33)],
+                    RB = wk_data[[2]][,c(2,3,7:9,14:24,28)],
+                    WR = wk_data[[3]][,c(2,3,7:9,18:24,28)],
+                    TE = wk_data[[4]][,c(2,3,7:9,18:24,28)]) %>%
+              .[-1,] %>% 
+              subset(prev_wk_player != 'Player') %>%
+              mutate(prev_wk_field = ifelse(prev_wk_field == "@",2,1))
   
   # Selecting relevant columns
-  wk_data <- wk_data[-1,columns] %>%
-             subset(player != 'Player')
+  #wk_data2 <- wk_data2[-1,] %>% subset(player != 'Player')
   
   # Making Home field = 1, visitor = 2
-  wk_data[['field']] <- ifelse(wk_data[['field']] == "@",2,1)
+  #wk_data[['field']] <- ifelse(wk_data[['field']] == "@",2,1)
   
   # Column cleaning - removing sacks and sack yds
-  if(position == "QB") {
-      cols_to_delete <- c(13,14)
-      wk_dat <- wk_data[,-cols_to_delete]}
+  # if(position == "QB") {
+  #     cols_to_delete <- c(13,14)
+  #     wk_dat <- wk_data[,-cols_to_delete]}
   
   # Removing the '%' from columns
   if(position != "QB") {
-     wk_data[["rec_ctch_per"]] <- as.numeric(sapply(wk_data[["rec_ctch_per"]],
+     wk_data2[["prev_wk_rec_ctch_per"]] <- as.numeric(sapply(wk_data2[["prev_wk_rec_ctch_per"]],
                                                     function(x) str_remove(x, '%')))}
   # converting into numeric
-  wk_data[,c(6:length(wk_data))] <- apply(wk_data[,c(6:length(wk_data))], 
+  wk_data2[,c(6:length(wk_data2))] <- apply(wk_data2[,c(6:length(wk_data2))], 
                               2, 
                               function(x) as.numeric(as.character(x)))
   
   # Doing some subsetting to remove players without any data
   if(position == "QB") {
-    wk_data <- filter(wk_data, pass_att > 5)
+    wk_data2 <- filter(wk_data2, prev_wk_pass_att > 5)
   } else {
     if(position == "RB") {
-    wk_data <- filter(wk_data, rush_att > 4)
+    wk_data2 <- filter(wk_data2, prev_wk_rush_att > 4)
     } else {
-      wk_data <- filter(wk_data, rec_tgt > 1)
+      wk_data2 <- filter(wk_data2, prev_wk_rec_tgt > 1)
     }
   }
 
 # Red Zone Stats ----------------------------------------------------------
   
-  rz_types <- list("passing","rushing","receiving")
+  # rz_types <- list("passing","rushing","receiving")
+  # 
+  # rz_df <- lapply(rz_types,
+  #                   function(x) {
+  #                     
+  #                     # Reading in Data
+  #                     d <- paste("http://www.pro-football-reference.com/years/2019/redzone-",
+  #                                x,
+  #                                ".htm",
+  #                                sep = "") %>%
+  #                           read_html() %>%
+  #                           html_table(fill = T) %>%
+  #                           .[[1]]
+  #                     
+  #                     # Ammending names
+  #                     rz_names <- paste(colnames(d), d[1,]) %>%
+  #                       str_to_lower() %>%
+  #                       str_remove_all("inside") %>%
+  #                       str_remove_all("^\\s+") %>%
+  #                       str_replace_all("20","twenty") %>%
+  #                       str_replace_all("10","ten") %>%
+  #                       str_replace_all("5","five") %>%
+  #                       str_replace_all("(?<=\\w)%","_per") %>%
+  #                       str_replace_all("%(?=\\w)","per_") %>%
+  #                       str_replace_all("\\s+","_") %>%
+  #                       str_replace_all("cmp","comp")
+  #                     
+  #                     
+  #                     # Adding into new columns
+  #                     colnames(d) <- paste(x,rz_names,sep = "_")
+  #                     
+  #                     # Final few cleaning steps
+  #                     d <- d %>%
+  #                       subset(.[[paste(x,"player",sep = "_")]] != "Player") %>%
+  #                       select(-contains("link"))
+  #                     
+  #                   })
   
-  rz_df <- lapply(rz_types,
-                    function(x) {
-                      
-                      # Reading in Data
-                      d <- paste("http://www.pro-football-reference.com/years/2019/redzone-",
-                                 x,
-                                 ".htm",
-                                 sep = "") %>%
-                            read_html() %>%
-                            html_table(fill = T) %>%
-                            .[[1]]
-                      
-                      # Ammending names
-                      rz_names <- paste(colnames(d), d[1,]) %>%
-                        str_to_lower() %>%
-                        str_remove_all("inside") %>%
-                        str_remove_all("^\\s+") %>%
-                        str_replace_all("20","twenty") %>%
-                        str_replace_all("10","ten") %>%
-                        str_replace_all("5","five") %>%
-                        str_replace_all("(?<=\\w)%","_per") %>%
-                        str_replace_all("%(?=\\w)","per_") %>%
-                        str_replace_all("\\s+","_") %>%
-                        str_replace_all("cmp","comp")
-                      
-                      
-                      # Adding into new columns
-                      colnames(d) <- paste(x,rz_names,sep = "_")
-                      
-                      # Final few cleaning steps
-                      d <- d %>%
-                        subset(.[[paste(x,"player",sep = "_")]] != "Player") %>%
-                        select(-contains("link"))
-                      
-                    })
+  rz_df <- data$rz_df
   
   # Creating the appropriate output for each position
   rz_data <- switch(position,
@@ -305,98 +315,99 @@ position_stats <- function(position, wk_num) {
 
 # Year to Date Stats ------------------------------------------------------
   
-  ytd_types <- list("passing","rushing","receiving")
+  # ytd_types <- list("passing","rushing","receiving")
+  # 
+  # ytd_df <- lapply(ytd_types, function(x) {
+  #                                    
+  #                                    # Reading in Data
+  #                                    d <- paste("http://www.pro-football-reference.com/years/2019/",
+  #                                               x,
+  #                                               ".htm",
+  #                                               sep = "") %>%
+  #                                      read_html() %>%
+  #                                      html_table(fill = T) %>%
+  #                                      .[[1]] %>%
+  #                                      .[,-1]
+  #                                    
+  #                                     if(x == "passing" | x == "receiving") {
+  #                                       d <- d  %>%
+  #                                            subset(Pos != "Pos") %>%
+  #                                            select(-Age, -GS, -Lng)
+  #                                     } else {
+  #                                       
+  #                                       # Rush is divided into two rows
+  #                                       colnames(d) <- d[1,]
+  #                                       d <- d[-1,] %>%
+  #                                            subset(Pos != "Pos" & as.numeric(Att) > 4) %>%
+  #                                            select(-Age, -GS, -Lng)
+  #                                       
+  #                                     }
+  #                                    
+  #                                    # Ammending names
+  #                                    d_names <- colnames(d) %>%
+  #                                      str_to_lower() %>%
+  #                                      str_replace_all("%","_per") %>%
+  #                                      str_replace_all("cmp","comp") %>%
+  #                                      str_replace("any/a", "avg_net_yds_per_att") %>%
+  #                                      str_replace("ay/a", "avg_yds_per_att") %>%
+  #                                      str_replace("ny/a", "net_yds_per_att") %>%
+  #                                      str_replace("y/a", "yds_per_att") %>%
+  #                                      str_replace("y/g", "yds_per_gm") %>%
+  #                                      str_replace("y/c", "yds_per_completion") %>%
+  #                                      str_replace("tgt", "target") %>%
+  #                                      str_replace("r/g", "rec_per_gm") %>%
+  #                                      str_replace("y/g", "yds_per_gm") %>%
+  #                                      str_replace("y/r", "yds_per_rec") %>%
+  #                                      str_replace("y/target", "yds_per_target")
+  #                                    
+  #                                    # Adding prefix to column names
+  #                                    if(x == "rushing") {
+  #                                      colnames(d) <- paste("ytd_rush", d_names, sep = "_")
+  #                                    } else {
+  #                                      if(x == "receiving") {
+  #                                      colnames(d) <- paste("ytd_rec", d_names, sep = "_")
+  #                                      } else {
+  #                                      colnames(d) <- paste("ytd_pass", d_names, sep = "_")
+  #                                      }
+  #                                    }
+  #                                    
+  #                                    # Converting the catch % into numeric
+  #                                    if(x == "receiving") {
+  #                                      d[["ytd_rec_ctch_per"]] <- as.numeric(sapply(d[["ytd_rec_ctch_per"]],
+  #                                                                         function(x) str_remove(x, '%')))
+  #                                    }
+  #                                    
+  #                                    # Making Columns numeric
+  #                                    d[,c(4:length(d))] <- apply(d[,c(4:length(d))], 
+  #                                                                2, 
+  #                                                                function(x) as.numeric(as.character(x)))
+  #                                    
+  #                                    # Making a few columns per game
+  #                                    
+  #                                      if(x == "passing") {
+  #                                        d <- mutate(d,
+  #                                                    ytd_pass_comp = ytd_pass_comp / ytd_pass_g,
+  #                                                    ytd_pass_att = ytd_pass_att / ytd_pass_g,
+  #                                                    ytd_pass_yds = ytd_pass_yds / ytd_pass_g,
+  #                                                    ytd_pass_td = ytd_pass_td / ytd_pass_g,
+  #                                                    ytd_pass_int = ytd_pass_int / ytd_pass_g)
+  #                                       } else {
+  #                                         if(x == "receiving") {
+  #                                           d <- mutate(d,
+  #                                                   ytd_rec_target = ytd_rec_target / ytd_rec_g,
+  #                                                   ytd_rec_rec = ytd_rec_rec / ytd_rec_g,
+  #                                                   ytd_rec_yds = ytd_rec_yds / ytd_rec_g,
+  #                                                   ytd_rec_td = ytd_rec_td / ytd_rec_g)
+  #                                         } else {
+  #                                           d <- mutate(d,
+  #                                                       ytd_rush_att = ytd_rush_att / ytd_rush_g,
+  #                                                       ytd_rush_yds = ytd_rush_yds / ytd_rush_g,
+  #                                                       ytd_rush_td = ytd_rush_td / ytd_rush_g)
+  #                                      }}
+  #                                    
+  #                             })
   
-  ytd_df <- lapply(ytd_types, function(x) {
-                                     
-                                     # Reading in Data
-                                     d <- paste("http://www.pro-football-reference.com/years/2019/",
-                                                x,
-                                                ".htm",
-                                                sep = "") %>%
-                                       read_html() %>%
-                                       html_table(fill = T) %>%
-                                       .[[1]] %>%
-                                       .[,-1]
-                                     
-                                      if(x == "passing" | x == "receiving") {
-                                        d <- d  %>%
-                                             subset(Pos != "Pos") %>%
-                                             select(-Age, -GS, -Lng)
-                                      } else {
-                                        
-                                        # Rush is divided into two rows
-                                        colnames(d) <- d[1,]
-                                        d <- d[-1,] %>%
-                                             subset(Pos != "Pos" & as.numeric(Att) > 4) %>%
-                                             select(-Age, -GS, -Lng)
-                                        
-                                      }
-                                     
-                                     # Ammending names
-                                     d_names <- colnames(d) %>%
-                                       str_to_lower() %>%
-                                       str_replace_all("%","_per") %>%
-                                       str_replace_all("cmp","comp") %>%
-                                       str_replace("any/a", "avg_net_yds_per_att") %>%
-                                       str_replace("ay/a", "avg_yds_per_att") %>%
-                                       str_replace("ny/a", "net_yds_per_att") %>%
-                                       str_replace("y/a", "yds_per_att") %>%
-                                       str_replace("y/g", "yds_per_gm") %>%
-                                       str_replace("y/c", "yds_per_completion") %>%
-                                       str_replace("tgt", "target") %>%
-                                       str_replace("r/g", "rec_per_gm") %>%
-                                       str_replace("y/g", "yds_per_gm") %>%
-                                       str_replace("y/r", "yds_per_rec") %>%
-                                       str_replace("y/target", "yds_per_target")
-                                     
-                                     # Adding prefix to column names
-                                     if(x == "rushing") {
-                                       colnames(d) <- paste("ytd_rush", d_names, sep = "_")
-                                     } else {
-                                       if(x == "receiving") {
-                                       colnames(d) <- paste("ytd_rec", d_names, sep = "_")
-                                       } else {
-                                       colnames(d) <- paste("ytd_pass", d_names, sep = "_")
-                                       }
-                                     }
-                                     
-                                     # Converting the catch % into numeric
-                                     if(x == "receiving") {
-                                       d[["ytd_rec_ctch_per"]] <- as.numeric(sapply(d[["ytd_rec_ctch_per"]],
-                                                                          function(x) str_remove(x, '%')))
-                                     }
-                                     
-                                     # Making Columns numeric
-                                     d[,c(4:length(d))] <- apply(d[,c(4:length(d))], 
-                                                                 2, 
-                                                                 function(x) as.numeric(as.character(x)))
-                                     
-                                     # Making a few columns per game
-                                     
-                                       if(x == "passing") {
-                                         d <- mutate(d,
-                                                     ytd_pass_comp = ytd_pass_comp / ytd_pass_g,
-                                                     ytd_pass_att = ytd_pass_att / ytd_pass_g,
-                                                     ytd_pass_yds = ytd_pass_yds / ytd_pass_g,
-                                                     ytd_pass_td = ytd_pass_td / ytd_pass_g,
-                                                     ytd_pass_int = ytd_pass_int / ytd_pass_g)
-                                        } else {
-                                          if(x == "receiving") {
-                                            d <- mutate(d,
-                                                    ytd_rec_target = ytd_rec_target / ytd_rec_g,
-                                                    ytd_rec_rec = ytd_rec_rec / ytd_rec_g,
-                                                    ytd_rec_yds = ytd_rec_yds / ytd_rec_g,
-                                                    ytd_rec_td = ytd_rec_td / ytd_rec_g)
-                                          } else {
-                                            d <- mutate(d,
-                                                        ytd_rush_att = ytd_rush_att / ytd_rush_g,
-                                                        ytd_rush_yds = ytd_rush_yds / ytd_rush_g,
-                                                        ytd_rush_td = ytd_rush_td / ytd_rush_g)
-                                       }}
-                                     
-                              })
-  
+  ytd_df <- data$ytd_df
   
   # Picking data which is relevant for the player - similar to red zone
   ytd_data <- switch(position,
@@ -407,16 +418,47 @@ position_stats <- function(position, wk_num) {
                                    as.data.frame(ytd_df[[3]]),
                                    by = c("ytd_rush_player" = "ytd_rec_player")))
   
-
+# Current Week Projections ------------------------------------------------
+  
+  proj_data <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4_W",wk_num,"_projections.csv", sep = "")) %>% 
+    subset(Pos == position) %>%
+    select(-PID,-Season,-XP,-Fum,-FG,-Grade,-Pa1D,-Ru1D,-Rec1D) %>%
+    mutate(Player = as.character(Player),
+           Pos = as.character(Pos),
+           Team = as.character(Team),
+           field = ifelse(str_detect(Opp, "@") == T, 2, 1),
+           Opp = str_remove(Opp, "@")) 
+  
+  # Column Processing
+  proj_names <- colnames(proj_data) %>%
+    str_to_lower() %>%
+    str_replace("[.]","_") %>%
+    str_replace("team", "tm")
+  
+  colnames(proj_data) <- paste("proj", proj_names, sep = "_") 
+  
+  # Making abbreviations
+  proj_data[["proj_tm"]] <- sapply(proj_data[["proj_tm"]], function(x) find_names(x, "fff_abbreviation"))
+  proj_data[["proj_opp"]] <- sapply(proj_data[["proj_opp"]], function(x) find_names(x, "fff_abbreviation"))
+  
+  # Adding to full dataframe
+  # all_data <- left_join(all_data, proj_data, by = c("player"= "proj_player", 
+  #                                                   "tm" = "proj_tm",
+  #                                                   "pos" = "proj_pos")) %>%
+  #   mutate(week = wk_num)
+  
 # Merging all data --------------------------------------------------------
   
   if(position == "QB") {
     
-    all_data <- inner_join(wk_data, ytd_data, by = c("player"= "ytd_pass_player", 
-                                                     "tm" = "ytd_pass_tm",
-                                                     "pos" = "ytd_pass_pos")) %>%
-                inner_join(rz_data, by = c("player" = "passing_player")) %>%
-                inner_join(all_d_data, by = c("opp" = "def_tm")) %>%
+    all_data <- full_join(proj_data, wk_data2, by = c("proj_player" = "prev_wk_player",
+                                                       "proj_tm" = "prev_wk_tm",
+                                                       "proj_pos" = "prev_wk_pos")) %>%
+                full_join(ytd_data, by = c("proj_player"= "ytd_pass_player", 
+                                                     "proj_tm" = "ytd_pass_tm",
+                                                     "proj_pos" = "ytd_pass_pos")) %>%
+                inner_join(rz_data, by = c("proj_player" = "passing_player")) %>%
+                inner_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
                 select(-ytd_pass_qbrec,
                        -ytd_pass_g,
                        -ytd_pass_comp,
@@ -426,55 +468,37 @@ position_stats <- function(position, wk_num) {
                        -ytd_pass_yds.1,
                        -ytd_pass_sk_per,
                        -ytd_pass_4qc,
-                       -ytd_pass_gwd)
+                       -ytd_pass_gwd) %>%
+                filter(proj_ffpts > 0)
     
   } else {
     if(position == "RB") {
       
-      all_data <- left_join(wk_data, ytd_data, by = c("player" = "ytd_rush_player",
-                                                       "tm" = "ytd_rush_tm",
-                                                       "pos" = "ytd_rush_pos")) %>%
-                  left_join(rz_data, by = c("player" = "rushing_player")) %>%
-                  left_join(all_d_data, by = c("opp" = "def_tm"))
+      all_data <- full_join(proj_data, wk_data2, by = c("proj_player" = "prev_wk_player",
+                                                         "proj_tm" = "prev_wk_tm",
+                                                         "proj_pos" = "prev_wk_pos")) %>%
+                  full_join(ytd_data, by = c("proj_player" = "ytd_rush_player",
+                                                       "proj_tm" = "ytd_rush_tm",
+                                                       "proj_pos" = "ytd_rush_pos")) %>%
+                  left_join(rz_data, by = c("proj_player" = "rushing_player")) %>%
+                  left_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
+                  filter(proj_ffpts > 0)
       
     } else {
-        
-      all_data <- left_join(wk_data, ytd_data, by = c("player"= "ytd_rec_player", 
-                                                       "tm" = "ytd_rec_tm",
-                                                       "pos" = "ytd_rec_pos")) %>%
-                  left_join(rz_data, by = c("player" = "receiving_player")) %>%
-                  left_join(all_d_data, by = c("opp" = "def_tm"))
-      
+       
+      all_data <- inner_join(proj_data, wk_data2, by = c("proj_player" = "prev_wk_player",
+                                                         "proj_tm" = "prev_wk_tm",
+                                                         "proj_pos" = "prev_wk_pos")) %>%
+                  full_join(ytd_data, by = c("proj_player"= "ytd_rec_player", 
+                                                       "proj_tm" = "ytd_rec_tm",
+                                                       "proj_pos" = "ytd_rec_pos")) %>%
+                  left_join(rz_data, by = c("proj_player" = "receiving_player")) %>%
+                  left_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
+                  filter(proj_ffpts > 0) #, proj_pos != "RB", proj_pos != "TE", proj_pos != "HB")
       }
   }
 
-# Current Week Projections ------------------------------------------------
 
-  proj_data <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4_W",wk_num,"_projections.csv", sep = "")) %>% 
-              subset(Pos == position) %>%
-              select(-PID,-Season,-XP,-Fum,-FG,-Grade,-Pa1D,-Ru1D,-Rec1D) %>%
-              mutate(Player = as.character(Player),
-                     Pos = as.character(Pos),
-                     Team = as.character(Team),
-                     Opp = as.character(Opp)) 
-  
-  # Column Processing
-  proj_names <- colnames(proj_data) %>%
-                str_to_lower() %>%
-                str_replace("[.]","_") %>%
-                str_replace("team", "tm")
-  
-  colnames(proj_data) <- paste("proj", proj_names, sep = "_") 
-  
-  # Making abbreviations
-  proj_data[["proj_tm"]] <- sapply(proj_data[["proj_tm"]], function(x) find_names(x, "fff_abbreviation"))
-  proj_data[["proj_opp"]] <- sapply(proj_data[["proj_opp"]], function(x) find_names(x, "fff_abbreviation"))
-  
-  # Adding to full dataframe
-  all_data <- inner_join(all_data, proj_data, by = c("player"= "proj_player", 
-                                                   "tm" = "proj_tm",
-                                                   "pos" = "proj_pos")) %>%
-              mutate(week = wk_num)
   
 
 # Return ------------------------------------------------------------------

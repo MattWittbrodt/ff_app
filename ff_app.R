@@ -2,33 +2,34 @@
 # DFs Shiny
 #
 
-
 library(shiny)
 library(tidyverse)
 library(DT)
 
 # Sourcing team name changes
-# source("~/ff_shiny_app/ff_app/find_names.R")
-# tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
-# 
+source("~/ff_shiny_app/ff_app/find_names.R")
+tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
+
 # # Getting full dataframe --------------------------------------------------
-# source("~/ff_shiny_app/ff_app/shiny_df_creation.R")
-# t <- Sys.time()
-# df <- shiny_df(2)
-# t2 <- Sys.time()
-# t2-t
+source("~/ff_shiny_app/ff_app/shiny_df_creation.R")
+#t <- Sys.time()
+df <- shiny_df(3)
+#t2 <- Sys.time()
+#t2-t
+
+#writexl::write_xlsx(df, "~/ff_shiny_app/all_data_wk_3.xlsx")
     
 # 
 # # DFS Specific Data
 
-df <- readxl::read_xlsx("~/ff_shiny_app/all_data_wk_2.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/all_data_wk_2.xlsx")
 
 dfs_df <- select(df,
-                 player,
-                 pos,
-                 tm,
-                 field,
-                 opp,
+                 proj_player,
+                 proj_pos,
+                 proj_tm,
+                 proj_field,
+                 proj_opp,
                  fd_sal,
                  projected_own,
                  cash_odds,
@@ -43,8 +44,10 @@ dfs_df <- select(df,
                  implied_total) %>%
             filter(fd_sal > 0) %>%
             mutate(points_per_1k = round(proj_ffpts / (fd_sal/1000),2),
-                   opp = ifelse(field == 2, paste("@",opp, sep = ""), opp)) %>%
-            select(-field)
+                   proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp)) %>%
+            select(-proj_field)
+
+names(dfs_df) <- str_remove(names(dfs_df), "proj_")
             
 
 #qb <- 
@@ -138,7 +141,7 @@ ui <- fluidPage(
     ),
     
     fluidRow(
-        column(3,
+        column(2,
                selectInput("y_axis",
                            h3("Y Axis"),
                            choices = list("fd_sal",
@@ -152,7 +155,7 @@ ui <- fluidPage(
                                           "total",
                                           "implied_total"),
                            selected = "fd_sal")),
-        column(3,
+        column(2,
                selectInput("x_axis",
                            h3("X Axis"),
                            choices = list("fd_sal",
@@ -212,11 +215,6 @@ server <- function(input, output) {
                                    pos == input$pos) %>% 
                         select(-implied_own) %>%
                         .[s1,]
-
-        # test <- filter(d_all, Pos == input$Position) %>%
-        #         .[s1,]
-
-        #        select(Player, input$x_axis, input$y_axis)
 
         return(render_table) #datatable(test, rownames = F)
     })
