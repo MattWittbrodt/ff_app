@@ -142,7 +142,7 @@ dvoa <- function() {
   
   dline <- dline %>%
            subset(team != "NFL") %>%
-           mutate(dline_power_success = as.numeric(sapply(dline_power_success, function(x) str_remove(x, '%'))),
+           mutate(dline_powersuccess = as.numeric(sapply(dline_powersuccess, function(x) str_remove(x, '%'))),
                   dline_stuffed = as.numeric(sapply(dline_stuffed, function(x) str_remove(x, '%'))))
   
   # Quick dline passing stats (on website as same table but not same rank)
@@ -171,7 +171,7 @@ dvoa <- function() {
                 subset(team != "NFL") %>%
                 mutate(dline_pass_rank = as.numeric(dline_pass_rank),
                        dline_pass_sacks = as.numeric(dline_pass_sacks),
-                       dline_pass_adjusted_sack_rate = as.numeric(sapply(dline_pass_adjusted_sack_rate, function(x) str_remove(x, '%'))))
+                       dline_pass_adjustedsack_rate = as.numeric(sapply(dline_pass_adjustedsack_rate, function(x) str_remove(x, '%'))))
   
 
 # OLine Stats -------------------------------------------------------------
@@ -204,7 +204,7 @@ dvoa <- function() {
   
   oline <- oline %>%
     subset(team != "NFL") %>%
-    mutate(oline_power_success = as.numeric(sapply(oline_power_success, function(x) str_remove(x, '%'))),
+    mutate(oline_powersuccess = as.numeric(sapply(oline_powersuccess, function(x) str_remove(x, '%'))),
            oline_stuffed = as.numeric(sapply(oline_stuffed, function(x) str_remove(x, '%'))))
   
   # Quick dline passing stats (on website as same table but not same rank)
@@ -233,7 +233,7 @@ dvoa <- function() {
     subset(team != "NFL") %>%
     mutate(oline_pass_rank = as.numeric(oline_pass_rank),
            oline_pass_sacks = as.numeric(oline_pass_sacks),
-           oline_pass_adjusted_sack_rate = as.numeric(sapply(oline_pass_adjusted_sack_rate, function(x) str_remove(x, '%'))))
+           oline_pass_adjustedsack_rate = as.numeric(sapply(oline_pass_adjustedsack_rate, function(x) str_remove(x, '%'))))
 
 # Return List of DFs ------------------------------------------------------
 
