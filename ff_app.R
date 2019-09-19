@@ -77,6 +77,104 @@ qb_names <- names(qb) %>%
 names(qb) <- qb_names
             
 
+# RB Data -----------------------------------------------------------------
+
+rb <- filter(df, proj_pos == "RB") %>%
+      select(proj_player,
+             proj_opp,
+             ytd_rush_att,
+             ytd_rush_yds_per_att,
+             ytd_rush_yds_per_gm,
+             ytd_rush_td,
+             ytd_rec_target,
+             ytd_rec_rec,
+             ytd_rec_yds,
+             ytd_rec_rec_per_gm,
+             rushing_twenty_att,
+             rushing_twenty_yds,
+             rushing_twenty_td,
+             rushing_twenty_per_rush,
+             rushing_ten_att,
+             rushing_ten_yds,
+             rushing_ten_td,
+             rushing_ten_per_rush,
+             rushing_five_att,
+             rushing_five_yds,
+             rushing_five_td,
+             receiving_twenty_tgt,
+             receiving_twenty_yds,
+             receiving_twenty_td,
+             receiving_twenty_per_tgt,
+             receiving_ten_tgt,
+             receiving_ten_rec,
+             receiving_ten_yds,                        
+             receiving_ten_td,
+             receiving_ten_per_tgt,
+             defense_dvoa,
+             rush_def_dvoa,
+             dline_stuffed,
+             dline_rbyards,
+             dline_2nd_level_yards,
+             oline_adj_lineyards,
+             oline_powerrank)
+
+
+# WR Data -----------------------------------------------------------------
+wr <- filter(df, proj_pos == "WR") %>%
+    select(proj_player,
+           proj_opp,
+           ytd_rec_target,
+           ytd_rec_rec,
+           ytd_rec_yds,
+           ytd_rec_rec_per_gm,
+           ytd_rec_yds_per_rec,
+           ytd_rec_yds_per_target,
+           ytd_rec_ctch_per,
+           receiving_twenty_tgt,
+           receiving_twenty_yds,
+           receiving_twenty_td,
+           receiving_twenty_per_tgt,
+           receiving_ten_tgt,
+           receiving_ten_rec,
+           receiving_ten_yds,                        
+           receiving_ten_td,
+           receiving_ten_per_tgt,
+           defense_dvoa,
+           pass_def_dvoa,
+           dline_pass_rank,
+           oline_pass_adjustedsack_rate,
+           dline_2nd_level_yards,
+           oline_adj_lineyards,
+           oline_powerrank)
+
+
+# TE Data -----------------------------------------------------------------
+te <- filter(df, proj_pos == "TE") %>%
+    select(proj_player,
+           proj_opp,
+           ytd_rec_target,
+           ytd_rec_rec,
+           ytd_rec_yds,
+           ytd_rec_rec_per_gm,
+           ytd_rec_yds_per_rec,
+           ytd_rec_yds_per_target,
+           ytd_rec_ctch_per,
+           receiving_twenty_tgt,
+           receiving_twenty_yds,
+           receiving_twenty_td,
+           receiving_twenty_per_tgt,
+           receiving_ten_tgt,
+           receiving_ten_rec,
+           receiving_ten_yds,                        
+           receiving_ten_td,
+           receiving_ten_per_tgt,
+           defense_dvoa,
+           pass_def_dvoa,
+           dline_pass_rank,
+           oline_pass_adjustedsack_rate,
+           dline_2nd_level_yards,
+           oline_adj_lineyards,
+           oline_powerrank)
 
 # UI Components -----------------------------------------------------------
 
@@ -196,7 +294,75 @@ ui <- navbarPage("DFS Data",
                              DVOA = Defense-adjusted Value Over Average where negative is better,
                              Dline = Defensive Line Ratings,
                              def_ = Raw Defense Stats")))
+),
+
+
+# RB Panel ----------------------------------------------------------------
+
+tabPanel("RB",
+         
+         fluidRow(column(12,p("YTD Stats are Per Game"))),
+         
+         fluidRow(column(2,
+                         
+                         checkboxGroupInput("rb_vars", "RB columns to show:",
+                                            names(rb), selected = names(rb))
+         ),
+         
+         
+         column(10,
+                div(DT::dataTableOutput("rbtable"), style = "font-size:75%")
+         )),
+         fluidRow(column(12,
+                         p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
+                             DVOA = Defense-adjusted Value Over Average where negative is better,
+                             Dline = Defensive Line Ratings,
+                             def_ = Raw Defense Stats")))
+),
+
+# WR Panel ----------------------------------------------------------------
+tabPanel("WR",
+         
+         fluidRow(column(12,p("YTD Stats are Per Game"))),
+         
+         fluidRow(column(2,
+                         
+                         checkboxGroupInput("wr_vars", "WR columns to show:",
+                                            names(wr), selected = names(wr))
+         ),
+         
+         
+         column(10,
+                div(DT::dataTableOutput("wrtable"), style = "font-size:75%")
+         )),
+         fluidRow(column(12,
+                         p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
+                             DVOA = Defense-adjusted Value Over Average where negative is better,
+                             Dline = Defensive Line Ratings,
+                             def_ = Raw Defense Stats")))
+),
+
+# TE Table ----------------------------------------------------------------
+tabPanel("TE",
+         
+         fluidRow(column(12,p("YTD Stats are Per Game"))),
+         
+         fluidRow(column(2,
+                         
+                         checkboxGroupInput("te_vars", "TE columns to show:",
+                                            names(te), selected = names(te))
+         ),
+         
+         column(10,
+                div(DT::dataTableOutput("tetable"), style = "font-size:75%")
+         )),
+         fluidRow(column(12,
+                         p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
+                             DVOA = Defense-adjusted Value Over Average where negative is better,
+                             Dline = Defensive Line Ratings,
+                             def_ = Raw Defense Stats")))
 ))
+
 
 # Server Function ---------------------------------------------------------
 server <- function(input, output) {
@@ -265,7 +431,24 @@ server <- function(input, output) {
         #output$qbtable <- renderDataTable({
             DT::datatable(qb[, input$qb_vars])
         })
+    
+    # RB Table
+    output$rbtable <- renderDataTable({
         
+        datatable(rb[, input$rb_vars])
+    })
+    
+    # WR Table
+    output$wrtable <- renderDataTable({
+        
+        datatable(wr[, input$wr_vars])
+    })
+    
+    # TE Table
+    output$tetable <- renderDataTable({
+        
+        datatable(te[, input$te_vars])
+    })
     
 }
 
