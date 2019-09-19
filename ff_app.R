@@ -6,24 +6,10 @@ library(shiny)
 library(tidyverse)
 library(DT)
 
-# Sourcing team name changes
-source("~/ff_shiny_app/ff_app/find_names.R")
-tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
-
-# # Getting full dataframe --------------------------------------------------
-source("~/ff_shiny_app/ff_app/shiny_df_creation.R")
-#t <- Sys.time()
-df <- shiny_df(3)
-#t2 <- Sys.time()
-#t2-t
-
-#writexl::write_xlsx(df, "~/ff_shiny_app/all_data_wk_3.xlsx")
+df <- readxl::read_xlsx("data/all_data_wk_3.xlsx")
     
-# 
-# # DFS Specific Data
 
-#df <- readxl::read_xlsx("~/ff_shiny_app/all_data_wk_2.xlsx")
-
+# DFS Specific Data -------------------------------------------------------
 dfs_df <- select(df,
                  proj_player,
                  proj_pos,
@@ -48,139 +34,173 @@ dfs_df <- select(df,
             select(-proj_field)
 
 names(dfs_df) <- str_remove(names(dfs_df), "proj_")
+                 
             
 
-#qb <- 
+# QB Data -----------------------------------------------------------------
+
+qb <- filter(df, proj_pos == "QB") %>%
+           select(proj_player,
+           proj_opp,
+           ytd_pass_comp_per,
+           ytd_pass_td,
+           ytd_pass_yds_per_gm,
+           ytd_pass_net_yds_per_att,
+           passing_twenty_att,
+           passing_twenty_td,
+           passing_ten_att,
+           passing_ten_td,
+           total_dvoa.x,
+           pass_def_dvoa,
+           dline_pass_rank,
+           dline_pass_adjustedsack_rate,
+           def_third_d_per,
+           def_pass_comp_per,
+           def_pass_qb_rating_allowed,
+           def_pass_adj_net_yds_per_att,
+           def_pass_yds_per_gm)
+
+qb_names <- names(qb) %>%
+            str_replace("passing", "rz") %>%
+            str_remove("\\.x") %>%
+            str_remove("proj_") %>%
+            str_replace("def_third_d","defense_3rd_conv") %>%
+            str_remove("(?<=\\w)pass") %>%
+            str_replace("_+","_") %>%
+            str_replace("_per_","/") %>%
+            str_replace("_per","%") %>%
+            str_replace("twenty", "20") %>%
+            str_replace("ten", "10") %>%
+            str_replace("adjusted","adj_")
+            
+
+names(qb) <- qb_names
+            
 
 
-# Importing and Preprocessing Data ----------------------------------------
-# leverage <- read.csv("data/4for4-fantasy-football-gpp-leverage-scores-table_wk2.csv") %>%
-#             select(-Opp)
-# projections <- read.csv("data/4for4_W2_projections.csv") %>% 
-#                select(-Team,-FG,-XP,-Pos,-PID,-Week,-Season,-Fum,
-#                       -Comp, -Pass.Att, -Pass.Yds, -Pass.TD, -INT, -Rush.Att, -Rush.Yds, 
-#                       -Rush.TD, -Rec, -Rec.Yds, -Rec.TD)
+# UI Components -----------------------------------------------------------
 
-# Vegas lines
-# source("vegas_lines.R")
-# vegas <- vegas_lines() %>%
-#          select(team, line, total, implied_total)
-
-# Removing some of the irrelevant columns
-# d_all <- merge(leverage, projections, by = "Player") %>%
-#          select(-Pa1D, -Ru1D, -Rec1D, -Grade) %>%
-#          mutate(Cash.Odds = as.numeric(gsub("\\%", "", Cash.Odds)),
-#                 GPP.Odds = as.numeric(gsub("\\%", "", GPP.Odds)),
-#                 Implied.Own. = as.numeric(gsub("\\%", "", Implied.Own.)),
-#                 Projected.Own. = as.numeric(gsub("\\%", "", Projected.Own.)),
-#                 Points_Per_1k = round(FFPts / (FD.Sal../1000),2),
-#                 Tm = as.character(Tm))
-#          
-# d_names <- colnames(d_all) %>%
-#            str_remove_all("[.]")
-
-# colnames(d_all) <- d_names
-
-# Merging total dataset and vegas lines
-# d_all <- inner_join(d_all, vegas, by = c("Tm" = "team"))
-
-
-# Define UI for application that draws a histogram
 # Fluidpage adjusts to window size
-ui <- fluidPage(
+ui <- navbarPage("DFS Data",
     
-    tabsetPanel(type = "tabs",
-                
-                tabPanel("DFS FanDuel",
 
-    # Application title
-    fluidRow(
-        column(3, 
-               selectInput("pos",
-                                  h3("Position"),
-                                  choices = list("QB","RB","WR","TE","DEF"),
-                                  selected = "QB"))),
- 
+# Main DFS Panel ------------------------------------------------------------
 
-    # Sidebar with a slider input for number of bins 
-    fluidRow(
-        column(3,
-              sliderInput("salary",
-                        "Minimum FanDuel Salary:",
-                        min = min(dfs_df$fd_sal),
-                        max = max(dfs_df$fd_sal),
-                        value = c(min,max)
-        )),
-        column(3,
-               sliderInput("value",
-                    "Points Per $1000",
-                    min = min(dfs_df$points_per_1k, na.rm = T),
-                    max = max(dfs_df$points_per_1k, na.rm = T),
-                    value = c(min,max)
-               )),
-        column(3,
-               sliderInput("lev",
-                           "Leverage",
-                           min = min(dfs_df$fd_lev),
-                           max = max(dfs_df$fd_lev),
-                           value = c(min,max)
-               )),
-        column(3,
-               sliderInput("line",
-                           "Line",
-                           min = min(dfs_df[["line"]], na.rm = T),
-                           max = max(dfs_df[["line"]], na.rm = T),
-                           value = c(min,max)
-               ))),
+    
+    tabPanel("DFS Specific",
+                          
 
-        # Show a plot of the generated distribution
+        # Application title
         fluidRow(
-         column(12,
-           DT::dataTableOutput("fanduel")
-        )
-    ),
+            column(3, 
+                   selectInput("pos",
+                                      h3("Position"),
+                                      choices = list("QB","RB","WR","TE","DEF"),
+                                      selected = "QB"))),
+     
     
-    fluidRow(
-        column(2,
-               selectInput("y_axis",
-                           h3("Y Axis"),
-                           choices = list("fd_sal",
-                                          "projected_own",
-                                          "cash_odds",
-                                          "gpp_odds",
-                                          "fd_lev",
-                                          "proj_ffpts",
-                                          "points_per_1k",
-                                          "line",
-                                          "total",
-                                          "implied_total"),
-                           selected = "fd_sal")),
-        column(2,
-               selectInput("x_axis",
-                           h3("X Axis"),
-                           choices = list("fd_sal",
-                                          "projected_own",
-                                          "cash_odds",
-                                          "gpp_odds",
-                                          "fd_lev",
-                                          "proj_ffpts",
-                                          "points_per_1k",
-                                          "line",
-                                          "total",
-                                          "implied_total"),
-                           selected = "gpp_odds")),
-        column(6,
-               plotOutput('plot', height = 500))
-    ),
+        # Sidebar with a slider input for number of bins 
+        fluidRow(
+            column(3,
+                  sliderInput("salary",
+                            "Minimum FanDuel Salary:",
+                            min = min(dfs_df$fd_sal),
+                            max = max(dfs_df$fd_sal),
+                            value = c(min,max)
+            )),
+            column(3,
+                   sliderInput("value",
+                        "Points Per $1000",
+                        min = min(dfs_df$points_per_1k, na.rm = T),
+                        max = max(dfs_df$points_per_1k, na.rm = T),
+                        value = c(min,max)
+                   )),
+            column(3,
+                   sliderInput("lev",
+                               "Leverage",
+                               min = min(dfs_df$fd_lev),
+                               max = max(dfs_df$fd_lev),
+                               value = c(min,max)
+                   )),
+            column(3,
+                   sliderInput("line",
+                               "Line",
+                               min = min(dfs_df[["line"]], na.rm = T),
+                               max = max(dfs_df[["line"]], na.rm = T),
+                               value = c(min,max)
+                   ))),
+    
+            # Show a plot of the generated distribution
+            fluidRow(
+             column(12,
+               DT::dataTableOutput("fanduel")
+            )
+        ),
+        
+        fluidRow(
+            column(2,
+                   selectInput("y_axis",
+                               h3("Y Axis"),
+                               choices = list("fd_sal",
+                                              "projected_own",
+                                              "cash_odds",
+                                              "gpp_odds",
+                                              "fd_lev",
+                                              "proj_ffpts",
+                                              "points_per_1k",
+                                              "line",
+                                              "total",
+                                              "implied_total"),
+                               selected = "fd_sal")),
+            column(2,
+                   selectInput("x_axis",
+                               h3("X Axis"),
+                               choices = list("fd_sal",
+                                              "projected_own",
+                                              "cash_odds",
+                                              "gpp_odds",
+                                              "fd_lev",
+                                              "proj_ffpts",
+                                              "points_per_1k",
+                                              "line",
+                                              "total",
+                                              "implied_total"),
+                               selected = "gpp_odds")),
+            column(6,
+                   plotOutput('plot', height = 500))
+        ),
+    
+        fluidRow(column(12,
+                         DT::dataTableOutput("dat")))
+        ),
 
-    fluidRow(column(12,
-                     DT::dataTableOutput("dat")))
-)))
 
-#tabPanel("Data")))
 
-# Define server logic required to draw a histogram
+# QB Panel ----------------------------------------------------------------
+
+    tabPanel("QB",
+             
+             
+             fluidRow(column(2,
+                 
+                 checkboxGroupInput("qb_vars", "QB columns to show:",
+                                    names(qb), selected = names(qb))
+             ),
+             
+ 
+                 column(10,
+                        div(DT::dataTableOutput("qbtable"), style = "font-size:75%")
+                 )),
+             fluidRow(column(12,
+                             p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
+                             DVOA = Defense-adjusted Value Over Average where negative is better,
+                             Dline = Defensive Line Ratings,
+                             def_ = Raw Defense Stats")))
+))
+
+# Server Function ---------------------------------------------------------
 server <- function(input, output) {
+    
     
     #table <- reactive({
            #     d <- subset(d_all, FD.Sal.. >= input$salary)
@@ -232,6 +252,21 @@ server <- function(input, output) {
                 axis.title = element_text(size = 12, face = "bold")
               )
     })
+    
+    output$qbtable <- renderDataTable({
+        
+        # Editing table for rendering
+        #render_qb_table <- qb
+        # 
+        # datatable(render_qb_table, 
+        #           rownames = F, 
+        #           options = list(pageLength = 20, lengthMenu = c(10,20,30)))
+        
+        #output$qbtable <- renderDataTable({
+            DT::datatable(qb[, input$qb_vars])
+        })
+        
+    
 }
 
 # Run the application 
