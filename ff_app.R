@@ -7,7 +7,8 @@ library(tidyverse)
 library(DT)
 
 df <- readxl::read_xlsx("data/all_data_wk_3.xlsx")
-    
+df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_3.xlsx")
+
 
 # DFS Specific Data -------------------------------------------------------
 dfs_df <- select(df,
@@ -116,7 +117,8 @@ rb <- filter(df, proj_pos == "RB") %>%
              dline_rbyards,
              dline_2nd_level_yards,
              oline_adj_lineyards,
-             oline_powerrank)
+             oline_powerrank) %>%
+        filter(ytd_rush_att > 0)
 
 
 # WR Data -----------------------------------------------------------------
@@ -145,7 +147,8 @@ wr <- filter(df, proj_pos == "WR") %>%
            oline_pass_adjustedsack_rate,
            dline_2nd_level_yards,
            oline_adj_lineyards,
-           oline_powerrank)
+           oline_powerrank) %>%
+    filter(ytd_rec_target > 0)
 
 
 # TE Data -----------------------------------------------------------------
@@ -174,7 +177,8 @@ te <- filter(df, proj_pos == "TE") %>%
            oline_pass_adjustedsack_rate,
            dline_2nd_level_yards,
            oline_adj_lineyards,
-           oline_powerrank)
+           oline_powerrank) %>%
+    filter(ytd_rec_target > 0)
 
 # UI Components -----------------------------------------------------------
 
