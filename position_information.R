@@ -3,15 +3,15 @@
 #wk_num = 2
 #position = "QB"
 
-position_stats <- function(position, wk_num, data) {
+position_stats <- function(position, wk_num, data, tm_names) {
   
   library(tidyverse)
   library(stringr)
   library(rvest)
   
   # Reading in team name chart
-  tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
-  source("~/ff_shiny_app/ff_app/find_names.R")
+  #tm_names <- readxl::read_xlsx("data/team_names.xlsx")
+  source("~/ff_shiny_app/ff_app/find_names.R", local = T)
   
 # Previous Week Data ------------------------------------------------------
   # wk_data <-  paste("https://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2019&year_max=2019&season_start=1&season_end=-1&pos%5B%5D=",
@@ -416,7 +416,8 @@ position_stats <- function(position, wk_num, data) {
                     TE = as.data.frame(ytd_df[[3]]),
                     RB = left_join(as.data.frame(ytd_df[[2]]), 
                                    as.data.frame(ytd_df[[3]]),
-                                   by = c("ytd_rush_player" = "ytd_rec_player")))
+                                   by = c("ytd_rush_player" = "ytd_rec_player")) %>% 
+                         mutate(ytd_rush_pos = ifelse(ytd_rush_pos != "WR" & ytd_rush_pos != "QB" & ytd_rush_pos != "TE", "RB", ytd_rush_pos)))
   
 # Current Week Projections ------------------------------------------------
   
