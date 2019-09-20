@@ -286,7 +286,7 @@ ui <- navbarPage("DFS Data",
              fluidRow(column(2,
                  
                  checkboxGroupInput("qb_vars", "QB columns to show:",
-                                    names(qb), selected = names(qb))
+                                    names(qb), selected = c("player"))
              ),
              
  
@@ -310,7 +310,7 @@ tabPanel("RB",
          fluidRow(column(2,
                          
                          checkboxGroupInput("rb_vars", "RB columns to show:",
-                                            names(rb), selected = names(rb))
+                                            names(rb), selected = c("proj_player"))
          ),
          
          
@@ -332,7 +332,7 @@ tabPanel("WR",
          fluidRow(column(2,
                          
                          checkboxGroupInput("wr_vars", "WR columns to show:",
-                                            names(wr), selected = names(wr))
+                                            names(wr), selected = c("proj_player"))
          ),
          
          
@@ -354,7 +354,7 @@ tabPanel("TE",
          fluidRow(column(2,
                          
                          checkboxGroupInput("te_vars", "TE columns to show:",
-                                            names(te), selected = names(te))
+                                            names(te), selected = c("proj_player"))
          ),
          
          column(10,
