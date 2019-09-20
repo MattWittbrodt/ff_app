@@ -6,15 +6,15 @@ library(tidyverse)
 
 # Reading in team name chart ----------------------------------------------
 tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
-source("~/ff_shiny_app/ff_app/find_names.R")
+source("~/ff_shiny_app/ff_app/find_names.R", local = T)
 
 # Vegas Lines -------------------------------------------------------------
-source("~/ff_shiny_app/ff_app/vegas_lines.R")
+source("~/ff_shiny_app/ff_app/vegas_lines.R", local = T)
 vegas <- vegas_lines()
 vegas[["team"]] <- sapply(vegas[["team"]], function(x) find_names(x, "vegas"))
 
 # DVOA Data ---------------------------------------------------------------
-source("~/ff_shiny_app/ff_app/dvoa.R")
+source("~/ff_shiny_app/ff_app/dvoa.R", local = T)
 dvoa <- dvoa() 
 dvoa_defense <- dvoa$defense
 dvoa_offense <- dvoa$offense
@@ -176,19 +176,19 @@ data <- list(wk_data = wk_data,
              rz_df = rz_df,
              ytd_df = ytd_df)
 # Positions ---------------------------------------------------------------
-source("~/ff_shiny_app/ff_app/position_information.R")
+source("~/ff_shiny_app/ff_app/position_information.R", local = T)
 
 # QB
-qb <- position_stats("QB",wk_num,data)
+qb <- position_stats("QB",wk_num,data, tm_names)
 
 # RB
-rb <- position_stats("RB",wk_num,data)
+rb <- position_stats("RB",wk_num,data, tm_names)
 
 # WR
-wr <- position_stats("WR",wk_num,data)
+wr <- position_stats("WR",wk_num,data, tm_names)
 
 # TE
-te <- position_stats("TE",wk_num,data)
+te <- position_stats("TE",wk_num,data, tm_names)
 
 
 # Combinng into one DF ----------------------------------------------------
@@ -242,3 +242,16 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 
 
 }
+
+# Sourcing team name changes
+source("~/ff_shiny_app/ff_app/find_names.R")
+tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
+
+# Getting full dataframe --------------------------------------------------
+#source("shiny_df_creation.R", local = T)
+#t <- Sys.time()
+df <- shiny_df(3)
+#t2 <- Sys.time()
+#t2-t
+
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_3.xlsx")
