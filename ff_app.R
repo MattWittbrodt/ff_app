@@ -7,7 +7,7 @@ library(tidyverse)
 library(DT)
 
 df <- readxl::read_xlsx("data/all_data_wk_3.xlsx")
-df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_3.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_3.xlsx")
 
 
 # DFS Specific Data -------------------------------------------------------
