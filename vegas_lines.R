@@ -6,34 +6,48 @@ vegas_lines <- function() {
   library(tidyverse)
   
   # Using rvest to get the data in
-  url <- "https://www.sportsline.com/nfl/odds/"
-  page <- read_html(url)
-  table <- html_table(page, fill = T)
-  df <- table[[1]]
+  #url <- "https://www.sportsline.com/nfl/odds"
+  d <- "http://www.vegasinsider.com/nfl/odds/las-vegas/" %>%
+        read_html(url) %>% 
+        html_table(fill = T) %>%
+        .[[7]]
   
-  # Cleaning Data to retrieve home, away, favorite, and total
-  df2 <- select(df, game, consensus) %>% 
-         subset(str_detect(game, "GMT") == T & str_detect(consensus, "ML") == F) %>%
-         group_by(game) %>% 
-         summarize(consensus = paste(consensus, collapse = '')) %>%
-         mutate(away_team = str_extract(game, "(?<=\\w{3}\\s)(\\w{2,3})"),
-                home_team = str_extract_all(game, "(?<=[@]\\s)(\\w{2,3})"),
-                total = str_extract(consensus,"(?<=[+])(\\d+\\.\\d|\\d+)"),
-                line = str_extract(consensus, "(?<=\\w{2,3}\\s[:punct:])(\\d+\\.\\d|\\d+)"),
-                favorite = str_extract(consensus, "\\w{2,3}")) %>%
-         select(-consensus,-game)
+  # New data cleaning
+  df <- d %>% 
+         filter(str_detect(X1,"/") == T & str_detect(X1, "09/22") == T) %>%
+         select(X1,X3) %>%
+         .[-1,]
   
-  # Getting into usable format
-  df3 <- gather(df2, key = "home_or_away", value = "team", -total, -favorite, -line) %>%
-         .[c("team", "home_or_away", "line", "total", "favorite")] %>%
-         mutate(home_or_away = str_remove(home_or_away, "_team"),
-                favorite = ifelse(team == favorite, 1, 0),
-                line = ifelse(favorite == 1, as.numeric(line)*-1, as.numeric(line)),
-                implied_total = (as.numeric(total)/2)+((line*-1)/2),
-                total = as.numeric(total),
-                team = as.character(team))
+  names(df) <- c("game", "total")
+         
+  df2 <- df %>%
+         mutate(total = str_replace_all(total, "½", ".5"),
+                total = str_replace(total, "u-10", " "),
+                total = str_remove(total, "-\\d{2}$"),
+                game = str_remove_all(game, "\\."),
+                game = str_remove(game, "09/22\\s+"),
+                game = str_remove(game, "PM\\s+"),
+                teams = str_extract_all(game, "(?<=\\d{3}\\s)(\\w{5}\\s\\w{3}|\\w{4,}|\\w{2,}\\s\\w{2,})"),
+                home = map_chr(teams, last),
+                away = map_chr(teams, first),
+                line = str_extract(total, "(-\\d+\\.\\d|-\\d+)"),
+                favorite = ifelse(str_detect(total, ("^-")) == T, away, home),
+                total = str_remove(total, "(-\\d+\\.\\d|-\\d+)"),
+                total = str_remove(total, "-10")) %>%
+        select(-teams, -game) %>%
+        # moving into final df form
+        gather(key = "home_or_away", value = "team", -total, -favorite, -line) %>%
+        # Ordering columns 
+        .[,c("team", "home_or_away", "line", "total", "favorite")] %>%
+        # Further mutating  
+        mutate(
+           favorite = ifelse(team == favorite, 1, 0),
+           line = ifelse(favorite == 1, as.numeric(line), as.numeric(line)*-1),
+           total = as.numeric(str_remove_all(total, "\\s")),
+           implied_total = (total/2)+((line*-1)/2))
   
-  return(df3)
+  
+  return(df2)
   
 }
 
