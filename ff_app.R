@@ -340,7 +340,21 @@ ui <- navbarPage("DFS Data",
                              p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
                              DVOA = Defense-adjusted Value Over Average where negative is better for total, but not pass,
                              Dline = Defensive Line Ratings,
-                             def_ = Raw Defense Stats")))
+                             def_ = Raw Defense Stats"))),
+             fluidRow(
+               column(2,
+                      selectInput("qb_y_axis",
+                                  h3("Y Axis"),
+                                  choices = as.list(names(qb)),
+                                  selected = "fd_sal")),
+               column(2,
+                      selectInput("qb_x_axis",
+                                  h3("X Axis"),
+                                  choices = as.list(as.list(names(qb))),
+                                  selected = "total_dvoa")),
+               column(6,
+                      plotOutput('qb_plot', height = 500))
+             )
 ),
 
 
@@ -448,9 +462,10 @@ server <- function(input, output) {
                         select(-implied_own) %>%
                         .[s1,]
 
-        return(render_table) #datatable(test, rownames = F)
+        return(render_table)
     })
     
+    # Player pool (start for now)
     output$player_pool <- renderPrint({ 
       
       s1 <- input$fanduel_rows_selected
@@ -486,6 +501,36 @@ server <- function(input, output) {
       
       DT::datatable(render_qb[, input$qb_vars], rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
       
+    })
+    
+    # QB Graph Output
+    qb_dat <- reactive({
+      
+      qb_s1 <- input$qbtable_rows_selected
+      
+      qb_render_table <- subset(qb,
+                                fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
+                                total_dvoa >= input$qb_dvoa[1] & total_dvoa <= input$qb_dvoa[2] &
+                                pass_def_dvoa >= input$qb_pass_dvoa[1] & pass_def_dvoa <= input$qb_pass_dvoa[2] &
+                                line >= input$qb_line[1] & line <= input$qb_line[2]) %>% 
+                         .[qb_s1,]
+      
+      return(qb_render_table) #datatable(test, rownames = F)
+    })
+    
+    # Output variable creation for QB
+    output$qb_plot = renderPlot({
+      
+      qb_plot_data <- qb_dat()
+      ggplot(qb_plot_data, aes(x = qb_plot_data[[input$qb_x_axis]], qb_plot_data[[input$qb_y_axis]])) +
+        xlab(input$qb_x_axis) +
+        ylab(input$qb_y_axis) +
+        geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
+        geom_text(aes(label = player), hjust = 0, vjust = -1) +
+        theme_bw() +
+        theme(
+          axis.title = element_text(size = 12, face = "bold")
+        )
     })
         
 # RB Tab Data -------------------------------------------------------------
