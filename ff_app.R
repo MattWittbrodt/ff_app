@@ -59,7 +59,9 @@ qb <- filter(df, proj_pos == "QB") %>%
            def_pass_comp_per,
            def_pass_qb_rating_allowed,
            def_pass_adj_net_yds_per_att,
-           def_pass_yds_per_gm)
+           def_pass_yds_per_gm,
+           fd_sal,
+           projected_own)
 
 qb_names <- names(qb) %>%
             str_replace("passing", "rz") %>%
@@ -272,8 +274,7 @@ ui <- navbarPage("DFS Data",
                    plotOutput('plot', height = 500))
         ),
     
-        fluidRow(column(12,
-                         DT::dataTableOutput("dat")))
+        fluidRow(column(12,textOutput("player_pool")))
         ),
 
 
@@ -286,16 +287,27 @@ ui <- navbarPage("DFS Data",
              fluidRow(column(2,
                  
                  checkboxGroupInput("qb_vars", "QB columns to show:",
-                                    names(qb), selected = c("player"))
+                                    names(qb), selected = c("player",
+                                                            "opp",
+                                                            "ytd_td",
+                                                            "ytd_yds/gm",
+                                                            "ytd_net_yds/att",
+                                                            "rz_20_att",
+                                                            "rz_10_att",
+                                                            "total_dvoa",
+                                                            "pass_def_dvoa",
+                                                            "dline_rank",
+                                                            "def_qb_rating_allowed",
+                                                            "def_adj_net_yds/att",
+                                                            "fd_sal"))
              ),
              
- 
                  column(10,
                         div(DT::dataTableOutput("qbtable"), style = "font-size:75%")
                  )),
              fluidRow(column(12,
                              p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
-                             DVOA = Defense-adjusted Value Over Average where negative is better,
+                             DVOA = Defense-adjusted Value Over Average where negative is better for total, but not pass,
                              Dline = Defensive Line Ratings,
                              def_ = Raw Defense Stats")))
 ),
@@ -372,9 +384,8 @@ tabPanel("TE",
 server <- function(input, output) {
     
     
-    #table <- reactive({
-           #     d <- subset(d_all, FD.Sal.. >= input$salary)
-    #})
+
+# Main Panel Server -------------------------------------------------------
 
     output$fanduel <- renderDataTable({
         
@@ -407,6 +418,15 @@ server <- function(input, output) {
                         .[s1,]
 
         return(render_table) #datatable(test, rownames = F)
+    })
+    
+    output$player_pool <- renderPrint({ 
+      
+      s1 <- input$fanduel_rows_selected
+      
+           dat() %>%
+           .[s1,] %>%
+           select(player)
     })
     
     output$plot = renderPlot({
