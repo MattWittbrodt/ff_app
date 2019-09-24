@@ -61,7 +61,8 @@ qb <- filter(df, proj_pos == "QB") %>%
            def_pass_adj_net_yds_per_att,
            def_pass_yds_per_gm,
            fd_sal,
-           projected_own)
+           projected_own,
+           line)
 
 qb_names <- names(qb) %>%
             str_replace("passing", "rz") %>%
@@ -283,6 +284,35 @@ ui <- navbarPage("DFS Data",
 
     tabPanel("QB",
              
+             fluidRow(
+               column(3,
+                      sliderInput("qb_salary",
+                                  "Minimum FanDuel Salary:",
+                                  min = min(qb$fd_sal, na.rm = T),
+                                  max = max(qb$fd_sal, na.rm = T),
+                                  value = c(min,max)
+                      )),
+               column(3,
+                      sliderInput("qb_dvoa",
+                                  "Total DVOA",
+                                  min = min(qb$total_dvoa, na.rm = T),
+                                  max = max(qb$total_dvoa, na.rm = T),
+                                  value = c(min,max)
+                      )),
+               column(3,
+                      sliderInput("qb_pass_dvoa",
+                                  "Pass D DVOA",
+                                  min = min(qb$pass_def_dvoa,  na.rm = T),
+                                  max = max(qb$pass_def_dvoa,  na.rm = T),
+                                  value = c(min,max)
+                      )),
+               column(3,
+                      sliderInput("qb_line",
+                                  "Line",
+                                  min = min(qb[["line"]], na.rm = T),
+                                  max = max(qb[["line"]], na.rm = T),
+                                  value = c(min,max)
+                      ))),
              
              fluidRow(column(2,
                  
@@ -299,11 +329,12 @@ ui <- navbarPage("DFS Data",
                                                             "dline_rank",
                                                             "def_qb_rating_allowed",
                                                             "def_adj_net_yds/att",
-                                                            "fd_sal"))
+                                                            "fd_sal",
+                                                            "line"))
              ),
              
                  column(10,
-                        div(DT::dataTableOutput("qbtable"), style = "font-size:75%")
+                        div(DT::dataTableOutput("qbtable"), style = "font-size:85%")
                  )),
              fluidRow(column(12,
                              p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
@@ -442,19 +473,22 @@ server <- function(input, output) {
                 axis.title = element_text(size = 12, face = "bold")
               )
     })
-    
+
+# QB Tab Data -------------------------------------------------------------
+
     output$qbtable <- renderDataTable({
+      
+      render_qb <-  subset(qb,
+                           fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
+                           total_dvoa >= input$qb_dvoa[1] & total_dvoa <= input$qb_dvoa[2] &
+                           pass_def_dvoa >= input$qb_pass_dvoa[1] & pass_def_dvoa <= input$qb_pass_dvoa[2] &
+                           line >= input$qb_line[1] & line <= input$qb_line[2])
+      
+      DT::datatable(render_qb[, input$qb_vars], rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
+      
+    })
         
-        # Editing table for rendering
-        #render_qb_table <- qb
-        # 
-        # datatable(render_qb_table, 
-        #           rownames = F, 
-        #           options = list(pageLength = 20, lengthMenu = c(10,20,30)))
-        
-        #output$qbtable <- renderDataTable({
-            DT::datatable(qb[, input$qb_vars])
-        })
+# RB Tab Data -------------------------------------------------------------
     
     # RB Table
     output$rbtable <- renderDataTable({
