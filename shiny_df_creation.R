@@ -1,6 +1,6 @@
 # DFS 2019 PreProcessing for Shiny App
 
-shiny_df <- function(wk_num) {
+shiny_df <- function(wk_num,date) {
   
 library(tidyverse)
 
@@ -10,7 +10,7 @@ source("~/ff_shiny_app/ff_app/find_names.R", local = T)
 
 # Vegas Lines -------------------------------------------------------------
 source("~/ff_shiny_app/ff_app/vegas_lines.R", local = T)
-vegas <- vegas_lines()
+vegas <- vegas_lines(date)
 vegas[["team"]] <- sapply(vegas[["team"]], function(x) find_names(x, "vegas"))
 
 # DVOA Data ---------------------------------------------------------------
@@ -236,19 +236,13 @@ leverage[["player"]] <- str_replace(leverage[["player"]], "Mitch", "Mitchell")
 all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "player",
                                                            "proj_pos" = "pos",
                                                            "proj_tm" = "tm"))
-
-#writexl::write_xlsx(all_positions, "~/ff_shiny_app/all_data_wk_2.xlsx")
-#all_positions <- readxl::read_xlsx("~/ff_shiny_app/all_data_wk_2.xlsx")
-
-
 }
 
 # Sourcing team name changes
-source("~/ff_shiny_app/ff_app/find_names.R")
-tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
+#source("~/ff_shiny_app/ff_app/find_names.R")
+#tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
 
 # Getting full dataframe --------------------------------------------------
-#source("shiny_df_creation.R", local = T)
 #t <- Sys.time()
 df <- shiny_df(3)
 #t2 <- Sys.time()
