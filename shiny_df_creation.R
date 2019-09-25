@@ -238,14 +238,9 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
                                                            "proj_tm" = "tm"))
 }
 
-# Sourcing team name changes
-#source("~/ff_shiny_app/ff_app/find_names.R")
-#tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
 
 # Getting full dataframe --------------------------------------------------
-#t <- Sys.time()
-df <- shiny_df(3)
-#t2 <- Sys.time()
-#t2-t
+df <- shiny_df(4, "09/29")
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_3.xlsx")
+
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_4.xlsx")
