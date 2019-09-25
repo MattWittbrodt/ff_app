@@ -51,7 +51,7 @@ qb <- filter(df, proj_pos == "QB") %>%
            passing_twenty_td,
            passing_ten_att,
            passing_ten_td,
-           total_dvoa.x,
+           defense_dvoa,
            pass_def_dvoa,
            dline_pass_rank,
            dline_pass_adjustedsack_rate,
@@ -120,9 +120,17 @@ rb <- filter(df, proj_pos == "RB") %>%
              dline_rbyards,
              dline_2nd_level_yards,
              oline_adj_lineyards,
-             oline_powerrank) %>%
-        filter(ytd_rush_att > 0)
+             oline_powerrank,
+             fd_sal,
+             line) %>%
+        filter(ytd_rush_att > 5)
 
+rb_names <- names(rb) %>%
+            str_remove("proj_") %>%
+            str_replace("rushing","rz_rush") %>%
+            str_replace("receiving", "rz_rec")
+
+names(rb) <- rb_names
 
 # WR Data -----------------------------------------------------------------
 wr <- filter(df, proj_pos == "WR") %>%
@@ -295,8 +303,8 @@ ui <- navbarPage("DFS Data",
                column(3,
                       sliderInput("qb_dvoa",
                                   "Total DVOA",
-                                  min = min(qb$total_dvoa, na.rm = T),
-                                  max = max(qb$total_dvoa, na.rm = T),
+                                  min = min(qb$defense_dvoa, na.rm = T),
+                                  max = max(qb$defense_dvoa, na.rm = T),
                                   value = c(min,max)
                       )),
                column(3,
@@ -324,7 +332,7 @@ ui <- navbarPage("DFS Data",
                                                             "ytd_net_yds/att",
                                                             "rz_20_att",
                                                             "rz_10_att",
-                                                            "total_dvoa",
+                                                            "defense_dvoa",
                                                             "pass_def_dvoa",
                                                             "dline_rank",
                                                             "def_qb_rating_allowed",
@@ -362,23 +370,83 @@ ui <- navbarPage("DFS Data",
 
 tabPanel("RB",
          
-         fluidRow(column(12,p("YTD Stats are Per Game"))),
+         fluidRow(
+           column(3,
+                  sliderInput("rb_salary",
+                              "Minimum FanDuel Salary:",
+                              min = min(rb$fd_sal, na.rm = T),
+                              max = max(rb$fd_sal, na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("rb_dvoa",
+                              "Total DVOA",
+                              min = min(rb$defense_dvoa, na.rm = T),
+                              max = max(rb$defense_dvoa, na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("rb_rush_dvoa",
+                              "Rush D DVOA",
+                              min = min(rb$rush_def_dvoa,  na.rm = T),
+                              max = max(rb$rush_def_dvoa,  na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("rb_line",
+                              "Line",
+                              min = min(rb[["line"]], na.rm = T),
+                              max = max(rb[["line"]], na.rm = T),
+                              value = c(min,max)
+                  ))),
          
          fluidRow(column(2,
                          
                          checkboxGroupInput("rb_vars", "RB columns to show:",
-                                            names(rb), selected = c("proj_player"))
+                                            names(rb), 
+                                            selected = c("player",
+                                                         "opp",
+                                                         "ytd_rush_att",
+                                                         "ytd_rush_yds_per_gm",
+                                                         "ytd_rush_td",
+                                                         "ytd_rec_target",
+                                                         "ytd_rec_rec_per_gm",
+                                                         "rz_rush_five_att",
+                                                         "rz_rec_twenty_tgt",
+                                                         "defense_dvoa",
+                                                         "rush_def_dvoa",
+                                                         "dline_stuffed",
+                                                         "oline_powerrank",
+                                                         "fd_sal",
+                                                         "line"))
          ),
          
          
          column(10,
                 div(DT::dataTableOutput("rbtable"), style = "font-size:75%")
          )),
+         
          fluidRow(column(12,
                          p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
                              DVOA = Defense-adjusted Value Over Average where negative is better,
                              Dline = Defensive Line Ratings,
-                             def_ = Raw Defense Stats")))
+                             def_ = Raw Defense Stats"))),
+         #
+         # RB Plot
+         #
+         fluidRow(
+           column(2,
+                  selectInput("rb_y_axis",
+                              h3("Y Axis"),
+                              choices = as.list(names(rb)),
+                              selected = "fd_sal")),
+           column(2,
+                  selectInput("rb_x_axis",
+                              h3("X Axis"),
+                              choices = as.list(as.list(names(rb))),
+                              selected = "defense_dvoa")),
+           column(6,
+                  plotOutput('rb_plot', height = 500)))
 ),
 
 # WR Panel ----------------------------------------------------------------
@@ -495,7 +563,7 @@ server <- function(input, output) {
       
       render_qb <-  subset(qb,
                            fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
-                           total_dvoa >= input$qb_dvoa[1] & total_dvoa <= input$qb_dvoa[2] &
+                           defense_dvoa >= input$qb_dvoa[1] & defense_dvoa <= input$qb_dvoa[2] &
                            pass_def_dvoa >= input$qb_pass_dvoa[1] & pass_def_dvoa <= input$qb_pass_dvoa[2] &
                            line >= input$qb_line[1] & line <= input$qb_line[2])
       
@@ -510,7 +578,7 @@ server <- function(input, output) {
       
       qb_render_table <- subset(qb,
                                 fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
-                                total_dvoa >= input$qb_dvoa[1] & total_dvoa <= input$qb_dvoa[2] &
+                                defense_dvoa >= input$qb_dvoa[1] & defense_dvoa <= input$qb_dvoa[2] &
                                 pass_def_dvoa >= input$qb_pass_dvoa[1] & pass_def_dvoa <= input$qb_pass_dvoa[2] &
                                 line >= input$qb_line[1] & line <= input$qb_line[2]) %>% 
                          .[qb_s1,]
@@ -537,11 +605,49 @@ server <- function(input, output) {
     
     # RB Table
     output$rbtable <- renderDataTable({
-        
-        datatable(rb[, input$rb_vars])
+      
+      render_rb <-  subset(rb,
+                           fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2] &
+                           defense_dvoa >= input$rb_dvoa[1] & defense_dvoa <= input$rb_dvoa[2] &
+                           rush_def_dvoa >= input$rb_rush_dvoa[1] & rush_def_dvoa <= input$rb_rush_dvoa[2] &
+                           line >= input$rb_line[1] & line <= input$rb_line[2])
+      
+      DT::datatable(render_rb[, input$rb_vars], rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
+      
     })
     
-    # WR Table
+    # RB Graph Output
+    rb_dat <- reactive({
+      
+      rb_s1 <- input$rbtable_rows_selected
+      
+      rb_render_table <- subset(rb,
+                                fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2] &
+                                defense_dvoa >= input$rb_dvoa[1] & defense_dvoa <= input$rb_dvoa[2] &
+                                rush_def_dvoa >= input$rb_rush_dvoa[1] & rush_def_dvoa <= input$rb_rush_dvoa[2] &
+                                line >= input$rb_line[1] & line <= input$rb_line[2]) %>% 
+                        .[rb_s1,]
+      
+      return(rb_render_table)
+    })
+    
+    # Output variable creation for QB
+    output$rb_plot = renderPlot({
+      
+      rb_plot_data <- rb_dat()
+      ggplot(rb_plot_data, aes(x = rb_plot_data[[input$rb_x_axis]], rb_plot_data[[input$rb_y_axis]])) +
+        xlab(input$rb_x_axis) +
+        ylab(input$rb_y_axis) +
+        geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
+        geom_text(aes(label = player), hjust = 0, vjust = -1) +
+        theme_bw() +
+        theme(
+          axis.title = element_text(size = 12, face = "bold")
+        )
+    })
+
+# WR Tab Data -------------------------------------------------------------
+
     output$wrtable <- renderDataTable({
         
         datatable(wr[, input$wr_vars])
