@@ -177,32 +177,44 @@ names(wr) <- wr_names
 
 # TE Data -----------------------------------------------------------------
 te <- filter(df, proj_pos == "TE") %>%
-    select(proj_player,
-           proj_opp,
-           ytd_rec_target,
-           ytd_rec_rec,
-           ytd_rec_yds,
-           ytd_rec_rec_per_gm,
-           ytd_rec_yds_per_rec,
-           ytd_rec_yds_per_target,
-           ytd_rec_ctch_per,
-           receiving_twenty_tgt,
-           receiving_twenty_yds,
-           receiving_twenty_td,
-           receiving_twenty_per_tgt,
-           receiving_ten_tgt,
-           receiving_ten_rec,
-           receiving_ten_yds,                        
-           receiving_ten_td,
-           receiving_ten_per_tgt,
-           defense_dvoa,
-           pass_def_dvoa,
-           dline_pass_rank,
-           oline_pass_adjustedsack_rate,
-           dline_2nd_level_yards,
-           oline_adj_lineyards,
-           oline_powerrank) %>%
-    filter(ytd_rec_target > 0)
+  select(proj_player,
+         proj_opp,
+         ytd_rec_target,
+         ytd_rec_rec,
+         ytd_rec_yds,
+         ytd_rec_rec_per_gm,
+         ytd_rec_yds_per_rec,
+         ytd_rec_yds_per_target,
+         ytd_rec_ctch_per,
+         receiving_twenty_tgt,
+         receiving_twenty_yds,
+         receiving_twenty_td,
+         receiving_twenty_per_tgt,
+         receiving_ten_tgt,
+         receiving_ten_rec,
+         receiving_ten_yds,                        
+         receiving_ten_td,
+         receiving_ten_per_tgt,
+         defense_dvoa,
+         pass_def_dvoa,
+         dline_pass_rank,
+         oline_pass_adjustedsack_rate,
+         dline_2nd_level_yards,
+         oline_adj_lineyards,
+         oline_powerrank,
+         oline_pass_adjustedsack_rate,
+         fd_sal,
+         projected_own,
+         line) %>%
+  filter(ytd_rec_target > 2)
+
+
+te_names <- names(te) %>%
+  str_remove("proj_") %>%
+  str_replace("rushing","rz_rush") %>%
+  str_replace("receiving", "rz_rec")
+
+names(te) <- te_names
 
 # UI Components -----------------------------------------------------------
 
@@ -551,13 +563,59 @@ tabPanel("WR",
 # TE Table ----------------------------------------------------------------
 tabPanel("TE",
          
-         fluidRow(column(12,p("YTD Stats are Per Game"))),
+         fluidRow(
+           column(3,
+                  sliderInput("te_salary",
+                              "Minimum FanDuel Salary:",
+                              min = min(te$fd_sal, na.rm = T),
+                              max = max(te$fd_sal, na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("te_dvoa",
+                              "Total DVOA",
+                              min = min(te$defense_dvoa, na.rm = T),
+                              max = max(te$defense_dvoa, na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("te_pass_dvoa",
+                              "Pass D DVOA",
+                              min = min(te$pass_def_dvoa,  na.rm = T),
+                              max = max(te$pass_def_dvoa,  na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("te_line",
+                              "Line",
+                              min = min(te[["line"]], na.rm = T),
+                              max = max(te[["line"]], na.rm = T),
+                              value = c(min,max)
+                  ))),
          
          fluidRow(column(2,
                          
-                         checkboxGroupInput("te_vars", "TE columns to show:",
-                                            names(te), selected = c("proj_player"))
+                         checkboxGroupInput("te_vars", "te columns to show:",
+                                            names(te), selected = c("player",
+                                                                    "opp",
+                                                                    "ytd_rec_target",
+                                                                    "ytd_rec_rec",
+                                                                    "ytd_rec_yds_per_target",
+                                                                    "receiving_twenty_tgt",
+                                                                    "receiving_twenty_td",
+                                                                    "receiving_twenty_per_tgt",
+                                                                    "receiving_ten_tgt",
+                                                                    "receiving_ten_rec",
+                                                                    "receiving_ten_td",
+                                                                    "receiving_ten_per_tgt",
+                                                                    "defense_dvoa",
+                                                                    "pass_def_dvoa",
+                                                                    "dline_pass_rank",
+                                                                    "oline_pass_adjustedsack_rate",
+                                                                    "fd_sal",
+                                                                    "line"))
          ),
+         
          
          column(10,
                 div(DT::dataTableOutput("tetable"), style = "font-size:75%")
@@ -566,7 +624,26 @@ tabPanel("TE",
                          p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
                              DVOA = Defense-adjusted Value Over Average where negative is better,
                              Dline = Defensive Line Ratings,
-                             def_ = Raw Defense Stats")))
+                             def_ = Raw Defense Stats"))),
+         
+         #
+         # TE Plot
+         #
+         fluidRow(
+           column(2,
+                  selectInput("te_y_axis",
+                              h3("Y Axis"),
+                              choices = as.list(names(te)),
+                              selected = "fd_sal")),
+           column(2,
+                  selectInput("te_x_axis",
+                              h3("X Axis"),
+                              choices = as.list(as.list(names(te))),
+                              selected = "defense_dvoa")),
+           column(6,
+                  plotOutput('te_plot', height = 500)))
+         
+         
 ))
 
 
@@ -738,7 +815,7 @@ server <- function(input, output) {
       
     })
     
-    # RB Graph Output
+    # WR Graph Output
     wr_dat <- reactive({
       
       wr_s1 <- input$wrtable_rows_selected
@@ -771,12 +848,47 @@ server <- function(input, output) {
   
 # TE Tab Data -------------------------------------------------------------
 
-
-    
     # TE Table
     output$tetable <- renderDataTable({
-        
-        datatable(te[, input$te_vars])
+      
+      render_te <-  subset(te,
+                           fd_sal >= input$te_salary[1] & fd_sal <= input$te_salary[2]) #&
+      # defense_dvoa >= input$te_dvoa[1] & defense_dvoa <= input$te_dvoa[2] &
+      # pass_def_dvoa >= input$te_pass_dvoa[1] & pass_def_dvoa <= input$te_pass_dvoa[2] &
+      # line >= input$te_line[1] & line <= input$te_line[2])
+      
+      DT::datatable(render_te[, input$te_vars], rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
+      
+    })
+    
+    # TE Graph Output
+    te_dat <- reactive({
+      
+      te_s1 <- input$tetable_rows_selected
+      
+      te_render_table <- subset(te,
+                                fd_sal >= input$te_salary[1] & fd_sal <= input$te_salary[2] &
+                                  defense_dvoa >= input$te_dvoa[1] & defense_dvoa <= input$te_dvoa[2] &
+                                  pass_def_dvoa >= input$te_pass_dvoa[1] & pass_def_dvoa <= input$te_pass_dvoa[2] &
+                                  line >= input$te_line[1] & line <= input$te_line[2]) %>% 
+        .[te_s1,]
+      
+      return(te_render_table)
+    })
+    
+    # Output variable creation for QB
+    output$te_plot = renderPlot({
+      
+      te_plot_data <- te_dat()
+      ggplot(te_plot_data, aes(x = te_plot_data[[input$te_x_axis]], te_plot_data[[input$te_y_axis]])) +
+        xlab(input$te_x_axis) +
+        ylab(input$te_y_axis) +
+        geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
+        geom_text(aes(label = player), hjust = 0, vjust = -1) +
+        theme_bw() +
+        theme(
+          axis.title = element_text(size = 12, face = "bold")
+        )
     })
     
 }
