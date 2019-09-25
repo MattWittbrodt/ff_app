@@ -9,7 +9,7 @@ vegas_lines <- function(date) {
   # Using rvest to get the data in
   #url <- "https://www.sportsline.com/nfl/odds"
   d <- "http://www.vegasinsider.com/nfl/odds/las-vegas/" %>%
-        read_html(url) %>% 
+        read_html() %>% 
         html_table(fill = T) %>%
         .[[7]]
   
