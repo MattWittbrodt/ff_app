@@ -34,7 +34,8 @@ vegas_lines <- function(date) {
                 line = str_extract(total, "(-\\d+\\.\\d|-\\d+)"),
                 favorite = ifelse(str_detect(total, ("^-")) == T, away, home),
                 total = str_remove(total, "(-\\d+\\.\\d|-\\d+)"),
-                total = str_remove(total, "-10")) %>%
+                total = str_remove(total, "-10"),
+                total = str_remove(total, "EV")) %>%
         select(-teams, -game) %>%
         # moving into final df form
         gather(key = "home_or_away", value = "team", -total, -favorite, -line) %>%
