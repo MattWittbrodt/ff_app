@@ -7,7 +7,7 @@ library(tidyverse)
 library(DT)
 
 df <- readxl::read_xlsx("data/all_data_wk_4.xlsx")
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_3.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4.xlsx")
 
 
 # DFS Specific Data -------------------------------------------------------
@@ -653,7 +653,7 @@ server <- function(input, output) {
     
 
 # Main Panel Server -------------------------------------------------------
-
+    
     output$fanduel <- renderDataTable({
         
         # Editing table for rendering
@@ -665,7 +665,50 @@ server <- function(input, output) {
                                pos == input$pos) %>%
                         select(-implied_own)
         
-        datatable(render_table, rownames = F, options = list(pageLength = 20, lengthMenu = c(10,20,30)))
+        # Selecting program
+        render_table <- render_table[,c("player", "pos", "tm", "opp",
+                                        "ffpts","points_per_1k","fd_lev",
+                                        "afpa","afpa_rk",
+                                        "fd_sal", "projected_own", "cash_odds", "gpp_odds",
+                                        "line","total","implied_total")]
+
+        # Better Output - customizing column names
+        dfs_container <- htmltools::withTags(table(
+                                            class = 'display',
+                                            thead(
+                                              tr(
+                                                th(colspan = 4,''),
+                                                th(class = 'dt-center', colspan = 3, 'Point Projections'),
+                                                th(class = 'dt-center', colspan = 2, 'aFPA'),
+                                                th(class = 'dt-center', colspan = 4, 'DFS Leverage'),
+                                                th(class = 'dt-center', colspan = 3, 'Vegas')
+                                              ),
+                                              tr(
+                                                th(colspan = 1, 'Player'),
+                                                th(colspan = 1, 'Position'),
+                                                th(colspan = 1, 'Team'),
+                                                th(colspan = 1, 'Opp'),
+                                                th(colspan = 1, 'Points'),
+                                                th(colspan = 1, 'Pt/$1k'),
+                                                th(colspan = 1, 'Leverage'),
+                                                th(colspan = 1, 'aFPA'),
+                                                th(colspan = 1, 'aFPA Rank'),
+                                                th(colspan = 1, 'Salary ($)'),
+                                                th(colspan = 1, 'Own (%)'),
+                                                th(colspan = 1, 'Cash (%)'),
+                                                th(colspan = 1, 'GPP (%)'),
+                                                th(colspan = 1, 'Line'),
+                                                th(colspan = 1, 'Total'),
+                                                th(colspan = 1, 'Implied Total'))
+                                            )
+                                          ))
+
+        datatable(render_table, 
+                  rownames = F, 
+                  container = dfs_container, 
+                  options = list(pageLength = 20, 
+                                 lengthMenu = c(10,20,30),
+                                 columnDefs = list(list(className = 'dt-center', targets = 'all'))))
 
        })
     
