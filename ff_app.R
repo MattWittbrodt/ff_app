@@ -6,9 +6,10 @@ library(shiny)
 library(tidyverse)
 library(DT)
 
-df <- readxl::read_xlsx("data/all_data_wk_4.xlsx")
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4.xlsx")
+df <- readxl::read_xlsx("data/all_data_wk_5.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5.xlsx")
 
+#NOTE: 16 columns per table works relatively well
 
 # DFS Specific Data -------------------------------------------------------
 dfs_df <- select(df,
@@ -60,10 +61,11 @@ qb <- filter(df, proj_pos == "QB") %>%
            def_pass_qb_rating_allowed,
            def_pass_adj_net_yds_per_att,
            def_pass_yds_per_gm,
-           oline_pass_adjustedsack_rate,
+           oline_pass_adjusted_sack_rate,
            fd_sal,
            projected_own,
-           line)
+           line) %>%
+           mutate(DVOA_Diff = pass_def_dvoa - defense_dvoa)
 
 qb_names <- names(qb) %>%
             str_replace("passing", "rz") %>%
@@ -78,9 +80,34 @@ qb_names <- names(qb) %>%
             str_replace("ten", "10") %>%
             str_replace("adjusted","adj_")
             
-
 names(qb) <- qb_names
-            
+
+
+# QB Opponent Defense Stats
+def_qb <- filter(df, proj_pos == "QB") %>%
+         select(proj_player,
+                proj_opp,
+                pts_vs_g,
+                pts_vs_passing_att,
+                pts_vs_passing_yds,
+                pts_vs_passing_td,
+                pts_vs_fantasy_per_game_fdpt,
+                def_red_zone_td,
+                def_red_zone_pct,
+                defense_dvoa,
+                pass_def_dvoa,
+                dline_pass_rank,
+                dline_pass_adjusted_sack_rate,
+                def_pass_qb_rating_allowed,
+                def_pass_adj_net_yds_per_att,
+                oline_pass_adjusted_sack_rate,
+                ) %>%
+  mutate(DVOA_Diff = pass_def_dvoa - defense_dvoa,
+         pts_vs_passing_att = as.numeric(pts_vs_passing_att) / as.numeric(pts_vs_g),
+         pts_vs_passing_yds = as.numeric(pts_vs_passing_yds) / as.numeric(pts_vs_g),
+         pts_vs_passing_td = as.numeric(pts_vs_passing_td) / as.numeric(pts_vs_g)) %>%
+  select(-pts_vs_g)
+
 
 # RB Data -----------------------------------------------------------------
 
@@ -118,8 +145,8 @@ rb <- filter(df, proj_pos == "RB") %>%
              defense_dvoa,
              rush_def_dvoa,
              dline_stuffed,
-             dline_rb_yards,
-             dline_2nd_level_yards,
+             dline_rbyards,
+             dline_2nd_levelyards,
              oline_adj_lineyards,
              oline_powerrank,
              fd_sal,
@@ -156,11 +183,10 @@ wr <- filter(df, proj_pos == "WR") %>%
            defense_dvoa,
            pass_def_dvoa,
            dline_pass_rank,
-           oline_pass_adjustedsack_rate,
-           dline_2nd_level_yards,
+           oline_pass_adjusted_sack_rate,
+           dline_2nd_levelyards,
            oline_adj_lineyards,
            oline_powerrank,
-           oline_pass_adjustedsack_rate,
            fd_sal,
            projected_own,
            line) %>%
@@ -198,11 +224,10 @@ te <- filter(df, proj_pos == "TE") %>%
          defense_dvoa,
          pass_def_dvoa,
          dline_pass_rank,
-         oline_pass_adjustedsack_rate,
-         dline_2nd_level_yards,
+         oline_pass_adjusted_sack_rate,
+         dline_2nd_levelyards,
          oline_adj_lineyards,
          oline_powerrank,
-         oline_pass_adjustedsack_rate,
          fd_sal,
          projected_own,
          line) %>%
