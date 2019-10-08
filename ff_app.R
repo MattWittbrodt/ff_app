@@ -200,21 +200,90 @@ names(rb) <- rb_names
 
 
 #
-# RB Defense Table
+# RB Defense and Oline Table
 #
-# rb <- filter(df, proj_pos == "RB") %>%
-#       select(proj_player,
-#              proj_opp,
-#              defense_dvoa,
-#              rush_def_dvoa,
-#              dline_stuffed,
-#              dline_rbyards,
-#              dline_2nd_levelyards,
-#              oline_adj_lineyards,
-#              oline_powerrank,
-#              fd_sal,
-#              line) %>%
-#       filter(ytd_rush_att > 5)
+
+# The following stats are not adjusted for opponent:
+#   
+#   RB Yards: Yards per carry by running backs against this defense, according to standard NFL numbers.
+#   Power Success: Percentage of runs on third or fourth down, two yards or less to go, that achieved a first down or touchdown. Also includes runs on first-and-goal or second-and-goal from the two-yard line or closer. This is the only statistic on this page that includes quarterbacks. Teams are ranked from lowest power success percentage allowed (#1) to highest power success percentage allowed (#32).
+#   Stuffed: Percentage of runs where the running back is tackled at or behind the line of scrimmage.Ranked from most stuffs (#1) to fewest stuffs (#32).
+#   Second Level Yards: Yards earned by opposing running backs against this team between 5-10 yards past the line of scrimmage, divided by total running back carries.
+#   Open Field Yards: Yards earned by opposing running backs against this team more than 10 yards past the line of scrimmage, divided by total running back carries.
+
+rb_def <- filter(df, proj_pos == "RB") %>%
+          select(proj_player,
+                 ytd_rush_att,
+                 proj_opp,
+                 pts_vs_g,
+                 pts_vs_rec_tgt,
+                 #pts_vs_rec_rec,
+                 pts_vs_rec_yds,
+                 pts_vs_rec_td,
+                 pts_vs_rush_att,
+                 pts_vs_rush_yds,                           
+                 pts_vs_rush_td,
+                 def_rush_yds_per_att,
+                 #def_rush_yds_per_gm,
+                 def_red_zone_td,
+                 def_red_zone_pct,
+                 defense_dvoa,
+                 rush_def_dvoa,
+                 rush_off_dvoa,
+                 dline_powersuccess,
+                 dline_adj_lineyards,
+                 dline_stuffed,
+                 dline_2nd_levelyards,
+                 dline_open_fieldyards,
+                 oline_adj_lineyards,
+                 oline_powersuccess,
+                 oline_stuffed,
+                 oline_open_fieldyards,
+                 oline_2nd_levelyards
+                 ) %>%
+          mutate(pts_vs_g =  as.numeric(pts_vs_g),
+                 pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
+                 pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
+                 pts_vs_rec_td = as.numeric(pts_vs_rec_td),
+                 pts_vs_rush_att = as.numeric(pts_vs_rush_att),
+                 pts_vs_rush_yds = as.numeric(pts_vs_rush_yds),                           
+                 pts_vs_rush_td = as.numeric(pts_vs_rush_td),
+                 dline_adj_lineyards = as.numeric(dline_adj_lineyards),
+                 dline_2nd_levelyards = as.numeric(dline_2nd_levelyards),
+                 dline_open_fieldyards = as.numeric(dline_open_fieldyards),
+                 oline_adj_lineyards = as.numeric(oline_adj_lineyards),
+                 oline_2nd_levelyards = as.numeric(oline_2nd_levelyards),
+                 oline_open_fieldyards = as.numeric(oline_open_fieldyards),
+                 pts_vs_rec_tgt = pts_vs_rec_tgt/pts_vs_g,
+                 pts_vs_rec_yds = pts_vs_rec_yds/pts_vs_g,
+                 pts_vs_rec_td = pts_vs_rec_td/pts_vs_g,
+                 pts_vs_rush_att = pts_vs_rush_att/pts_vs_g,
+                 pts_vs_rush_yds = pts_vs_rush_yds/pts_vs_g,    
+                 pts_vs_rush_td = pts_vs_rush_td/pts_vs_g,                           
+                 pts_vs_total_touch = pts_vs_rush_att + pts_vs_rec_tgt,
+                 DVOA_Advantage = rush_def_dvoa - rush_off_dvoa,
+                 DVOA_Difference = defense_dvoa - rush_def_dvoa,
+                 net_adj_line_yd_diff = oline_adj_lineyards - dline_adj_lineyards,
+                 power_success_diff = oline_powersuccess - dline_powersuccess,
+                 second_level_yds_diff = oline_2nd_levelyards - oline_2nd_levelyards,
+                 open_fieldyards_diff = oline_open_fieldyards - dline_open_fieldyards) %>%
+          filter(ytd_rush_att > 5) %>%
+          select(proj_player,
+                 proj_opp,
+                 pts_vs_total_touch,
+                 pts_vs_rush_att,
+                 pts_vs_rush_yds,                           
+                 pts_vs_rush_td,
+                 pts_vs_rec_tgt,
+                 pts_vs_rec_yds,
+                 defense_dvoa,
+                 rush_def_dvoa,
+                 DVOA_Advantage,
+                 DVOA_Difference,
+                 dline_powersuccess,
+                 power_success_diff,
+                 dline_adj_lineyards,
+                 net_adj_line_yd_diff)
 # 
 # rb_names <- names(rb) %>%
 #   str_remove("proj_") %>%
@@ -556,31 +625,31 @@ tabPanel("RB",
                               value = c(min,max)
                   ))),
          
-         fluidRow(column(2,
-                         
-                         checkboxGroupInput("rb_vars", "RB columns to show:",
-                                            names(rb), 
-                                            selected = c("player",
-                                                         "opp",
-                                                         "ytd_rush_att",
-                                                         "ytd_rush_yds_per_gm",
-                                                         "ytd_rush_td",
-                                                         "ytd_rec_target",
-                                                         "ytd_rec_rec_per_gm",
-                                                         "rz_rush_five_att",
-                                                         "rz_rec_twenty_tgt",
-                                                         "defense_dvoa",
-                                                         "rush_def_dvoa",
-                                                         "dline_stuffed",
-                                                         "oline_powerrank",
-                                                         "fd_sal",
-                                                         "line"))
+         # fluidRow(column(2,
+         #                 
+         #                 checkboxGroupInput("rb_vars", "RB columns to show:",
+         #                                    names(rb), 
+         #                                    selected = c("player",
+         #                                                 "opp",
+         #                                                 "ytd_rush_att",
+         #                                                 "ytd_rush_yds_per_gm",
+         #                                                 "ytd_rush_td",
+         #                                                 "ytd_rec_target",
+         #                                                 "ytd_rec_rec_per_gm",
+         #                                                 "rz_rush_five_att",
+         #                                                 "rz_rec_twenty_tgt",
+         #                                                 "defense_dvoa",
+         #                                                 "rush_def_dvoa",
+         #                                                 "dline_stuffed",
+         #                                                 "oline_powerrank",
+         #                                                 "fd_sal",
+         #                                                 "line"))
+         # ),
+         
+         
+         column(12,
+                div(DT::dataTableOutput("def_rb"), style = "font-size:75%")
          ),
-         
-         
-         column(10,
-                div(DT::dataTableOutput("rbtable"), style = "font-size:75%")
-         )),
          
          fluidRow(column(12,
                          p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
@@ -1080,6 +1149,54 @@ server <- function(input, output) {
       return(rb_render_table)
     })
     
+    #
+    # Defense RB
+    #
+    output$def_rb <- renderDataTable({
+      
+      # Offense QB Container
+      def_rb_container <- htmltools::withTags(table(
+        class = 'display',
+        thead(
+          tr(
+            th(colspan = 2,''),
+            th(class = 'dt-center', colspan = 6, 'Def Performance Against RB'),
+            th(class = 'dt-center', colspan = 4, 'DVOA Metrics'),
+            th(class = 'dt-center', colspan = 4, 'D Line Performance')
+          ),
+          tr(
+            th(colspan = 1, 'Player'),
+            th(colspan = 1, 'Opp'),
+            th(colspan = 1, 'Total Touhces'),
+            th(colspan = 1, 'Rush Att'),
+            th(colspan = 1, 'Rush Yds'),
+            th(colspan = 1, 'Rush TD'),
+            th(colspan = 1, 'Targets'),
+            th(colspan = 1, 'Rec Yds'),
+            th(colspan = 1, 'Defense'),
+            th(colspan = 1, 'Rushing'),
+            th(colspan = 1, 'Rushing Adv'),
+            th(colspan = 1, 'Difference'),
+            th(colspan = 1, 'Power Success'),
+            th(colspan = 1, 'Difference vs Off'),
+            th(colspan = 1, 'Adj Net Yards'),
+            th(colspan = 1, 'Difference vs Off'))
+        )
+      ))
+      
+      # render_qb <-  subset(off_qb,
+      #                      fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
+      #                        line >= input$qb_line[1] & line <= input$qb_line[2])
+      
+      datatable(rb_def, 
+                rownames = F, 
+                container = def_rb_container, 
+                options = list(pageLength = 10, 
+                               lengthMenu = c(10,20,30),
+                               columnDefs = list(list(className = 'dt-center', targets = 'all'))))
+      
+    })
+    
     # Output variable creation for QB
     output$rb_plot = renderPlot({
       
@@ -1094,6 +1211,8 @@ server <- function(input, output) {
           axis.title = element_text(size = 12, face = "bold")
         )
     })
+    
+    
 
 # WR Tab Data -------------------------------------------------------------
     
