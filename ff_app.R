@@ -133,70 +133,70 @@ off_qb <- filter(df, proj_pos == "QB") %>%
 
 # RB Data -----------------------------------------------------------------
 
-rb <- filter(df, proj_pos == "RB") %>%
-      select(proj_player,
-             proj_opp,
-             ytd_rush_att,
-             ytd_rush_yds_per_att,
-             ytd_rush_yds_per_gm,
-             ytd_rush_td,
-             ytd_rec_target,
-             ytd_rec_rec,
-             ytd_rec_yds,
-             ytd_rec_rec_per_gm,
-             rushing_twenty_att,
-             rushing_twenty_yds,
-             rushing_twenty_td,
-             rushing_twenty_per_rush,
-             rushing_ten_att,
-             rushing_ten_yds,
-             rushing_ten_td,
-             rushing_ten_per_rush,
-             rushing_five_att,
-             rushing_five_yds,
-             rushing_five_td,
-             receiving_twenty_tgt,
-             receiving_twenty_yds,
-             receiving_twenty_td,
-             receiving_twenty_per_tgt,
-             receiving_ten_tgt,
-             receiving_ten_rec,
-             receiving_ten_yds,                        
-             receiving_ten_td,
-             receiving_ten_per_tgt,
-             defense_dvoa,
-             rush_def_dvoa,
-             dline_stuffed,
-             dline_rbyards,
-             dline_2nd_levelyards,
-             oline_adj_lineyards,
-             oline_powerrank,
-             fd_sal,
-             line,
-             pts_vs_rush_att,
-             pts_vs_rush_yds,
-             pts_vs_rush_td,   
-             pts_vs_rec_tgt,
-             pts_vs_rec_rec,
-             pts_vs_rec_yds,
-             pts_vs_rec_td,
-             pts_vs_fantasy_per_game_fdpt) %>%
-        filter(ytd_rush_att > 5) %>%
-        mutate(pts_vs_rush_att = as.numeric(pts_vs_rush_att),
-               pts_vs_rush_yds = as.numeric(pts_vs_rush_yds),
-               pts_vs_rush_td = as.numeric(pts_vs_rush_yds),   
-               pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
-               pts_vs_rec_rec = as.numeric(pts_vs_rec_rec),
-               pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
-               pts_vs_rec_td = as.numeric(pts_vs_rec_tgt),
-               pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt))
-
-rb_names <- names(rb) %>%
-            str_remove("proj_") %>%
-            str_replace("rushing","rz_rush") %>%
-            str_replace("receiving", "rz_rec")
-
-names(rb) <- rb_names
+# rb <- filter(df, proj_pos == "RB") %>%
+#       select(proj_player,
+#              proj_opp,
+#              ytd_rush_att,
+#              ytd_rush_yds_per_att,
+#              ytd_rush_yds_per_gm,
+#              ytd_rush_td,
+#              ytd_rec_target,
+#              ytd_rec_rec,
+#              ytd_rec_yds,
+#              ytd_rec_rec_per_gm,
+#              rushing_twenty_att,
+#              rushing_twenty_yds,
+#              rushing_twenty_td,
+#              rushing_twenty_per_rush,
+#              rushing_ten_att,
+#              rushing_ten_yds,
+#              rushing_ten_td,
+#              rushing_ten_per_rush,
+#              rushing_five_att,
+#              rushing_five_yds,
+#              rushing_five_td,
+#              receiving_twenty_tgt,
+#              receiving_twenty_yds,
+#              receiving_twenty_td,
+#              receiving_twenty_per_tgt,
+#              receiving_ten_tgt,
+#              receiving_ten_rec,
+#              receiving_ten_yds,                        
+#              receiving_ten_td,
+#              receiving_ten_per_tgt,
+#              defense_dvoa,
+#              rush_def_dvoa,
+#              dline_stuffed,
+#              dline_rbyards,
+#              dline_2nd_levelyards,
+#              oline_adj_lineyards,
+#              oline_powerrank,
+#              fd_sal,
+#              line,
+#              pts_vs_rush_att,
+#              pts_vs_rush_yds,
+#              pts_vs_rush_td,   
+#              pts_vs_rec_tgt,
+#              pts_vs_rec_rec,
+#              pts_vs_rec_yds,
+#              pts_vs_rec_td,
+#              pts_vs_fantasy_per_game_fdpt) %>%
+#         filter(ytd_rush_att > 5) %>%
+#         mutate(pts_vs_rush_att = as.numeric(pts_vs_rush_att),
+#                pts_vs_rush_yds = as.numeric(pts_vs_rush_yds),
+#                pts_vs_rush_td = as.numeric(pts_vs_rush_yds),   
+#                pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
+#                pts_vs_rec_rec = as.numeric(pts_vs_rec_rec),
+#                pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
+#                pts_vs_rec_td = as.numeric(pts_vs_rec_tgt),
+#                pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt))
+# 
+# rb_names <- names(rb) %>%
+#             str_remove("proj_") %>%
+#             str_replace("rushing","rz_rush") %>%
+#             str_replace("receiving", "rz_rec")
+# 
+# names(rb) <- rb_names
 
 
 #
@@ -254,16 +254,16 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  oline_adj_lineyards = as.numeric(oline_adj_lineyards),
                  oline_2nd_levelyards = as.numeric(oline_2nd_levelyards),
                  oline_open_fieldyards = as.numeric(oline_open_fieldyards),
-                 pts_vs_rec_tgt = pts_vs_rec_tgt/pts_vs_g,
-                 pts_vs_rec_yds = pts_vs_rec_yds/pts_vs_g,
+                 pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
+                 pts_vs_rec_yds = round(pts_vs_rec_yds/pts_vs_g,1),
                  pts_vs_rec_td = pts_vs_rec_td/pts_vs_g,
-                 pts_vs_rush_att = pts_vs_rush_att/pts_vs_g,
+                 pts_vs_rush_att = round(pts_vs_rush_att/pts_vs_g,1),
                  pts_vs_rush_yds = pts_vs_rush_yds/pts_vs_g,    
                  pts_vs_rush_td = pts_vs_rush_td/pts_vs_g,                           
-                 pts_vs_total_touch = pts_vs_rush_att + pts_vs_rec_tgt,
-                 DVOA_Advantage = rush_def_dvoa - rush_off_dvoa,
-                 DVOA_Difference = defense_dvoa - rush_def_dvoa,
-                 net_adj_line_yd_diff = oline_adj_lineyards - dline_adj_lineyards,
+                 pts_vs_total_touch = round(pts_vs_rush_att + pts_vs_rec_tgt,1),
+                 DVOA_Advantage = rush_def_dvoa + rush_off_dvoa,
+                 DVOA_Difference = rush_def_dvoa - defense_dvoa,
+                 net_adj_line_yd_diff = round(oline_adj_lineyards - dline_adj_lineyards,1),
                  power_success_diff = oline_powersuccess - dline_powersuccess,
                  second_level_yds_diff = oline_2nd_levelyards - oline_2nd_levelyards,
                  open_fieldyards_diff = oline_open_fieldyards - dline_open_fieldyards) %>%
@@ -284,14 +284,31 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  power_success_diff,
                  dline_adj_lineyards,
                  net_adj_line_yd_diff)
-# 
-# rb_names <- names(rb) %>%
-#   str_remove("proj_") %>%
-#   str_replace("rushing","rz_rush") %>%
-#   str_replace("receiving", "rz_rec")
-# 
-# names(rb) <- rb_names
 
+#
+# RB Offense Table
+#
+
+rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5) %>%
+          select(proj_player,
+                 proj_opp,
+                 ytd_rec_target,
+                 ytd_rec_yds_per_gm,
+                 ytd_rush_att,
+                 ytd_rush_td,
+                 ytd_rush_yds_per_att,
+                 ytd_rush_yds_per_gm,
+                 receiving_ten_tgt,
+                 receiving_ten_td,
+                 receiving_ten_per_tgt,
+                 rushing_ten_att,
+                 rushing_ten_td,
+                 rushing_ten_per_rush,
+                 rushing_five_att,
+                 rushing_five_td,
+                 rushing_five_per_rush,
+                 line) %>%
+          mutate(total_touches = ytd_rush_att + ytd_rec_target)
 
 # WR Data -----------------------------------------------------------------
 wr <- filter(df, proj_pos == "WR") %>%
@@ -595,35 +612,35 @@ ui <- navbarPage("DFS Data",
 
 tabPanel("RB",
          
-         fluidRow(
-           column(3,
-                  sliderInput("rb_salary",
-                              "Minimum FanDuel Salary:",
-                              min = min(rb$fd_sal, na.rm = T),
-                              max = max(rb$fd_sal, na.rm = T),
-                              value = c(min,max)
-                  )),
-           column(3,
-                  sliderInput("rb_dvoa",
-                              "Total DVOA",
-                              min = min(rb$defense_dvoa, na.rm = T),
-                              max = max(rb$defense_dvoa, na.rm = T),
-                              value = c(min,max)
-                  )),
-           column(3,
-                  sliderInput("rb_rush_dvoa",
-                              "Rush D DVOA",
-                              min = min(rb$rush_def_dvoa,  na.rm = T),
-                              max = max(rb$rush_def_dvoa,  na.rm = T),
-                              value = c(min,max)
-                  )),
-           column(3,
-                  sliderInput("rb_line",
-                              "Line",
-                              min = min(rb[["line"]], na.rm = T),
-                              max = max(rb[["line"]], na.rm = T),
-                              value = c(min,max)
-                  ))),
+         # fluidRow(
+         #   column(3,
+         #          sliderInput("rb_salary",
+         #                      "Minimum FanDuel Salary:",
+         #                      min = min(rb$fd_sal, na.rm = T),
+         #                      max = max(rb$fd_sal, na.rm = T),
+         #                      value = c(min,max)
+         #          )),
+         #   column(3,
+         #          sliderInput("rb_dvoa",
+         #                      "Total DVOA",
+         #                      min = min(rb$defense_dvoa, na.rm = T),
+         #                      max = max(rb$defense_dvoa, na.rm = T),
+         #                      value = c(min,max)
+         #          )),
+         #   column(3,
+         #          sliderInput("rb_rush_dvoa",
+         #                      "Rush D DVOA",
+         #                      min = min(rb$rush_def_dvoa,  na.rm = T),
+         #                      max = max(rb$rush_def_dvoa,  na.rm = T),
+         #                      value = c(min,max)
+         #          )),
+         #   column(3,
+         #          sliderInput("rb_line",
+         #                      "Line",
+         #                      min = min(rb[["line"]], na.rm = T),
+         #                      max = max(rb[["line"]], na.rm = T),
+         #                      value = c(min,max)
+         #          ))),
          
          # fluidRow(column(2,
          #                 
@@ -648,30 +665,25 @@ tabPanel("RB",
          
          
          column(12,
-                div(DT::dataTableOutput("def_rb"), style = "font-size:75%")
-         ),
-         
-         fluidRow(column(12,
-                         p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
-                             DVOA = Defense-adjusted Value Over Average where negative is better,
-                             Dline = Defensive Line Ratings,
-                             def_ = Raw Defense Stats"))),
+                div(DT::dataTableOutput("def_rb"), style = "font-size:95%")
+         )#,
+        
          #
          # RB Plot
          #
-         fluidRow(
-           column(2,
-                  selectInput("rb_y_axis",
-                              h3("Y Axis"),
-                              choices = as.list(names(rb)),
-                              selected = "fd_sal")),
-           column(2,
-                  selectInput("rb_x_axis",
-                              h3("X Axis"),
-                              choices = as.list(as.list(names(rb))),
-                              selected = "defense_dvoa")),
-           column(6,
-                  plotOutput('rb_plot', height = 500)))
+         # fluidRow(
+         #   column(2,
+         #          selectInput("rb_y_axis",
+         #                      h3("Y Axis"),
+         #                      choices = as.list(names(rb)),
+         #                      selected = "fd_sal")),
+         #   column(2,
+         #          selectInput("rb_x_axis",
+         #                      h3("X Axis"),
+         #                      choices = as.list(as.list(names(rb))),
+         #                      selected = "defense_dvoa")),
+         #   column(6,
+         #          plotOutput('rb_plot', height = 500)))
 ),
 
 # WR Panel ----------------------------------------------------------------
@@ -1122,39 +1134,39 @@ server <- function(input, output) {
 # RB Tab Data -------------------------------------------------------------
     
     # RB Table
-    output$rbtable <- renderDataTable({
-      
-      render_rb <-  subset(rb,
-                           fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2] &
-                           defense_dvoa >= input$rb_dvoa[1] & defense_dvoa <= input$rb_dvoa[2] &
-                           rush_def_dvoa >= input$rb_rush_dvoa[1] & rush_def_dvoa <= input$rb_rush_dvoa[2] &
-                           line >= input$rb_line[1] & line <= input$rb_line[2])
-      
-      DT::datatable(render_rb[, input$rb_vars], rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
-      
-    })
-    
-    # RB Graph Output
-    rb_dat <- reactive({
-      
-      rb_s1 <- input$rbtable_rows_selected
-      
-      rb_render_table <- subset(rb,
-                                fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2] &
-                                defense_dvoa >= input$rb_dvoa[1] & defense_dvoa <= input$rb_dvoa[2] &
-                                rush_def_dvoa >= input$rb_rush_dvoa[1] & rush_def_dvoa <= input$rb_rush_dvoa[2] &
-                                line >= input$rb_line[1] & line <= input$rb_line[2]) %>% 
-                        .[rb_s1,]
-      
-      return(rb_render_table)
-    })
+    # output$rbtable <- renderDataTable({
+    #   
+    #   render_rb <-  subset(rb,
+    #                        fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2] &
+    #                        defense_dvoa >= input$rb_dvoa[1] & defense_dvoa <= input$rb_dvoa[2] &
+    #                        rush_def_dvoa >= input$rb_rush_dvoa[1] & rush_def_dvoa <= input$rb_rush_dvoa[2] &
+    #                        line >= input$rb_line[1] & line <= input$rb_line[2])
+    #   
+    #   DT::datatable(render_rb[, input$rb_vars], rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
+    #   
+    # })
+    # 
+    # # RB Graph Output
+    # rb_dat <- reactive({
+    #   
+    #   rb_s1 <- input$rbtable_rows_selected
+    #   
+    #   rb_render_table <- subset(rb,
+    #                             fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2] &
+    #                             defense_dvoa >= input$rb_dvoa[1] & defense_dvoa <= input$rb_dvoa[2] &
+    #                             rush_def_dvoa >= input$rb_rush_dvoa[1] & rush_def_dvoa <= input$rb_rush_dvoa[2] &
+    #                             line >= input$rb_line[1] & line <= input$rb_line[2]) %>% 
+    #                     .[rb_s1,]
+    #   
+    #   return(rb_render_table)
+    # })
     
     #
     # Defense RB
     #
     output$def_rb <- renderDataTable({
       
-      # Offense QB Container
+      # Defense RB Container
       def_rb_container <- htmltools::withTags(table(
         class = 'display',
         thead(
@@ -1167,7 +1179,7 @@ server <- function(input, output) {
           tr(
             th(colspan = 1, 'Player'),
             th(colspan = 1, 'Opp'),
-            th(colspan = 1, 'Total Touhces'),
+            th(colspan = 1, 'Total Touches'),
             th(colspan = 1, 'Rush Att'),
             th(colspan = 1, 'Rush Yds'),
             th(colspan = 1, 'Rush TD'),
@@ -1190,27 +1202,93 @@ server <- function(input, output) {
       
       datatable(rb_def, 
                 rownames = F, 
-                container = def_rb_container, 
+                container = def_rb_container,
                 options = list(pageLength = 10, 
                                lengthMenu = c(10,20,30),
-                               columnDefs = list(list(className = 'dt-center', targets = 'all'))))
-      
+                               columnDefs = list(list(className = 'dt-center', targets = 'all'))),
+                caption = htmltools::tags$caption(
+                               style = 'caption-side: bottom; text-align: left;',
+                               'Legend: Total Touches = Rush Att + Target by RB vs. Defense | 
+                                Rushing Adv = Rush D DVOA + Rush Off DVOA, higher is better | 
+                                Difference = Rush DVOA - Defense DVOA, lower means rushing d is a strength (i.e., compartively better than overall) |
+                                Power Success = % runs on 3rd/4th down OR 1st/nd & goal from <= 2 yds which were successful |
+                                Difference = O Line success (rank) - D Line Success (rank) |
+                                Adj Net Yards = Adjusted Yds allowed by D line |
+                                Difference vs Off = Adj Net Yds from Offense - Defense, higher is better'))
     })
     
     # Output variable creation for QB
-    output$rb_plot = renderPlot({
+    # output$rb_plot = renderPlot({
+    #   
+    #   rb_plot_data <- rb_dat()
+    #   ggplot(rb_plot_data, aes(x = rb_plot_data[[input$rb_x_axis]], rb_plot_data[[input$rb_y_axis]])) +
+    #     xlab(input$rb_x_axis) +
+    #     ylab(input$rb_y_axis) +
+    #     geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
+    #     geom_text(aes(label = player), hjust = 0, vjust = -1) +
+    #     theme_bw() +
+    #     theme(
+    #       axis.title = element_text(size = 12, face = "bold")
+    #     )
+    # })
+    
+    #
+    # Offense RB
+    #
+    
+    # output$off_rb <- renderDataTable({
+    #   
+    #   # Defense RB Container
+    #   offf_rb_container <- htmltools::withTags(table(
+    #     class = 'display',
+    #     thead(
+    #       tr(
+    #         th(colspan = 2,''),
+    #         th(class = 'dt-center', colspan = 6, 'Def Performance Against RB'),
+    #         th(class = 'dt-center', colspan = 4, 'DVOA Metrics'),
+    #         th(class = 'dt-center', colspan = 4, 'D Line Performance')
+    #       ),
+    #       tr(
+    #         th(colspan = 1, 'Player'),
+    #         th(colspan = 1, 'Opp'),
+    #         th(colspan = 1, 'Total Touhces'),
+    #         th(colspan = 1, 'Rush Att'),
+    #         th(colspan = 1, 'Rush Yds'),
+    #         th(colspan = 1, 'Rush TD'),
+    #         th(colspan = 1, 'Targets'),
+    #         th(colspan = 1, 'Rec Yds'),
+    #         th(colspan = 1, 'Defense'),
+    #         th(colspan = 1, 'Rushing'),
+    #         th(colspan = 1, 'Rushing Adv'),
+    #         th(colspan = 1, 'Difference'),
+    #         th(colspan = 1, 'Power Success'),
+    #         th(colspan = 1, 'Difference vs Off'),
+    #         th(colspan = 1, 'Adj Net Yards'),
+    #         th(colspan = 1, 'Difference vs Off'))
+    #     )
+    #   ))
+    #   
+    #   # render_qb <-  subset(off_qb,
+    #   #                      fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
+    #   #                        line >= input$qb_line[1] & line <= input$qb_line[2])
+    #   
+    #   datatable(rb_def, 
+    #             rownames = F, 
+    #             container = def_rb_container, 
+    #             options = list(pageLength = 10, 
+    #                            lengthMenu = c(10,20,30),
+    #                            columnDefs = list(list(className = 'dt-center', targets = 'all'))))
+    #   
+    #})
       
-      rb_plot_data <- rb_dat()
-      ggplot(rb_plot_data, aes(x = rb_plot_data[[input$rb_x_axis]], rb_plot_data[[input$rb_y_axis]])) +
-        xlab(input$rb_x_axis) +
-        ylab(input$rb_y_axis) +
-        geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
-        geom_text(aes(label = player), hjust = 0, vjust = -1) +
-        theme_bw() +
-        theme(
-          axis.title = element_text(size = 12, face = "bold")
-        )
-    })
+      
+      
+      
+      
+      
+      
+      
+    #})
     
     
 
