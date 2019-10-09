@@ -133,83 +133,10 @@ off_qb <- filter(df, proj_pos == "QB") %>%
 
 # RB Data -----------------------------------------------------------------
 
-# rb <- filter(df, proj_pos == "RB") %>%
-#       select(proj_player,
-#              proj_opp,
-#              ytd_rush_att,
-#              ytd_rush_yds_per_att,
-#              ytd_rush_yds_per_gm,
-#              ytd_rush_td,
-#              ytd_rec_target,
-#              ytd_rec_rec,
-#              ytd_rec_yds,
-#              ytd_rec_rec_per_gm,
-#              rushing_twenty_att,
-#              rushing_twenty_yds,
-#              rushing_twenty_td,
-#              rushing_twenty_per_rush,
-#              rushing_ten_att,
-#              rushing_ten_yds,
-#              rushing_ten_td,
-#              rushing_ten_per_rush,
-#              rushing_five_att,
-#              rushing_five_yds,
-#              rushing_five_td,
-#              receiving_twenty_tgt,
-#              receiving_twenty_yds,
-#              receiving_twenty_td,
-#              receiving_twenty_per_tgt,
-#              receiving_ten_tgt,
-#              receiving_ten_rec,
-#              receiving_ten_yds,                        
-#              receiving_ten_td,
-#              receiving_ten_per_tgt,
-#              defense_dvoa,
-#              rush_def_dvoa,
-#              dline_stuffed,
-#              dline_rbyards,
-#              dline_2nd_levelyards,
-#              oline_adj_lineyards,
-#              oline_powerrank,
-#              fd_sal,
-#              line,
-#              pts_vs_rush_att,
-#              pts_vs_rush_yds,
-#              pts_vs_rush_td,   
-#              pts_vs_rec_tgt,
-#              pts_vs_rec_rec,
-#              pts_vs_rec_yds,
-#              pts_vs_rec_td,
-#              pts_vs_fantasy_per_game_fdpt) %>%
-#         filter(ytd_rush_att > 5) %>%
-#         mutate(pts_vs_rush_att = as.numeric(pts_vs_rush_att),
-#                pts_vs_rush_yds = as.numeric(pts_vs_rush_yds),
-#                pts_vs_rush_td = as.numeric(pts_vs_rush_yds),   
-#                pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
-#                pts_vs_rec_rec = as.numeric(pts_vs_rec_rec),
-#                pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
-#                pts_vs_rec_td = as.numeric(pts_vs_rec_tgt),
-#                pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt))
-# 
-# rb_names <- names(rb) %>%
-#             str_remove("proj_") %>%
-#             str_replace("rushing","rz_rush") %>%
-#             str_replace("receiving", "rz_rec")
-# 
-# names(rb) <- rb_names
-
 
 #
 # RB Defense and Oline Table
 #
-
-# The following stats are not adjusted for opponent:
-#   
-#   RB Yards: Yards per carry by running backs against this defense, according to standard NFL numbers.
-#   Power Success: Percentage of runs on third or fourth down, two yards or less to go, that achieved a first down or touchdown. Also includes runs on first-and-goal or second-and-goal from the two-yard line or closer. This is the only statistic on this page that includes quarterbacks. Teams are ranked from lowest power success percentage allowed (#1) to highest power success percentage allowed (#32).
-#   Stuffed: Percentage of runs where the running back is tackled at or behind the line of scrimmage.Ranked from most stuffs (#1) to fewest stuffs (#32).
-#   Second Level Yards: Yards earned by opposing running backs against this team between 5-10 yards past the line of scrimmage, divided by total running back carries.
-#   Open Field Yards: Yards earned by opposing running backs against this team more than 10 yards past the line of scrimmage, divided by total running back carries.
 
 rb_def <- filter(df, proj_pos == "RB") %>%
           select(proj_player,
@@ -616,57 +543,36 @@ ui <- navbarPage("DFS Data",
 
 tabPanel("RB",
          
-         # fluidRow(
-         #   column(3,
-         #          sliderInput("rb_salary",
-         #                      "Minimum FanDuel Salary:",
-         #                      min = min(rb$fd_sal, na.rm = T),
-         #                      max = max(rb$fd_sal, na.rm = T),
-         #                      value = c(min,max)
-         #          )),
-         #   column(3,
-         #          sliderInput("rb_dvoa",
-         #                      "Total DVOA",
-         #                      min = min(rb$defense_dvoa, na.rm = T),
-         #                      max = max(rb$defense_dvoa, na.rm = T),
-         #                      value = c(min,max)
-         #          )),
-         #   column(3,
-         #          sliderInput("rb_rush_dvoa",
-         #                      "Rush D DVOA",
-         #                      min = min(rb$rush_def_dvoa,  na.rm = T),
-         #                      max = max(rb$rush_def_dvoa,  na.rm = T),
-         #                      value = c(min,max)
-         #          )),
-         #   column(3,
-         #          sliderInput("rb_line",
-         #                      "Line",
-         #                      min = min(rb[["line"]], na.rm = T),
-         #                      max = max(rb[["line"]], na.rm = T),
-         #                      value = c(min,max)
-         #          ))),
-         
-         # fluidRow(column(2,
-         #                 
-         #                 checkboxGroupInput("rb_vars", "RB columns to show:",
-         #                                    names(rb), 
-         #                                    selected = c("player",
-         #                                                 "opp",
-         #                                                 "ytd_rush_att",
-         #                                                 "ytd_rush_yds_per_gm",
-         #                                                 "ytd_rush_td",
-         #                                                 "ytd_rec_target",
-         #                                                 "ytd_rec_rec_per_gm",
-         #                                                 "rz_rush_five_att",
-         #                                                 "rz_rec_twenty_tgt",
-         #                                                 "defense_dvoa",
-         #                                                 "rush_def_dvoa",
-         #                                                 "dline_stuffed",
-         #                                                 "oline_powerrank",
-         #                                                 "fd_sal",
-         #                                                 "line"))
-         # ),
-         
+         fluidRow(
+           column(3,
+                  sliderInput("rush_dvoa",
+                              "Rushing DVOA",
+                              min = min(rb_def$rush_def_dvoa, na.rm = T),
+                              max = max(rb_def$rush_def_dvoa, na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("net_yds_diff",
+                              "Net Yards Differece",
+                              min = min(rb_def$net_adj_line_yd_diff, na.rm = T),
+                              max = max(rb_def$net_adj_line_yd_diff, na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("dvoa_advantage",
+                              "Rushing Advantage",
+                              min = min(rb_def$DVOA_Advantage,  na.rm = T),
+                              max = max(rb_def$DVOA_Advantage,  na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("total_touches",
+                              "Total Touches by RB",
+                              min = min(rb_def$pts_vs_total_touch, na.rm = T),
+                              max = max(rb_def$pts_vs_total_touch, na.rm = T),
+                              value = c(min,max)
+                  ))),
+
          
          column(12,
                 div(DT::dataTableOutput("def_rb"), style = "font-size:95%")
@@ -1204,22 +1110,24 @@ server <- function(input, output) {
         )
       ))
       
-      # render_qb <-  subset(off_qb,
-      #                      fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
-      #                        line >= input$qb_line[1] & line <= input$qb_line[2])
+      render_def_rb <-  subset(rb_def,
+                               rush_def_dvoa >= input$rush_dvoa[1] & rush_def_dvoa <= input$rush_dvoa[2] &
+                               net_adj_line_yd_diff >= input$net_yds_diff[1] & net_adj_line_yd_diff <= input$net_yds_diff[2] &
+                               DVOA_Advantage >= input$dvoa_advantage[1] & DVOA_Advantage <= input$dvoa_advantage[2] &
+                               pts_vs_total_touch >= input$total_touches[1] & pts_vs_total_touch <= input$total_touches[2])
       
-      datatable(rb_def, 
+      datatable(render_def_rb, 
                 rownames = F, 
                 container = def_rb_container,
-                options = list(pageLength = 10, 
-                               lengthMenu = c(10,20,30),
+                options = list(pageLength = 15, 
+                               lengthMenu = c(5,15,25),
                                columnDefs = list(list(className = 'dt-center', targets = 'all'))),
                 caption = htmltools::tags$caption(
                                style = 'caption-side: bottom; text-align: left;',
                                'Legend: Total Touches = Rush Att + Target by RB vs. Defense | 
-                                Rushing Adv = Rush D DVOA + Rush Off DVOA, higher is better | 
+                                Rushing Advantage = Rush D DVOA + Rush Off DVOA, higher is better | 
                                 Difference = Rush DVOA - Defense DVOA, lower means rushing d is a strength (i.e., compartively better than overall) |
-                                Power Success = % runs on 3rd/4th down OR 1st/nd & goal from <= 2 yds which were successful |
+                                Power Success = % runs on 3rd/4th down OR 1st/2nd & goal from <= 2 yds which were successful |
                                 Difference = O Line success (rank) - D Line Success (rank) |
                                 Adj Net Yards = Adjusted Yds allowed by D line |
                                 Difference vs Off = Adj Net Yds from Offense - Defense, higher is better'))
