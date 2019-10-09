@@ -31,7 +31,7 @@ dvoa <- function() {
   
   # subsetting columns
   total_efficiency <- total_efficiency %>%
-                      select(-lastweek,
+                      select(-last_week,
                              -contains("s_t_"),
                              -w_l) %>%
                       mutate(total_dvoa = as.numeric(sapply(total_dvoa, function(x) str_remove(x, '%'))),
@@ -75,8 +75,8 @@ dvoa <- function() {
   # subsetting columns
   offense <- offense %>% 
              select(-lastweek,
-                    -offense_dvoa) %>%
-             mutate(offense_dave = as.numeric(sapply(offense_dave, function(x) str_remove(x, '%'))),
+                    -off_dvoa) %>%
+             mutate(off_dave = as.numeric(sapply(off_dave, function(x) str_remove(x, '%'))),
                     pass_off_dvoa = as.numeric(sapply(pass_off_dvoa, function(x) str_remove(x, '%'))),
                     rush_off_dvoa = as.numeric(sapply(rush_off_dvoa, function(x) str_remove(x, '%'))))
 
@@ -97,7 +97,8 @@ dvoa <- function() {
     str_replace_all("(?<=defense)dave","_dave") %>%
     str_remove("_\\d") %>%
     str_replace("passdef", "pass_def") %>%
-    str_replace("rushdef","rush_def")
+    str_replace("rushdef","rush_def") %>%
+    str_replace("defdave", "def_dave")
   
   # Adding in descriptors for rank column
   for(ii in 1:length(defense_names)) {
@@ -114,9 +115,9 @@ dvoa <- function() {
   
   # subsetting columns
   defense <- defense %>% 
-    select(-lastweek,
-           -defense_dvoa) %>%
-    mutate(defense_dave = as.numeric(sapply(defense_dave, function(x) str_remove(x, '%'))),
+    select(-last_week,
+           -def_dvoa) %>%
+    mutate(def_dave = as.numeric(sapply(def_dave, function(x) str_remove(x, '%'))),
            pass_def_dvoa = as.numeric(sapply(pass_def_dvoa, function(x) str_remove(x, '%'))),
            rush_def_dvoa = as.numeric(sapply(rush_def_dvoa, function(x) str_remove(x, '%'))))
   
@@ -150,7 +151,7 @@ dvoa <- function() {
   
   dline <- dline %>%
            subset(team != "NFL") %>%
-           mutate(dline_power_success = as.numeric(sapply(dline_power_success, function(x) str_remove(x, '%'))),
+           mutate(dline_powersuccess = as.numeric(sapply(dline_powersuccess, function(x) str_remove(x, '%'))),
                   dline_stuffed = as.numeric(sapply(dline_stuffed, function(x) str_remove(x, '%'))))
   
   # Quick dline passing stats (on website as same table but not same rank)
@@ -164,7 +165,8 @@ dvoa <- function() {
   # colnames are in first line, so correcting for that
   dline_pass_names <- dline_pass[1,] %>%
                       str_to_lower() %>%
-                      str_replace_all("[^\\w]+","_")
+                      str_replace_all("[^\\w]+","_") %>%
+                      str_replace("adjustedsack", "adjusted_sack")
   
   # Addind prefix
   for(ii in 1:length(dline_pass_names)) {
@@ -241,7 +243,7 @@ dvoa <- function() {
     subset(team != "NFL") %>%
     mutate(oline_pass_rank = as.numeric(oline_pass_rank),
            oline_pass_sacks = as.numeric(oline_pass_sacks),
-           oline_pass_adjustedsack_rate = as.numeric(sapply(oline_pass_adjustedsack_rate, function(x) str_remove(x, '%'))))
+           oline_pass_adjusted_sack_rate = as.numeric(sapply(oline_pass_adjusted_sack_rate, function(x) str_remove(x, '%'))))
 
 # Return List of DFs ------------------------------------------------------
 
