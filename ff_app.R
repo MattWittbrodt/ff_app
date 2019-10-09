@@ -308,7 +308,11 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5) %>%
                  rushing_five_td,
                  rushing_five_per_rush,
                  line) %>%
-          mutate(total_touches = ytd_rush_att + ytd_rec_target)
+          mutate(total_touches = ytd_rush_att + ytd_rec_target) %>%
+          select(proj_player, proj_opp,
+                 total_touches, ytd_rush_att:ytd_rush_yds_per_gm,
+                 ytd_rec_target,ytd_rec_yds_per_gm,
+                 receiving_ten_tgt:line)
 
 # WR Data -----------------------------------------------------------------
 wr <- filter(df, proj_pos == "WR") %>%
@@ -666,6 +670,10 @@ tabPanel("RB",
          
          column(12,
                 div(DT::dataTableOutput("def_rb"), style = "font-size:95%")
+         ),
+         
+         column(12,
+                div(DT::dataTableOutput("off_rb"), style = "font-size:95%")
          )#,
         
          #
@@ -1236,50 +1244,56 @@ server <- function(input, output) {
     # Offense RB
     #
     
-    # output$off_rb <- renderDataTable({
-    #   
-    #   # Defense RB Container
-    #   offf_rb_container <- htmltools::withTags(table(
-    #     class = 'display',
-    #     thead(
-    #       tr(
-    #         th(colspan = 2,''),
-    #         th(class = 'dt-center', colspan = 6, 'Def Performance Against RB'),
-    #         th(class = 'dt-center', colspan = 4, 'DVOA Metrics'),
-    #         th(class = 'dt-center', colspan = 4, 'D Line Performance')
-    #       ),
-    #       tr(
-    #         th(colspan = 1, 'Player'),
-    #         th(colspan = 1, 'Opp'),
-    #         th(colspan = 1, 'Total Touhces'),
-    #         th(colspan = 1, 'Rush Att'),
-    #         th(colspan = 1, 'Rush Yds'),
-    #         th(colspan = 1, 'Rush TD'),
-    #         th(colspan = 1, 'Targets'),
-    #         th(colspan = 1, 'Rec Yds'),
-    #         th(colspan = 1, 'Defense'),
-    #         th(colspan = 1, 'Rushing'),
-    #         th(colspan = 1, 'Rushing Adv'),
-    #         th(colspan = 1, 'Difference'),
-    #         th(colspan = 1, 'Power Success'),
-    #         th(colspan = 1, 'Difference vs Off'),
-    #         th(colspan = 1, 'Adj Net Yards'),
-    #         th(colspan = 1, 'Difference vs Off'))
-    #     )
-    #   ))
-    #   
-    #   # render_qb <-  subset(off_qb,
-    #   #                      fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
-    #   #                        line >= input$qb_line[1] & line <= input$qb_line[2])
-    #   
-    #   datatable(rb_def, 
-    #             rownames = F, 
-    #             container = def_rb_container, 
-    #             options = list(pageLength = 10, 
-    #                            lengthMenu = c(10,20,30),
-    #                            columnDefs = list(list(className = 'dt-center', targets = 'all'))))
-    #   
-    #})
+    output$off_rb <- renderDataTable({
+
+      # Defense RB Container
+      off_rb_container <- htmltools::withTags(table(
+        class = 'display',
+        thead(
+          tr(
+            th(colspan = 3,''),
+            th(class = 'dt-center', colspan = 4, 'YTD Rush / Game'),
+            th(class = 'dt-center', colspan = 2, 'YTD Rec / Game'),
+            th(class = 'dt-center', colspan = 3, 'RZ Rec inside 10y'),
+            th(class = 'dt-center', colspan = 3, 'RZ Rush inside 10y'),
+            th(class = 'dt-center', colspan = 3, 'RZ Rush inside 5y'),
+            th(class = 'dt-center', colspan = 1, '')
+          ),
+          tr(
+            th(colspan = 1, 'Player'),
+            th(colspan = 1, 'Opp'),
+            th(colspan = 1, 'Total Touches'),
+            th(colspan = 1, 'Att'),
+            th(colspan = 1, 'TD'),
+            th(colspan = 1, 'Yd/Att'),
+            th(colspan = 1, 'Yds'),
+            th(colspan = 1, 'Targets'),
+            th(colspan = 1, 'Yds'),
+            th(colspan = 1, 'Tgt'),
+            th(colspan = 1, 'TD'),
+            th(colspan = 1, 'Tgt %'),
+            th(colspan = 1, 'Att'),
+            th(colspan = 1, 'TD'),
+            th(colspan = 1, 'Att %'),
+            th(colspan = 1, 'Att'),
+            th(colspan = 1, 'TD'),
+            th(colspan = 1, 'Att %'),
+            th(colspan = 1, 'Line'))
+        )
+      ))
+
+      # render_qb <-  subset(off_qb,
+      #                      fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
+      #                        line >= input$qb_line[1] & line <= input$qb_line[2])
+
+      datatable(rb_off,
+                rownames = F,
+                container = off_rb_container,
+                options = list(pageLength = 10,
+                               lengthMenu = c(10,20,30),
+                               columnDefs = list(list(className = 'dt-center', targets = 'all'))))
+
+    })
       
       
       
