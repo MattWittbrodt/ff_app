@@ -74,9 +74,9 @@ dvoa <- function() {
   
   # subsetting columns
   offense <- offense %>% 
-             select(-lastweek,
-                    -off_dvoa) %>%
-             mutate(off_dave = as.numeric(sapply(off_dave, function(x) str_remove(x, '%'))),
+             select(-contains("last"),
+                    -offense_dvoa) %>%
+             mutate(offense_dave = as.numeric(sapply(offense_dave, function(x) str_remove(x, '%'))),
                     pass_off_dvoa = as.numeric(sapply(pass_off_dvoa, function(x) str_remove(x, '%'))),
                     rush_off_dvoa = as.numeric(sapply(rush_off_dvoa, function(x) str_remove(x, '%'))))
 
@@ -115,9 +115,9 @@ dvoa <- function() {
   
   # subsetting columns
   defense <- defense %>% 
-    select(-last_week,
-           -def_dvoa) %>%
-    mutate(def_dave = as.numeric(sapply(def_dave, function(x) str_remove(x, '%'))),
+    select(-contains("last"),
+           -defense_dvoa) %>%
+    mutate(defense_dave = as.numeric(sapply(defense_dave, function(x) str_remove(x, '%'))),
            pass_def_dvoa = as.numeric(sapply(pass_def_dvoa, function(x) str_remove(x, '%'))),
            rush_def_dvoa = as.numeric(sapply(rush_def_dvoa, function(x) str_remove(x, '%'))))
   
@@ -151,7 +151,7 @@ dvoa <- function() {
   
   dline <- dline %>%
            subset(team != "NFL") %>%
-           mutate(dline_powersuccess = as.numeric(sapply(dline_powersuccess, function(x) str_remove(x, '%'))),
+           mutate(dline_power_success = as.numeric(sapply(dline_power_success, function(x) str_remove(x, '%'))),
                   dline_stuffed = as.numeric(sapply(dline_stuffed, function(x) str_remove(x, '%'))))
   
   # Quick dline passing stats (on website as same table but not same rank)
@@ -214,7 +214,7 @@ dvoa <- function() {
   
   oline <- oline %>%
     subset(team != "NFL") %>%
-    mutate(oline_powersuccess = as.numeric(sapply(oline_powersuccess, function(x) str_remove(x, '%'))),
+    mutate(oline_power_success = as.numeric(sapply(oline_power_success, function(x) str_remove(x, '%'))),
            oline_stuffed = as.numeric(sapply(oline_stuffed, function(x) str_remove(x, '%'))))
   
   # Quick dline passing stats (on website as same table but not same rank)
