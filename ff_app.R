@@ -7,7 +7,7 @@ library(tidyverse)
 library(DT)
 
 df <- readxl::read_xlsx("data/all_data_wk_6.xlsx")
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_6.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -242,55 +242,129 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5) %>%
                  receiving_ten_tgt:line)
 
 # WR Data -----------------------------------------------------------------
-wr <- filter(df, proj_pos == "WR") %>%
-    select(proj_player,
-           proj_opp,
-           ytd_rec_target,
-           ytd_rec_rec,
-           ytd_rec_yds,
-           ytd_rec_rec_per_gm,
-           ytd_rec_yds_per_rec,
-           ytd_rec_yds_per_target,
-           ytd_rec_ctch_per,
-           receiving_twenty_tgt,
-           receiving_twenty_yds,
-           receiving_twenty_td,
-           receiving_twenty_per_tgt,
-           receiving_ten_tgt,
-           receiving_ten_rec,
-           receiving_ten_yds,                        
-           receiving_ten_td,
-           receiving_ten_per_tgt,
-           defense_dvoa,
-           pass_def_dvoa,
-           dline_pass_rank,
-           oline_pass_adjusted_sack_rate,
-           dline_2nd_levelyards,
-           oline_adj_line_yards,
-           oline_power_rank,
-           fd_sal,
-           projected_own,
-           line,
-           pts_vs_rec_tgt,
-           pts_vs_rec_rec,
-           pts_vs_rec_yds,
-           pts_vs_rec_td,
-           pts_vs_fantasy_per_game_fdpt) %>%
-    filter(ytd_rec_target > 3) %>%
-    mutate(pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
-           pts_vs_rec_rec = as.numeric(pts_vs_rec_rec),
-           pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
-           pts_vs_rec_td = as.numeric(pts_vs_rec_tgt),
-           pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt))
+# wr <- filter(df, proj_pos == "WR") %>%
+#     select(proj_player,
+#            proj_opp,
+#            ytd_rec_target,
+#            ytd_rec_rec,
+#            ytd_rec_yds,
+#            ytd_rec_rec_per_gm,
+#            ytd_rec_yds_per_rec,
+#            ytd_rec_yds_per_target,
+#            ytd_rec_ctch_per,
+#            receiving_twenty_tgt,
+#            receiving_twenty_yds,
+#            receiving_twenty_td,
+#            receiving_twenty_per_tgt,
+#            receiving_ten_tgt,
+#            receiving_ten_rec,
+#            receiving_ten_yds,                        
+#            receiving_ten_td,
+#            receiving_ten_per_tgt,
+#            defense_dvoa,
+#            pass_def_dvoa,
+#            dline_pass_rank,
+#            oline_pass_adjusted_sack_rate,
+#            dline_2nd_levelyards,
+#            oline_adj_line_yards,
+#            oline_power_rank,
+#            fd_sal,
+#            projected_own,
+#            line,
+#            pts_vs_rec_tgt,
+#            pts_vs_rec_rec,
+#            pts_vs_rec_yds,
+#            pts_vs_rec_td,
+#            pts_vs_fantasy_per_game_fdpt) %>%
+#     filter(ytd_rec_target > 3) %>%
+#     mutate(pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
+#            pts_vs_rec_rec = as.numeric(pts_vs_rec_rec),
+#            pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
+#            pts_vs_rec_td = as.numeric(pts_vs_rec_tgt),
+#            pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt))
+# 
+# 
+# wr_names <- names(wr) %>%
+#   str_remove("proj_") %>%
+#   str_replace("rushing","rz_rush") %>%
+#   str_replace("receiving", "rz_rec")
+# 
+# names(wr) <- wr_names
 
 
-wr_names <- names(wr) %>%
-  str_remove("proj_") %>%
-  str_replace("rushing","rz_rush") %>%
-  str_replace("receiving", "rz_rec")
+#
+# WR Defense and Oline Table
+#
 
-names(wr) <- wr_names
+wr_def <- filter(df, proj_pos == "WR" & ytd_rec_target > 2) %>%
+  select(proj_player,
+         proj_opp,
+         pts_vs_g,
+         pts_vs_fantasy_per_game_fdpt,
+         pts_vs_rec_tgt,
+         pts_vs_rec_yds,
+         pts_vs_rec_td,
+         def_red_zone_td,
+         def_red_zone_pct,
+         def_pass_adj_net_yds_per_att,
+         def_pass_yds_per_gm,
+         def_tot_yds_per_play,
+         defense_dvoa,
+         pass_def_dvoa,
+         pass_off_dvoa,
+         oline_pass_adjusted_sack_rate,
+         dline_pass_rank,
+         dline_pass_sacks,
+         dline_pass_adjusted_sack_rate
+  ) %>%
+  mutate(pts_vs_g =  as.numeric(pts_vs_g),
+         pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt),
+         pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
+         pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
+         pts_vs_rec_td = as.numeric(pts_vs_rec_td),
+         oline_pass_adjusted_sack_rate = as.numeric(oline_pass_adjusted_sack_rate),
+         dline_pass_rank = as.numeric(dline_pass_rank),
+         dline_pass_sacks = as.numeric(dline_pass_sacks),
+         dline_pass_adjusted_sack_rate = as.numeric(dline_pass_adjusted_sack_rate),
+         pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
+         pts_vs_rec_yds = round(pts_vs_rec_yds/pts_vs_g,1),
+         pts_vs_rec_td = pts_vs_rec_td/pts_vs_g,
+         DVOA_Advantage = pass_def_dvoa + pass_off_dvoa,
+         DVOA_Difference = pass_def_dvoa - defense_dvoa,
+         sack_rate_diff = round(oline_pass_adjusted_sack_rate - dline_pass_adjusted_sack_rate,1)) %>%
+  select(proj_player,
+         proj_opp,
+         pts_vs_fantasy_per_game_fdpt:pts_vs_rec_td,
+         def_red_zone_td:def_tot_yds_per_play,
+         defense_dvoa,
+         pass_def_dvoa,
+         DVOA_Advantage, 
+         DVOA_Difference,
+         dline_pass_rank:dline_pass_adjusted_sack_rate,
+         sack_rate_diff)
 
+#
+# WR Offense Table
+#
+
+wr_off <- filter(df, proj_pos == "WR" & ytd_rec_target > 2) %>%
+  select(proj_player,
+         proj_opp,
+         ytd_rec_target,
+         ytd_rec_yds_per_target,
+         ytd_rec_yds_per_gm,
+         ytd_rec_td,
+         receiving_twenty_tgt,
+         receiving_twenty_td,
+         receiving_twenty_per_tgt,
+         receiving_ten_tgt,
+         receiving_ten_td,
+         receiving_ten_per_tgt,
+         pass_off_dvoa,
+         fd_sal,
+         line,
+         proj_rec_yds,
+         proj_rec_td)
 
 # TE Data -----------------------------------------------------------------
 te <- filter(df, proj_pos == "TE") %>%
@@ -603,85 +677,91 @@ tabPanel("RB",
 # WR Panel ----------------------------------------------------------------
 tabPanel("WR",
          
-         fluidRow(
-           column(3,
-                  sliderInput("wr_salary",
-                              "Minimum FanDuel Salary:",
-                              min = min(wr$fd_sal, na.rm = T),
-                              max = max(wr$fd_sal, na.rm = T),
-                              value = c(min,max)
-                  )),
-           column(3,
-                  sliderInput("wr_dvoa",
-                              "Total DVOA",
-                              min = min(wr$defense_dvoa, na.rm = T),
-                              max = max(wr$defense_dvoa, na.rm = T),
-                              value = c(min,max)
-                  )),
-           column(3,
-                  sliderInput("wr_pass_dvoa",
-                              "Pass D DVOA",
-                              min = min(wr$pass_def_dvoa,  na.rm = T),
-                              max = max(wr$pass_def_dvoa,  na.rm = T),
-                              value = c(min,max)
-                  )),
-           column(3,
-                  sliderInput("wr_line",
-                              "Line",
-                              min = min(wr[["line"]], na.rm = T),
-                              max = max(wr[["line"]], na.rm = T),
-                              value = c(min,max)
-                  ))),
+         fluidRow(column(12, 
+                  div(DT::dataTableOutput("def_wr")))),
          
-         fluidRow(column(2,
-                         
-                         checkboxGroupInput("wr_vars", "WR columns to show:",
-                                            names(wr), selected = c("player",
-                                                                    "opp",
-                                                                    "ytd_rec_target",
-                                                                    "ytd_rec_rec",
-                                                                    "ytd_rec_yds_per_target",
-                                                                    "receiving_twenty_tgt",
-                                                                    "receiving_twenty_td",
-                                                                    "receiving_twenty_per_tgt",
-                                                                    "receiving_ten_tgt",
-                                                                    "receiving_ten_rec",
-                                                                    "receiving_ten_td",
-                                                                    "receiving_ten_per_tgt",
-                                                                    "defense_dvoa",
-                                                                    "pass_def_dvoa",
-                                                                    "dline_pass_rank",
-                                                                    "oline_pass_adjustedsack_rate",
-                                                                    "fd_sal",
-                                                                    "line"))
-         ),
-         
-         
-         column(10,
-                div(DT::dataTableOutput("wrtable"), style = "font-size:75%")
-         )),
          fluidRow(column(12,
-                         p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
-                             DVOA = Defense-adjusted Value Over Average where negative is better,
-                             Dline = Defensive Line Ratings,
-                             def_ = Raw Defense Stats"))),
+                  div(DT::dataTableOutput("off_wr"))))
          
-         #
-         # WR Plot
-         #
-         fluidRow(
-           column(2,
-                  selectInput("wr_y_axis",
-                              h3("Y Axis"),
-                              choices = as.list(names(wr)),
-                              selected = "fd_sal")),
-           column(2,
-                  selectInput("wr_x_axis",
-                              h3("X Axis"),
-                              choices = as.list(as.list(names(wr))),
-                              selected = "defense_dvoa")),
-           column(6,
-                  plotOutput('wr_plot', height = 500)))
+         # fluidRow(
+         #   column(3,
+         #          sliderInput("wr_salary",
+         #                      "Minimum FanDuel Salary:",
+         #                      min = min(wr$fd_sal, na.rm = T),
+         #                      max = max(wr$fd_sal, na.rm = T),
+         #                      value = c(min,max)
+         #          )),
+         #   column(3,
+         #          sliderInput("wr_dvoa",
+         #                      "Total DVOA",
+         #                      min = min(wr$defense_dvoa, na.rm = T),
+         #                      max = max(wr$defense_dvoa, na.rm = T),
+         #                      value = c(min,max)
+         #          )),
+         #   column(3,
+         #          sliderInput("wr_pass_dvoa",
+         #                      "Pass D DVOA",
+         #                      min = min(wr$pass_def_dvoa,  na.rm = T),
+         #                      max = max(wr$pass_def_dvoa,  na.rm = T),
+         #                      value = c(min,max)
+         #          )),
+         #   column(3,
+         #          sliderInput("wr_line",
+         #                      "Line",
+         #                      min = min(wr[["line"]], na.rm = T),
+         #                      max = max(wr[["line"]], na.rm = T),
+         #                      value = c(min,max)
+         #          ))),
+         # 
+         # fluidRow(column(2,
+         #                 
+         #                 checkboxGroupInput("wr_vars", "WR columns to show:",
+         #                                    names(wr), selected = c("player",
+         #                                                            "opp",
+         #                                                            "ytd_rec_target",
+         #                                                            "ytd_rec_rec",
+         #                                                            "ytd_rec_yds_per_target",
+         #                                                            "receiving_twenty_tgt",
+         #                                                            "receiving_twenty_td",
+         #                                                            "receiving_twenty_per_tgt",
+         #                                                            "receiving_ten_tgt",
+         #                                                            "receiving_ten_rec",
+         #                                                            "receiving_ten_td",
+         #                                                            "receiving_ten_per_tgt",
+         #                                                            "defense_dvoa",
+         #                                                            "pass_def_dvoa",
+         #                                                            "dline_pass_rank",
+         #                                                            "oline_pass_adjustedsack_rate",
+         #                                                            "fd_sal",
+         #                                                            "line"))
+         # ),
+         # 
+         # 
+         # column(10,
+         #        div(DT::dataTableOutput("wrtable"), style = "font-size:75%")
+         # )),
+         # fluidRow(column(12,
+         #                 p("Data Dictionary: Rz = Red Zone, ytd = Year to Date, 
+         #                     DVOA = Defense-adjusted Value Over Average where negative is better,
+         #                     Dline = Defensive Line Ratings,
+         #                     def_ = Raw Defense Stats"))),
+         # 
+         # #
+         # # WR Plot
+         # #
+         # fluidRow(
+         #   column(2,
+         #          selectInput("wr_y_axis",
+         #                      h3("Y Axis"),
+         #                      choices = as.list(names(wr)),
+         #                      selected = "fd_sal")),
+         #   column(2,
+         #          selectInput("wr_x_axis",
+         #                      h3("X Axis"),
+         #                      choices = as.list(as.list(names(wr))),
+         #                      selected = "defense_dvoa")),
+         #   column(6,
+         #          plotOutput('wr_plot', height = 500)))
          
          
 ),
@@ -1216,6 +1296,96 @@ server <- function(input, output) {
 
 # WR Tab Data -------------------------------------------------------------
     
+    
+    # Def WR Table
+    
+    output$def_wr <- renderDataTable({
+      
+      # Defense WR Container
+      def_wr_container <- htmltools::withTags(table(
+          class = 'display',
+          thead(
+            tr(
+              th(colspan = 2,''),
+              th(class = 'dt-center', colspan = 4, 'Points Against to WR'),
+              th(class = 'dt-center', colspan = 2, 'RZ Defense'),
+              th(class = 'dt-center', colspan = 3, 'Defense Efficiency'),
+              th(class = 'dt-center', colspan = 5, 'DVOA'),
+              th(class = 'dt-center', colspan = 4, 'D Line Performance')
+            ),
+            tr(
+              th(colspan = 1, 'Player'),
+              th(colspan = 1, 'Opp'),
+              th(colspan = 1, 'FD Pts'),
+              th(colspan = 1, 'Targets'),
+              th(colspan = 1, 'Yds'),
+              th(colspan = 1, 'TD'),
+              th(colspan = 1, 'TD'),
+              th(colspan = 1, 'Score %'),
+              th(colspan = 1, 'Adj Net Yds/Att'),
+              th(colspan = 1, 'Pass Yds/G'),
+              th(colspan = 1, 'Total Yds/Play'),
+              th(colspan = 1, 'Defense'),
+              th(colspan = 1, 'Passing'),
+              th(colspan = 1, 'Pass Adv'),
+              th(colspan = 1, 'Difference'),
+              th(colspan = 1, 'Pass Rk'),
+              th(colspan = 1, 'Sacks'),
+              th(colspan = 1, 'Adj Sack Rate'),
+              th(colspan = 1, 'Sack Rate Diff'))
+          )))
+      
+      datatable(wr_def, 
+                rownames = F,
+                container = def_wr_container,
+                options = list(pageLength = 15, lengthMenu = c(10,15,20)))
+    
+      })
+    
+    # Offense WR
+    output$off_wr <- renderDataTable({
+      
+      # Offense WR Container
+      off_wr_container <- htmltools::withTags(table(
+        class = 'display',
+        thead(
+          tr(
+            th(colspan = 2,''),
+            th(class = 'dt-center', colspan = 4, 'YTD Stats'),
+            th(class = 'dt-center', colspan = 3, 'RZ Within 20y'),
+            th(class = 'dt-center', colspan = 3, 'RZ Within 10y'),
+            th(class = 'dt-center', colspan = 1, 'DVOA'),
+            th(class = 'dt-center', colspan = 1, 'FD Info'),
+            th(class = 'dt-center', colspan = 1, 'Vegas'),
+            th(class = 'dt-center', colspan = 2, 'Projections')
+          ),
+          tr(
+            th(colspan = 1, 'Player'),
+            th(colspan = 1, 'Opp'),
+            th(colspan = 1, 'Target'),
+            th(colspan = 1, 'Yds/Tgt'),
+            th(colspan = 1, 'Yds/Gm'), ### ADD TD!
+            th(colspan = 1, 'TD'),
+            th(colspan = 1, 'Tgt'),
+            th(colspan = 1, 'TD'),
+            th(colspan = 1, '%Tgt'),
+            th(colspan = 1, 'Tgt'),
+            th(colspan = 1, 'TD'),
+            th(colspan = 1, '%Tgt'),
+            th(colspan = 1, 'Offense'),
+            th(colspan = 1, 'Salary ($)'),
+            th(colspan = 1, 'Line'),
+            th(colspan = 1, 'Rec Yds'),
+            th(colspan = 1, 'Rec TD'))
+        )))
+      
+      datatable(wr_off,
+                rownames = F,
+                container = off_wr_container,
+                options = list(pageLength = 15, lengthMenu = c(10,15,20)))
+    })
+    
+    
     # WR Table
     output$wrtable <- renderDataTable({
       
@@ -1245,19 +1415,19 @@ server <- function(input, output) {
     })
     
     # Output variable creation for QB
-    output$wr_plot = renderPlot({
-      
-      wr_plot_data <- wr_dat()
-      ggplot(wr_plot_data, aes(x = wr_plot_data[[input$wr_x_axis]], wr_plot_data[[input$wr_y_axis]])) +
-        xlab(input$wr_x_axis) +
-        ylab(input$wr_y_axis) +
-        geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
-        geom_text(aes(label = player), hjust = 0, vjust = -1) +
-        theme_bw() +
-        theme(
-          axis.title = element_text(size = 12, face = "bold")
-        )
-    })
+    # output$wr_plot = renderPlot({
+    #   
+    #   wr_plot_data <- wr_dat()
+    #   ggplot(wr_plot_data, aes(x = wr_plot_data[[input$wr_x_axis]], wr_plot_data[[input$wr_y_axis]])) +
+    #     xlab(input$wr_x_axis) +
+    #     ylab(input$wr_y_axis) +
+    #     geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
+    #     geom_text(aes(label = player), hjust = 0, vjust = -1) +
+    #     theme_bw() +
+    #     theme(
+    #       axis.title = element_text(size = 12, face = "bold")
+    #     )
+    # })
     
   
 # TE Tab Data -------------------------------------------------------------
