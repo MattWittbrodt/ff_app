@@ -6,7 +6,7 @@ library(shiny)
 library(tidyverse)
 library(DT)
 
-df <- readxl::read_xlsx("data/all_data_wk_5.xlsx")
+df <- readxl::read_xlsx("data/all_data_wk_6.xlsx")
 #df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5.xlsx")
 
 #NOTE: 16 columns per table works relatively well
@@ -157,13 +157,13 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  defense_dvoa,
                  rush_def_dvoa,
                  rush_off_dvoa,
-                 dline_powersuccess,
-                 dline_adj_lineyards,
+                 dline_power_success,
+                 dline_adj_line_yards,
                  dline_stuffed,
                  dline_2nd_levelyards,
                  dline_open_fieldyards,
-                 oline_adj_lineyards,
-                 oline_powersuccess,
+                 oline_adj_line_yards,
+                 oline_power_success,
                  oline_stuffed,
                  oline_open_fieldyards,
                  oline_2nd_levelyards
@@ -175,10 +175,10 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  pts_vs_rush_att = as.numeric(pts_vs_rush_att),
                  pts_vs_rush_yds = as.numeric(pts_vs_rush_yds),                           
                  pts_vs_rush_td = as.numeric(pts_vs_rush_td),
-                 dline_adj_lineyards = as.numeric(dline_adj_lineyards),
+                 dline_adj_line_yards = as.numeric(dline_adj_line_yards),
                  dline_2nd_levelyards = as.numeric(dline_2nd_levelyards),
                  dline_open_fieldyards = as.numeric(dline_open_fieldyards),
-                 oline_adj_lineyards = as.numeric(oline_adj_lineyards),
+                 oline_adj_line_yards = as.numeric(oline_adj_line_yards),
                  oline_2nd_levelyards = as.numeric(oline_2nd_levelyards),
                  oline_open_fieldyards = as.numeric(oline_open_fieldyards),
                  pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
@@ -190,8 +190,8 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  pts_vs_total_touch = round(pts_vs_rush_att + pts_vs_rec_tgt,1),
                  DVOA_Advantage = rush_def_dvoa + rush_off_dvoa,
                  DVOA_Difference = rush_def_dvoa - defense_dvoa,
-                 net_adj_line_yd_diff = round(oline_adj_lineyards - dline_adj_lineyards,1),
-                 power_success_diff = oline_powersuccess - dline_powersuccess,
+                 net_adj_line_yd_diff = round(oline_adj_line_yards - dline_adj_line_yards,1),
+                 power_success_diff = oline_power_success - dline_power_success,
                  second_level_yds_diff = oline_2nd_levelyards - oline_2nd_levelyards,
                  open_fieldyards_diff = oline_open_fieldyards - dline_open_fieldyards) %>%
           filter(ytd_rush_att > 5) %>%
@@ -207,9 +207,9 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  rush_def_dvoa,
                  DVOA_Advantage,
                  DVOA_Difference,
-                 dline_powersuccess,
+                 dline_power_success,
                  power_success_diff,
-                 dline_adj_lineyards,
+                 dline_adj_line_yards,
                  net_adj_line_yd_diff)
 
 #
@@ -266,8 +266,8 @@ wr <- filter(df, proj_pos == "WR") %>%
            dline_pass_rank,
            oline_pass_adjusted_sack_rate,
            dline_2nd_levelyards,
-           oline_adj_lineyards,
-           oline_powerrank,
+           oline_adj_line_yards,
+           oline_power_rank,
            fd_sal,
            projected_own,
            line,
@@ -317,8 +317,8 @@ te <- filter(df, proj_pos == "TE") %>%
          dline_pass_rank,
          oline_pass_adjusted_sack_rate,
          dline_2nd_levelyards,
-         oline_adj_lineyards,
-         oline_powerrank,
+         oline_adj_line_yards,
+         oline_power_rank,
          fd_sal,
          projected_own,
          line,
