@@ -143,6 +143,7 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  ytd_rush_att,
                  proj_opp,
                  pts_vs_g,
+                 pts_vs_fantasy_per_game_fdpt,
                  pts_vs_rec_tgt,
                  #pts_vs_rec_rec,
                  pts_vs_rec_yds,
@@ -169,6 +170,7 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  oline_2nd_levelyards
                  ) %>%
           mutate(pts_vs_g =  as.numeric(pts_vs_g),
+                 pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt),
                  pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
                  pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
                  pts_vs_rec_td = as.numeric(pts_vs_rec_td),
@@ -188,7 +190,7 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  pts_vs_rush_yds = pts_vs_rush_yds/pts_vs_g,    
                  pts_vs_rush_td = pts_vs_rush_td/pts_vs_g,                           
                  pts_vs_total_touch = round(pts_vs_rush_att + pts_vs_rec_tgt,1),
-                 DVOA_Advantage = rush_def_dvoa + rush_off_dvoa,
+                 DVOA_Advantage = round(rush_def_dvoa + rush_off_dvoa,1),
                  DVOA_Difference = rush_def_dvoa - defense_dvoa,
                  net_adj_line_yd_diff = round(oline_adj_line_yards - dline_adj_line_yards,1),
                  power_success_diff = oline_power_success - dline_power_success,
@@ -198,6 +200,7 @@ rb_def <- filter(df, proj_pos == "RB") %>%
           select(proj_player,
                  proj_opp,
                  pts_vs_total_touch,
+                 pts_vs_fantasy_per_game_fdpt,
                  pts_vs_rush_att,
                  pts_vs_rush_yds,                           
                  pts_vs_rush_td,
@@ -1110,34 +1113,6 @@ server <- function(input, output) {
         
 # RB Tab Data -------------------------------------------------------------
     
-    # RB Table
-    # output$rbtable <- renderDataTable({
-    #   
-    #   render_rb <-  subset(rb,
-    #                        fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2] &
-    #                        defense_dvoa >= input$rb_dvoa[1] & defense_dvoa <= input$rb_dvoa[2] &
-    #                        rush_def_dvoa >= input$rb_rush_dvoa[1] & rush_def_dvoa <= input$rb_rush_dvoa[2] &
-    #                        line >= input$rb_line[1] & line <= input$rb_line[2])
-    #   
-    #   DT::datatable(render_rb[, input$rb_vars], rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
-    #   
-    # })
-    # 
-    # # RB Graph Output
-    # rb_dat <- reactive({
-    #   
-    #   rb_s1 <- input$rbtable_rows_selected
-    #   
-    #   rb_render_table <- subset(rb,
-    #                             fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2] &
-    #                             defense_dvoa >= input$rb_dvoa[1] & defense_dvoa <= input$rb_dvoa[2] &
-    #                             rush_def_dvoa >= input$rb_rush_dvoa[1] & rush_def_dvoa <= input$rb_rush_dvoa[2] &
-    #                             line >= input$rb_line[1] & line <= input$rb_line[2]) %>% 
-    #                     .[rb_s1,]
-    #   
-    #   return(rb_render_table)
-    # })
-    
     #
     # Defense RB
     #
@@ -1149,7 +1124,7 @@ server <- function(input, output) {
         thead(
           tr(
             th(colspan = 2,''),
-            th(class = 'dt-center', colspan = 6, 'Def Performance Against RB'),
+            th(class = 'dt-center', colspan = 7, 'Def Performance Against RB'),
             th(class = 'dt-center', colspan = 4, 'DVOA Metrics'),
             th(class = 'dt-center', colspan = 4, 'D Line Performance')
           ),
@@ -1157,6 +1132,7 @@ server <- function(input, output) {
             th(colspan = 1, 'Player'),
             th(colspan = 1, 'Opp'),
             th(colspan = 1, 'Total Touches'),
+            th(colspan = 1, 'FD Pts Against'),
             th(colspan = 1, 'Rush Att'),
             th(colspan = 1, 'Rush Yds'),
             th(colspan = 1, 'Rush TD'),
@@ -1182,8 +1158,8 @@ server <- function(input, output) {
       datatable(render_def_rb, 
                 rownames = F, 
                 container = def_rb_container,
-                options = list(pageLength = 15, 
-                               lengthMenu = c(5,15,25),
+                options = list(pageLength = 10, 
+                               lengthMenu = c(5,10,15,20),
                                columnDefs = list(list(className = 'dt-center', targets = 'all'))),
                 caption = htmltools::tags$caption(
                                style = 'caption-side: bottom; text-align: left;',
