@@ -5,7 +5,6 @@ shiny_df <- function(wk_num,date) {
 library(tidyverse)
 
 # Reading in team name chart ----------------------------------------------
-tm_names <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/team_names.xlsx")
 source("~/ff_shiny_app/ff_app/find_names.R", local = T)
 
 # Vegas Lines -------------------------------------------------------------
@@ -151,23 +150,23 @@ ytd_df <- lapply(ytd_types, function(x) {
   
   if(x == "passing") {
     d <- mutate(d,
-                ytd_pass_comp = ytd_pass_comp / ytd_pass_g,
-                ytd_pass_att = ytd_pass_att / ytd_pass_g,
-                ytd_pass_yds = ytd_pass_yds / ytd_pass_g,
-                ytd_pass_td = ytd_pass_td / ytd_pass_g,
-                ytd_pass_int = ytd_pass_int / ytd_pass_g)
+                ytd_pass_comp = round(ytd_pass_comp / ytd_pass_g,2),
+                ytd_pass_att = round(ytd_pass_att / ytd_pass_g,2),
+                ytd_pass_yds = round(ytd_pass_yds / ytd_pass_g,2),
+                ytd_pass_td = round(ytd_pass_td / ytd_pass_g,2),
+                ytd_pass_int = round(ytd_pass_int / ytd_pass_g,2))
   } else {
     if(x == "receiving") {
       d <- mutate(d,
-                  ytd_rec_target = ytd_rec_target / ytd_rec_g,
-                  ytd_rec_rec = ytd_rec_rec / ytd_rec_g,
-                  ytd_rec_yds = ytd_rec_yds / ytd_rec_g,
-                  ytd_rec_td = ytd_rec_td / ytd_rec_g)
+                  ytd_rec_target = round(ytd_rec_target / ytd_rec_g,2),
+                  ytd_rec_rec = round(ytd_rec_rec / ytd_rec_g,2),
+                  ytd_rec_yds = round(ytd_rec_yds / ytd_rec_g,2),
+                  ytd_rec_td = round(ytd_rec_td / ytd_rec_g,2))
     } else {
       d <- mutate(d,
-                  ytd_rush_att = ytd_rush_att / ytd_rush_g,
-                  ytd_rush_yds = ytd_rush_yds / ytd_rush_g,
-                  ytd_rush_td = ytd_rush_td / ytd_rush_g)
+                  ytd_rush_att = round(ytd_rush_att / ytd_rush_g,2),
+                  ytd_rush_yds = round(ytd_rush_yds / ytd_rush_g,2),
+                  ytd_rush_td = round(ytd_rush_td / ytd_rush_g,2))
     }}
   
 })
@@ -240,7 +239,7 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(4, "09/29")
+df <- shiny_df(6, "10/13")
 
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_4.xlsx")
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_5.xlsx")
