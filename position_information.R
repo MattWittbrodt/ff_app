@@ -124,8 +124,7 @@ position_stats <- function(position, wk_num, data, tm_names) {
   #
   # Team Defense
   #
-  team_d <- d_data[[1]] %>%
-            .[,-c(1,3)]
+  team_d <- d_data[[1]] %>% .[,-1]
   
   # Hanlding Column Names
   team_d_names <- paste(colnames(team_d), team_d[1,]) %>%
@@ -160,11 +159,18 @@ position_stats <- function(position, wk_num, data, tm_names) {
                                           2, 
                                           function(x) as.numeric(as.character(x)))
 
+  # team_d <- team_d %>% 
+  #           mutate(pass_td = pass_td / tot_g,
+  #                  pass_att = pass_att / tot_g,
+  #                  pass_yds = pass_yds / tot_g,
+  #                  pass_comp_per = pass_comp / pass_att) %>%
+  #           select(-tot_g)  
+  
   #
   # Conversions Against
   #
   
-  conversion_d <- d_data[[7]] %>% .[,-1]
+  conversion_d <- d_data[[8]] %>% .[,-1]
     
   # Column names
   conversion_d_names <- paste(colnames(conversion_d), conversion_d[1,]) %>%
@@ -212,8 +218,8 @@ position_stats <- function(position, wk_num, data, tm_names) {
   # Passing D
   #
   
-  pass_d <- d_data[[2]] %>% .[,-c(1,3)]
-  
+  pass_d <- d_data[[3]] %>% .[,-c(1,3)]
+
   pass_d_names <- colnames(pass_d) %>%
                   str_to_lower() %>%
                   str_replace("y/a", "yds_per_att") %>%
@@ -228,10 +234,10 @@ position_stats <- function(position, wk_num, data, tm_names) {
                   str_replace("anyds","adj_net_yds") %>%
                   str_replace("nyds","net_yds") %>%
                   str_replace("yds.1","sack_yds")
-  
-  colnames(pass_d) <- paste("pass", pass_d_names, sep = "_")  
-  
-  pass_d <- pass_d %>% 
+
+  colnames(pass_d) <- paste("pass", pass_d_names, sep = "_")
+
+  pass_d <- pass_d %>%
             subset(pass_tm != "Avg Team" & pass_tm != "League Total" & pass_tm != "Avg Tm/G") %>%
             select(-pass_comp,
                    -pass_att,
