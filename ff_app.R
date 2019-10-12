@@ -6,7 +6,8 @@ library(shiny)
 library(tidyverse)
 library(DT)
 
-df <- readxl::read_xlsx("data/all_data_wk_6.xlsx")
+df <- readxl::read_xlsx("data/all_data_wk_6.xlsx") %>%
+      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 #df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_6.xlsx")
 
 #NOTE: 16 columns per table works relatively well
@@ -16,7 +17,6 @@ dfs_df <- select(df,
                  proj_player,
                  proj_pos,
                  proj_tm,
-                 proj_field,
                  proj_opp,
                  fd_sal,
                  projected_own,
@@ -31,9 +31,7 @@ dfs_df <- select(df,
                  total,
                  implied_total) %>%
             filter(fd_sal > 0) %>%
-            mutate(points_per_1k = round(proj_ffpts / (fd_sal/1000),2),
-                   proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp)) %>%
-            select(-proj_field)
+            mutate(points_per_1k = round(proj_ffpts / (fd_sal/1000),2))
 
 names(dfs_df) <- str_remove(names(dfs_df), "proj_")
                  
@@ -41,51 +39,51 @@ names(dfs_df) <- str_remove(names(dfs_df), "proj_")
 
 # QB Data -----------------------------------------------------------------
 
-qb <- filter(df, proj_pos == "QB") %>%
-           select(proj_player,
-           proj_opp,
-           ytd_pass_comp_per,
-           ytd_pass_td,
-           ytd_pass_yds_per_gm,
-           ytd_pass_net_yds_per_att,
-           passing_twenty_att,
-           passing_twenty_td,
-           passing_ten_att,
-           passing_ten_td,
-           defense_dvoa,
-           pass_def_dvoa,
-           dline_pass_rank,
-           dline_pass_adjusted_sack_rate,
-           def_third_d_per,
-           def_pass_comp_per,
-           def_pass_qb_rating_allowed,
-           def_pass_adj_net_yds_per_att,
-           def_pass_yds_per_gm,
-           oline_pass_adjusted_sack_rate,
-           fd_sal,
-           projected_own,
-           line) %>%
-           mutate(DVOA_Diff = pass_def_dvoa - defense_dvoa)
-
-qb_names <- names(qb) %>%
-            str_replace("passing", "rz") %>%
-            str_remove("\\.x") %>%
-            str_remove("proj_") %>%
-            str_replace("def_third_d","defense_3rd_conv") %>%
-            str_remove("(?<=\\w)pass") %>%
-            str_replace("_+","_") %>%
-            str_replace("_per_","/") %>%
-            str_replace("_per","%") %>%
-            str_replace("twenty", "20") %>%
-            str_replace("ten", "10") %>%
-            str_replace("adjusted","adj_")
-            
-names(qb) <- qb_names
+# qb <- filter(df, proj_pos == "QB") %>%
+#            select(proj_player,
+#            proj_opp,
+#            ytd_pass_comp_per,
+#            ytd_pass_td,
+#            ytd_pass_yds_per_gm,
+#            ytd_pass_net_yds_per_att,
+#            passing_twenty_att,
+#            passing_twenty_td,
+#            passing_ten_att,
+#            passing_ten_td,
+#            defense_dvoa,
+#            pass_def_dvoa,
+#            dline_pass_rank,
+#            dline_pass_adjusted_sack_rate,
+#            def_third_d_per,
+#            def_pass_comp_per,
+#            def_pass_qb_rating_allowed,
+#            def_pass_adj_net_yds_per_att,
+#            def_pass_yds_per_gm,
+#            oline_pass_adjusted_sack_rate,
+#            fd_sal,
+#            projected_own,
+#            line) %>%
+#            mutate(DVOA_Diff = pass_def_dvoa - defense_dvoa)
+# 
+# qb_names <- names(qb) %>%
+#             str_replace("passing", "rz") %>%
+#             str_remove("\\.x") %>%
+#             str_remove("proj_") %>%
+#             str_replace("def_third_d","defense_3rd_conv") %>%
+#             str_remove("(?<=\\w)pass") %>%
+#             str_replace("_+","_") %>%
+#             str_replace("_per_","/") %>%
+#             str_replace("_per","%") %>%
+#             str_replace("twenty", "20") %>%
+#             str_replace("ten", "10") %>%
+#             str_replace("adjusted","adj_")
+#             
+# names(qb) <- qb_names
 
 
 # QB Opponent Defense Stats
 def_qb <- filter(df, proj_pos == "QB") %>%
-         select(proj_player,
+          select(proj_player,
                 proj_opp,
                 pts_vs_g,
                 pts_vs_passing_att,
@@ -111,7 +109,9 @@ def_qb <- filter(df, proj_pos == "QB") %>%
          pts_vs_passing_att, pts_vs_passing_yds, pts_vs_passing_td, pts_vs_fantasy_per_game_fdpt,
          def_red_zone_td, def_red_zone_pct,
          defense_dvoa, pass_def_dvoa, DVOA_Diff,
-         dline_pass_rank, dline_pass_adjusted_sack_rate, def_pass_qb_rating_allowed, def_pass_adj_net_yds_per_att, oline_pass_adjusted_sack_rate
+         dline_pass_rank, dline_pass_adjusted_sack_rate, 
+         def_pass_qb_rating_allowed, 
+         def_pass_adj_net_yds_per_att, oline_pass_adjusted_sack_rate
   )
 
 off_qb <- filter(df, proj_pos == "QB") %>%
@@ -275,7 +275,7 @@ wr_def <- filter(df, proj_pos == "WR" & ytd_rec_target > 2) %>%
          pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt),
          pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
          pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
-         pts_vs_rec_td = as.numeric(pts_vs_rec_td),
+         pts_vs_rec_td = round(as.numeric(pts_vs_rec_td),1),
          oline_pass_adjusted_sack_rate = as.numeric(oline_pass_adjusted_sack_rate),
          dline_pass_rank = as.numeric(dline_pass_rank),
          dline_pass_sacks = as.numeric(dline_pass_sacks),
@@ -351,7 +351,7 @@ te_def <- filter(df, proj_pos == "TE" & ytd_rec_target > 2) %>%
          pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt),
          pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
          pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
-         pts_vs_rec_td = as.numeric(pts_vs_rec_td),
+         pts_vs_rec_td = round(as.numeric(pts_vs_rec_td),1),
          oline_pass_adjusted_sack_rate = as.numeric(oline_pass_adjusted_sack_rate),
          dline_pass_rank = as.numeric(dline_pass_rank),
          dline_pass_sacks = as.numeric(dline_pass_sacks),
@@ -1163,12 +1163,12 @@ server <- function(input, output) {
                                columnDefs = list(list(className = 'dt-center', targets = 'all'))),
                 caption = htmltools::tags$caption(
                                style = 'caption-side: bottom; text-align: left;',
-                               'Legend: Total Touches = Rush Att + Target by RB vs. Defense | 
-                                Rushing Advantage = Rush D DVOA + Rush Off DVOA, higher is better | 
-                                Difference = Rush DVOA - Defense DVOA, lower means rushing d is a strength (i.e., compartively better than overall) |
-                                Power Success = % runs on 3rd/4th down OR 1st/2nd & goal from <= 2 yds which were successful |
-                                Difference = O Line success (rank) - D Line Success (rank) |
-                                Adj Net Yards = Adjusted Yds allowed by D line |
+                               'Legend: Total Touches = Rush Att + Target by RB vs. Defense ||| 
+                                Rushing Advantage = Rush D DVOA + Rush Off DVOA, higher is better ||| 
+                                Difference = Rush DVOA - Defense DVOA, lower means rushing d is a strength (i.e., compartively better than overall) |||
+                                Power Success = % runs on 3rd/4th down OR 1st/2nd & goal from <= 2 yds which were successful |||
+                                Difference = O Line success (rank) - D Line Success (rank) |||
+                                Adj Net Yards = Adjusted Yds allowed by D line |||
                                 Difference vs Off = Adj Net Yds from Offense - Defense, higher is better'))
     })
     
@@ -1297,7 +1297,12 @@ server <- function(input, output) {
       datatable(wr_def, 
                 rownames = F,
                 container = def_wr_container,
-                options = list(pageLength = 15, lengthMenu = c(10,15,20)))
+                options = list(pageLength = 15, lengthMenu = c(10,15,20)),
+                caption = htmltools::tags$caption(
+                          style = 'caption-side: bottom; text-align: left;',
+                          'Legend: Pass Adv = Pass D DVOA + Pass Off DVOA, higher is better ||| 
+                                Difference = Pass DVOA - Defense DVOA, lower means passing d is a strength (i.e., compartively better than overall) |||
+                                Adj Sack Rate = sacks (plus intentional grounding penalties) per pass attempt adjusted for down, distance, and opponent'))
     
       })
     
@@ -1432,7 +1437,12 @@ server <- function(input, output) {
       datatable(te_def, 
                 rownames = F,
                 container = def_te_container,
-                options = list(pageLength = 15, lengthMenu = c(10,15,20)))
+                options = list(pageLength = 15, lengthMenu = c(10,15,20)),
+                caption = htmltools::tags$caption(
+                  style = 'caption-side: bottom; text-align: left;',
+                  'Legend: Pass Adv = Pass D DVOA + Pass Off DVOA, higher is better ||| 
+                                Difference = Pass DVOA - Defense DVOA, lower means passing d is a strength (i.e., compartively better than overall) |||
+                                Adj Sack Rate = sacks (plus intentional grounding penalties) per pass attempt adjusted for down, distance, and opponent'))
       
     })
     
