@@ -158,12 +158,14 @@ ytd_df <- lapply(ytd_types, function(x) {
   } else {
     if(x == "receiving") {
       d <- mutate(d,
+                  ytd_rec_player = str_remove_all(ytd_rec_player, '[:punct:]'),
                   ytd_rec_target = round(ytd_rec_target / ytd_rec_g,2),
                   ytd_rec_rec = round(ytd_rec_rec / ytd_rec_g,2),
                   ytd_rec_yds = round(ytd_rec_yds / ytd_rec_g,2),
                   ytd_rec_td = round(ytd_rec_td / ytd_rec_g,2))
     } else {
       d <- mutate(d,
+                  ytd_rush_player = str_remove_all(ytd_rush_player, '[:punct:]'),
                   ytd_rush_att = round(ytd_rush_att / ytd_rush_g,2),
                   ytd_rush_yds = round(ytd_rush_yds / ytd_rush_g,2),
                   ytd_rush_td = round(ytd_rush_td / ytd_rush_g,2))
@@ -242,4 +244,4 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 df <- shiny_df(6, "10/13")
 
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_5.xlsx")
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_6.xlsx")
