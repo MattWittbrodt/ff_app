@@ -145,10 +145,10 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  oline_open_fieldyards = as.numeric(oline_open_fieldyards),
                  pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
                  pts_vs_rec_yds = round(pts_vs_rec_yds/pts_vs_g,1),
-                 pts_vs_rec_td = pts_vs_rec_td/pts_vs_g,
+                 pts_vs_rec_td = round(pts_vs_rec_td/pts_vs_g,1),
                  pts_vs_rush_att = round(pts_vs_rush_att/pts_vs_g,1),
-                 pts_vs_rush_yds = pts_vs_rush_yds/pts_vs_g,    
-                 pts_vs_rush_td = pts_vs_rush_td/pts_vs_g,                           
+                 pts_vs_rush_yds = round(pts_vs_rush_yds/pts_vs_g,1),    
+                 pts_vs_rush_td = round(pts_vs_rush_td/pts_vs_g,1),                           
                  pts_vs_total_touch = round(pts_vs_rush_att + pts_vs_rec_tgt,1),
                  DVOA_Advantage = round(rush_def_dvoa + rush_off_dvoa,1),
                  DVOA_Difference = rush_def_dvoa - defense_dvoa,
@@ -614,6 +614,42 @@ tabPanel("RB",
                 div(DT::dataTableOutput("def_rb"), style = "font-size:95%")
          ),
          
+         #
+         # Offensive RB Stats
+         #
+         
+         ## Sliders
+         fluidRow(
+           column(3,
+                  sliderInput("tot_touches",
+                              "Total Touches",
+                              min = min(rb_off[["total_touches"]], na.rm = T),
+                              max = max(rb_off[["total_touches"]], na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("rush_att",
+                              "Rushing Attempts / Gm",
+                              min = min(rb_off[["ytd_rush_att"]], na.rm = T),
+                              max = max(rb_off[["ytd_rush_att"]], na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("rush_10_per",
+                              "% Rushing Att Inside 10y",
+                              min = min(rb_off[["rushing_ten_per_rush"]],  na.rm = T),
+                              max = max(rb_off[["rushing_ten_per_rush"]],  na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("rb_off_line",
+                              "Line",
+                              min = min(rb_off[["line"]], na.rm = T),
+                              max = max(rb_off[["line"]], na.rm = T),
+                              value = c(min,max)
+                  ))),
+         
+         ## RB Offense Table
          column(12,
                 div(DT::dataTableOutput("off_rb"), style = "font-size:95%")
          )#,
@@ -1140,11 +1176,13 @@ server <- function(input, output) {
         )
       ))
 
-      # render_qb <-  subset(off_qb,
-      #                      fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
-      #                        line >= input$qb_line[1] & line <= input$qb_line[2])
+      render_off_rb <-  subset(rb_off,
+                               total_touches >= input$tot_touches[1] & total_touches <= input$tot_touches[2] &
+                               ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
+                               rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
+                               line >= input$rb_off_line[1] & line <= input$rb_off_line[2])
 
-      datatable(rb_off,
+      datatable(render_off_rb,
                 rownames = F,
                 container = off_rb_container,
                 options = list(pageLength = 10,
