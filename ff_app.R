@@ -675,6 +675,36 @@ tabPanel("RB",
 # WR Panel ----------------------------------------------------------------
 tabPanel("WR",
          
+         fluidRow(
+           column(3,
+                  sliderInput("fd_pts_gm_wr",
+                              "Fantasy Pts/G to WR",
+                              min = min(wr_def[["pts_vs_fantasy_per_game_fdpt"]], na.rm = T),
+                              max = max(wr_def[["pts_vs_fantasy_per_game_fdpt"]], na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("wr_tg_vs",
+                              "Targets/Gm to WR",
+                              min = min(wr_def[["pts_vs_rec_tgt"]], na.rm = T),
+                              max = max(wr_def[["pts_vs_rec_tgt"]], na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("pass_yds_gm",
+                              "Pass Yds/Gm",
+                              min = min(wr_def[["def_pass_yds_per_gm"]],  na.rm = T),
+                              max = max(wr_def[["def_pass_yds_per_gm"]],  na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("wr_dvoa_advantage",
+                              "DVOA Advantage",
+                              min = min(wr_def[["DVOA_Advantage"]], na.rm = T),
+                              max = max(wr_def[["DVOA_Advantage"]], na.rm = T),
+                              value = c(min,max)
+                  ))),
+         
          fluidRow(column(12, 
                   div(DT::dataTableOutput("def_wr"), style = "font-size: 90%"))),
          
@@ -1242,7 +1272,13 @@ server <- function(input, output) {
               th(colspan = 1, 'Sack Rate Diff'))
           )))
       
-      datatable(wr_def, 
+      wr_def_render <- subset(wr_def, 
+                              pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm_wr[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm_wr[2] &
+                              pts_vs_rec_tgt >= input$wr_tg_vs[1] & pts_vs_rec_tgt <= input$wr_tg_vs[2] &
+                              def_pass_yds_per_gm >= input$pass_yds_gm[1] & def_pass_yds_per_gm <= input$pass_yds_gm[2] &
+                              DVOA_Advantage >= input$wr_dvoa_advantage[1] & DVOA_Advantage <= input$wr_dvoa_advantage[2])
+      
+      datatable(wr_def_render, 
                 rownames = F,
                 container = def_wr_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20)),
