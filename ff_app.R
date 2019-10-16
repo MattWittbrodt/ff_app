@@ -708,6 +708,38 @@ tabPanel("WR",
          fluidRow(column(12, 
                   div(DT::dataTableOutput("def_wr"), style = "font-size: 90%"))),
          
+         #
+         #  Offense WR Sliders and Table Presentation
+         #
+         
+         fluidRow(
+           column(3,
+                  sliderInput("wr_tgt",
+                              "YTD Targets Per Game",
+                              min = min(wr_off[["ytd_rec_target"]], na.rm = T),
+                              max = max(wr_off[["ytd_rec_target"]], na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("wr_rz_20",
+                              "% Targets Receiving Inside 20yd",
+                              min = min(wr_off[["receiving_twenty_per_tgt"]], na.rm = T),
+                              max = max(wr_off[["receiving_twenty_per_tgt"]], na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("cb_pts_tgt",
+                              "CB Matchup FD Pts/Tgt",
+                              min = min(wr_off[["vs_cb_fpt"]],  na.rm = T),
+                              max = max(wr_off[["vs_cb_fpt"]],  na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  checkboxGroupInput("cb_matchup",
+                              "CB Matchup Advantage",
+                              choices = list("plus", "minus", "neutral"),
+                              selected = c("plus", "minus", "neutral")))),
+         
          fluidRow(column(12,
                   div(DT::dataTableOutput("off_wr"), style = "font-size: 90%")))
         
@@ -1326,8 +1358,19 @@ server <- function(input, output) {
             th(colspan = 1, 'Salary ($)'),
             th(colspan = 1, 'Line'))
         )))
+      
+      wr_off_render <- subset(wr_off, 
+                              ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] &
+                              receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] &
+                              vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2])
+      
+      # for +/-/neutral CB pairings
+      if(length(input$cb_matchup) == 1) {wr_off_render <- filter(wr_off_render, vs_cb_matchup == input$cb_matchup)
+      
+      } else if(length(input$cb_matchup) == 2)  {wr_off_render <- filter(wr_off_render, vs_cb_matchup == input$cb_matchup[1] | vs_cb_matchup == input$cb_matchup[2])
+        } else {wr_off_render <- filter(wr_off_render, vs_cb_matchup == input$cb_matchup[1] | vs_cb_matchup == input$cb_matchup[2] | vs_cb_matchup == input$cb_matchup[3])}
     
-      datatable(wr_off,
+      datatable(wr_off_render,
                 rownames = F,
                 container = off_wr_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20)))
