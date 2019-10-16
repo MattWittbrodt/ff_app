@@ -327,7 +327,7 @@ te_def <- filter(df, proj_pos == "TE" & ytd_rec_target > 2) %>%
          dline_pass_adjusted_sack_rate = as.numeric(dline_pass_adjusted_sack_rate),
          pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
          pts_vs_rec_yds = round(pts_vs_rec_yds/pts_vs_g,1),
-         pts_vs_rec_td = pts_vs_rec_td/pts_vs_g,
+         pts_vs_rec_td = round(pts_vs_rec_td/pts_vs_g,1),
          DVOA_Advantage = pass_def_dvoa + pass_off_dvoa,
          DVOA_Difference = pass_def_dvoa - defense_dvoa,
          sack_rate_diff = round(oline_pass_adjusted_sack_rate - dline_pass_adjusted_sack_rate,1)) %>%
@@ -803,6 +803,40 @@ tabPanel("TE",
          fluidRow(column(12, 
                         div(DT::dataTableOutput("def_te")))),
          
+         #
+         #  Offense TE Sliders and Table Presentation
+         #
+         
+         fluidRow(
+           column(3,
+                  sliderInput("te_tgt",
+                              "YTD Targets Per Game",
+                              min = min(te_off[["ytd_rec_target"]], na.rm = T),
+                              max = max(te_off[["ytd_rec_target"]], na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("te_rec_td",
+                              "Receiving TD",
+                              min = min(te_off[["ytd_rec_td"]],  na.rm = T),
+                              max = max(te_off[["ytd_rec_td"]],  na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("te_rz_20",
+                              "% Targets Receiving Inside 20yd",
+                              min = min(te_off[["receiving_twenty_per_tgt"]], na.rm = T),
+                              max = max(te_off[["receiving_twenty_per_tgt"]], na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("pass_off_dvoa_te",
+                              "Pass Off DVOA",
+                              min = min(te_off[["pass_off_dvoa"]],  na.rm = T),
+                              max = max(te_off[["pass_off_dvoa"]],  na.rm = T),
+                              value = c(min,max)
+                  ))),
+           
          fluidRow(column(12,
                          div(DT::dataTableOutput("off_te"))))
          
@@ -1550,15 +1584,18 @@ server <- function(input, output) {
             th(colspan = 1, 'Rec TD'))
         )))
       
-      datatable(te_off,
+      # Editing Table to render
+      te_off_render <- subset(te_off, 
+                              ytd_rec_target >= input$te_tgt[1] & ytd_rec_target <= input$te_tgt[2] &
+                              ytd_rec_td >= input$te_rec_td[1] & ytd_rec_td <= input$te_rec_td[2] &
+                              receiving_twenty_per_tgt >= input$te_rz_20[1] & receiving_twenty_per_tgt <= input$te_rz_20[2] &
+                              pass_off_dvoa >= input$pass_off_dvoa_te[1] & pass_off_dvoa <= input$pass_off_dvoa_te[2])
+      
+      datatable(te_off_render,
                 rownames = F,
                 container = off_te_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20)))
     })
-    
-    
-    
-    
     
     
     # # TE Table
