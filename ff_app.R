@@ -763,8 +763,42 @@ tabPanel("WR",
          
 ),
 
-# TE Table ----------------------------------------------------------------
+# TE Panel ----------------------------------------------------------------
 tabPanel("TE",
+         
+         #
+         # TE Defense Stats
+         #
+         
+         fluidRow(
+           column(3,
+                  sliderInput("fd_pts_gm_te",
+                              "Fantasy Pts/G to TE",
+                              min = min(te_def[["pts_vs_fantasy_per_game_fdpt"]], na.rm = T),
+                              max = max(te_def[["pts_vs_fantasy_per_game_fdpt"]], na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("te_tg_vs",
+                              "Targets/Gm to TE",
+                              min = min(te_def[["pts_vs_rec_tgt"]], na.rm = T),
+                              max = max(te_def[["pts_vs_rec_tgt"]], na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("pass_yds_gm_te",
+                              "Pass Yds/Gm",
+                              min = min(te_def[["def_pass_yds_per_gm"]],  na.rm = T),
+                              max = max(te_def[["def_pass_yds_per_gm"]],  na.rm = T),
+                              value = c(min,max)
+                  )),
+           column(3,
+                  sliderInput("te_dvoa_advantage",
+                              "DVOA Advantage",
+                              min = min(te_def[["DVOA_Advantage"]], na.rm = T),
+                              max = max(te_def[["DVOA_Advantage"]], na.rm = T),
+                              value = c(min,max)
+                  ))),
          
          fluidRow(column(12, 
                         div(DT::dataTableOutput("def_te")))),
@@ -1461,7 +1495,13 @@ server <- function(input, output) {
             th(colspan = 1, 'Sack Rate Diff'))
         )))
       
-      datatable(te_def, 
+      te_def_render <- subset(te_def, 
+                              pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm_te[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm_te[2] &
+                              pts_vs_rec_tgt >= input$te_tg_vs[1] & pts_vs_rec_tgt <= input$te_tg_vs[2] &
+                              def_pass_yds_per_gm >= input$pass_yds_gm_te[1] & def_pass_yds_per_gm <= input$pass_yds_gm_te[2] &
+                              DVOA_Advantage >= input$te_dvoa_advantage[1] & DVOA_Advantage <= input$te_dvoa_advantage[2])
+      
+      datatable(te_def_render, 
                 rownames = F,
                 container = def_te_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20)),
