@@ -13,7 +13,7 @@ wr_vs_cv <- function(file) {
               matchup = factor(ifelse(X..... == " ", "plus",
                               ifelse(X..... == "N", "neutral", "minus")), 
                               ordered = T, levels = c("minus", "neutral", "plus")),
-              WR = as.character(WR)) %>%
+              WR = str_remove_all(as.character(WR), "[:punct:]")) %>%
        select(-X.....)
   
   names(d) <- names(d) %>%
