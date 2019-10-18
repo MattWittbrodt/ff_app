@@ -47,7 +47,8 @@ position_stats <- function(position, wk_num, data, tm_names) {
                     TE = wk_data[[4]][,c(2,3,7:9,18:24,28)]) %>%
               .[-1,] %>% 
               subset(prev_wk_player != 'Player') %>%
-              mutate(prev_wk_field = ifelse(prev_wk_field == "@",2,1))
+              mutate(prev_wk_field = ifelse(prev_wk_field == "@",2,1),
+                     prev_wk_player = str_remove_all(prev_wk_player, "[:punct:]"))
   
   # Removing the '%' from columns
   if(position != "QB") {
@@ -102,7 +103,8 @@ position_stats <- function(position, wk_num, data, tm_names) {
           mutate(receiving_twenty_per_tgt = as.numeric(sapply(receiving_twenty_per_tgt,
                                                               function(x) str_remove(x, '%'))),
                  receiving_ten_per_tgt = as.numeric(sapply(receiving_ten_per_tgt,
-                                                           function(x) str_remove(x, '%'))))
+                                                           function(x) str_remove(x, '%'))),
+                 receiving_player = str_remove_all(receiving_player, "[:punct:]"))
       } 
   }
   
@@ -277,7 +279,7 @@ position_stats <- function(position, wk_num, data, tm_names) {
   proj_data <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4_W",wk_num,"_projections.csv", sep = "")) %>% 
     subset(Pos == position) %>%
     select(-PID,-Season,-XP,-Fum,-FG,-Grade,-Pa1D,-Ru1D,-Rec1D) %>%
-    mutate(Player = as.character(Player),
+    mutate(Player = str_remove_all(as.character(Player), "[:punct:]"),
            Pos = as.character(Pos),
            Team = as.character(Team),
            field = ifelse(str_detect(Opp, "@") == T, 2, 1),
@@ -341,7 +343,7 @@ position_stats <- function(position, wk_num, data, tm_names) {
       
     } else {
        
-      all_data <- inner_join(proj_data, wk_data2, by = c("proj_player" = "prev_wk_player",
+      all_data <- full_join(proj_data, wk_data2, by = c("proj_player" = "prev_wk_player",
                                                          "proj_tm" = "prev_wk_tm",
                                                          "proj_pos" = "prev_wk_pos")) %>%
                   full_join(ytd_data, by = c("proj_player"= "ytd_rec_player", 
