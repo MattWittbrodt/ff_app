@@ -6,7 +6,7 @@ library(shiny)
 library(tidyverse)
 library(DT)
 
-df <- readxl::read_xlsx("data/all_data_wk_6_2.xlsx") %>%
+df <- readxl::read_xlsx("data/all_data_wk_7.xlsx") %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 #df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_6_2.xlsx")
 
@@ -280,7 +280,8 @@ wr_off <- filter(df, proj_pos == "WR" & ytd_rec_target > 2) %>%
          vs_cb_fpt,
          vs_cb_matchup,
          fd_sal,
-         line)
+         line) %>%
+      mutate(vs_cb_fpt = as.numeric(vs_cb_fpt))
          #proj_rec_yds,
          #proj_rec_td)#,
          # vs_cb_tar,
