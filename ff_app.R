@@ -8,7 +8,7 @@ library(DT)
 
 df <- readxl::read_xlsx("data/all_data_wk_7.xlsx") %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_6_2.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_7.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -505,20 +505,20 @@ ui <- navbarPage("DFS Data",
                              DVOA = Defense-adjusted Value Over Average where negative is better for total, but not pass,
                              Dline = Defensive Line Ratings,
                              def_ = Raw Defense Stats"))),
-             fluidRow(
-               column(2,
-                      selectInput("qb_y_axis",
-                                  h3("Y Axis"),
-                                  choices = as.list(names(off_qb)),
-                                  selected = "fd_sal")),
-               column(2,
-                      selectInput("qb_x_axis",
-                                  h3("X Axis"),
-                                  choices = as.list(as.list(names(off_qb))),
-                                  selected = "ytd_pass_net_yds_per_att")),
-               column(6,
-                      plotOutput('qb_off_plot', height = 500))
-             ),
+             # fluidRow(
+             #   column(2,
+             #          selectInput("off_qb_y_axis",
+             #                      h3("Y Axis"),
+             #                      choices = as.list(names(off_qb)),
+             #                      selected = "fd_sal")),
+             #   column(2,
+             #          selectInput("off_qb_x_axis",
+             #                      h3("X Axis"),
+             #                      choices = as.list(as.list(names(off_qb))),
+             #                      selected = "ytd_pass_net_yds_per_att")),
+             #   column(6,
+             #          plotOutput('qb_off_plot', height = 500))
+             # ),
              
              #
              # Sliders for Defense QB
@@ -559,22 +559,45 @@ ui <- navbarPage("DFS Data",
                column(12,DT::dataTableOutput("def_qb"))
              ),
              
+             # fluidRow(
+             #   column(2,
+             #          selectInput("def_qb_y_axis",
+             #                      h3("Y Axis"),
+             #                      choices = as.list(names(def_qb)),
+             #                      selected = "pts_vs_fantasy_per_game_fdpt")),
+             #   column(2,
+             #          selectInput("def_qb_x_axis",
+             #                      h3("X Axis"),
+             #                      choices = as.list(as.list(names(def_qb))),
+             #                      selected = "pass_def_dvoa")),
+             #   column(6,
+             #          plotOutput('qb_def_plot', height = 500))),
+             
+             # fluidRow(
+             #   column(12,DT::dataTableOutput("all_qb"))
+             # )
+             
              fluidRow(
                column(2,
-                      selectInput("def_qb_y_axis",
+                      selectInput("qb_y_axis",
                                   h3("Y Axis"),
-                                  choices = as.list(names(def_qb)),
+                                  choices = as.list(c(names(def_qb), names(off_qb))),
                                   selected = "pts_vs_fantasy_per_game_fdpt")),
                column(2,
-                      selectInput("def_qb_x_axis",
+                      selectInput("qb_x_axis",
                                   h3("X Axis"),
-                                  choices = as.list(as.list(names(def_qb))),
+                                  choices = as.list(c(names(def_qb), names(off_qb))),
                                   selected = "pass_def_dvoa")),
+               column(2,
+                      selectInput("qb_size",
+                                  h3("Size"),
+                                  choices = as.list(c(names(def_qb), names(off_qb))),
+                                  selected = "pts_vs_passing_att")),
                column(6,
-                      plotOutput('qb_def_plot', height = 500)))
+                      plotOutput('qbplot', height = 500))
+             )
 
 ),
-
 
 # RB Panel ----------------------------------------------------------------
 
@@ -1037,6 +1060,8 @@ server <- function(input, output) {
     #
     # Offense QB
     #
+    
+    # Getting Subsetted Database Based on Sliders
     output$off_qb <- renderDataTable({
       
       # Offense QB Container
@@ -1072,7 +1097,7 @@ server <- function(input, output) {
                            fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
                            line >= input$qb_line[1] & line <= input$qb_line[2] &
                            pass_off_dvoa >= input$pass_dvoa[1] & pass_off_dvoa <= input$pass_dvoa[2] &
-                             ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2])
+                           ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2])
       
       #DT::datatable(render_qb, rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
       
@@ -1102,9 +1127,9 @@ server <- function(input, output) {
     output$qb_off_plot = renderPlot({
 
       qb_plot_data <- qb_off_reactive()
-      ggplot(qb_plot_data, aes(x = qb_plot_data[[input$qb_x_axis]], qb_plot_data[[input$qb_y_axis]])) +
-        xlab(input$qb_x_axis) +
-        ylab(input$qb_y_axis) +
+      ggplot(qb_plot_data, aes(x = qb_plot_data[[input$off_qb_x_axis]], qb_plot_data[[input$off_qb_y_axis]])) +
+        xlab(input$off_qb_x_axis) +
+        ylab(input$off_qb_y_axis) +
         geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
         geom_text(aes(label = proj_player), hjust = 0, vjust = -1) +
         theme_bw() +
@@ -1188,6 +1213,39 @@ server <- function(input, output) {
         )
     })
     
+    
+    
+    # Combine for a big figure
+    all_qb <- reactive({
+
+      # Getting full dataframe
+      all <- full_join(off_qb, def_qb, by = c("proj_player", "proj_opp"))
+
+      off <- qb_def_reactive()
+      def <- qb_off_reactive()
+      all_qb_plot <- full_join(def, off, by = c("proj_player", "proj_opp")) %>%
+                     select(proj_player, proj_opp) %>%
+                     left_join(all, by = c("proj_player", "proj_opp"))
+      
+      return(all_qb_plot)
+
+    })
+    
+    # Making into a plot
+    output$qbplot <- renderPlot({
+        
+        qb_plot_data <- all_qb()
+        ggplot(qb_plot_data, aes(x = qb_plot_data[[input$qb_x_axis]], qb_plot_data[[input$qb_y_axis]])) +
+          xlab(input$qb_x_axis) +
+          ylab(input$qb_y_axis) +
+          geom_point(aes(size = qb_plot_data[[input$qb_size]]), color = "#0000b7", alpha = 0.5) +
+          scale_size(name = input$qb_size) +
+          geom_text(aes(label = proj_player), hjust = 0, vjust = -1) +
+          theme_bw() +
+          theme(
+            axis.title = element_text(size = 12, face = "bold")
+          )
+      })
         
 # RB Tab Data -------------------------------------------------------------
     
