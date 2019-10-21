@@ -227,7 +227,8 @@ leverage <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4-fantasy-football-gp
                    GPP.Odds = as.numeric(gsub("\\%", "", GPP.Odds)),
                    Implied.Own. = as.numeric(gsub("\\%", "", Implied.Own.)),
                    Projected.Own. = as.numeric(gsub("\\%", "", Projected.Own.)),
-                   Tm = as.character(Tm))
+                   Tm = as.character(Tm),
+                   Player = str_remove_all(Player, "[:punct:]"))
 
 leverage_names <- colnames(leverage) %>% 
                   str_to_lower() %>% 
@@ -238,7 +239,6 @@ colnames(leverage) <- leverage_names
 
 # fixing team names and some select player names
 leverage[["tm"]] <- sapply(leverage[["tm"]], function(x) find_names(x, "fff_abbreviation"))
-leverage[["player"]] <- str_replace(leverage[["player"]], "DK", "D.K.")
 leverage[["player"]] <- str_replace(leverage[["player"]], "Mitch", "Mitchell")
 
 
