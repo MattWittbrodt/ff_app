@@ -573,10 +573,6 @@ ui <- navbarPage("DFS Data",
              #   column(6,
              #          plotOutput('qb_def_plot', height = 500))),
              
-             # fluidRow(
-             #   column(12,DT::dataTableOutput("all_qb"))
-             # )
-             
              fluidRow(
                column(2,
                       selectInput("qb_y_axis",
@@ -676,24 +672,29 @@ tabPanel("RB",
          ## RB Offense Table
          column(12,
                 div(DT::dataTableOutput("off_rb"), style = "font-size:95%")
-         )#,
+         ),
         
          #
          # RB Plot
          #
-         # fluidRow(
-         #   column(2,
-         #          selectInput("rb_y_axis",
-         #                      h3("Y Axis"),
-         #                      choices = as.list(names(rb)),
-         #                      selected = "fd_sal")),
-         #   column(2,
-         #          selectInput("rb_x_axis",
-         #                      h3("X Axis"),
-         #                      choices = as.list(as.list(names(rb))),
-         #                      selected = "defense_dvoa")),
-         #   column(6,
-         #          plotOutput('rb_plot', height = 500)))
+         fluidRow(
+           column(2,
+                  selectInput("rb_y_axis",
+                              h3("Y Axis"),
+                              choices = as.list(c(names(rb_def), names(rb_off))),
+                              selected = "fd_sal")),
+           column(2,
+                  selectInput("rb_x_axis",
+                              h3("X Axis"),
+                              choices = as.list(c(names(rb_def), names(rb_off))),
+                              selected = "defense_dvoa")),
+           column(2,
+                  selectInput("rb_size",
+                              h3("Size"),
+                              choices = as.list(c(names(rb_def), names(rb_off))),
+                              selected = "pts_vs_rush_att")),
+           column(6,
+                  plotOutput('rbplot', height = 500)))
 ),
 
 # WR Panel ----------------------------------------------------------------
@@ -1379,17 +1380,60 @@ server <- function(input, output) {
                                columnDefs = list(list(className = 'dt-center', targets = 'all'))))
 
     })
-      
-      
-      
-      
-      
-      
-      
-      
-    #})
     
     
+    ###### Graphing
+    
+    # RB Offense  Graph Output
+    rb_reactive <- reactive({
+      
+      ## Offense
+      rb_off_s1 <- input$off_rb_rows_selected
+      
+      reactive_off_rb <-  subset(rb_off,
+                          total_touches >= input$tot_touches[1] & total_touches <= input$tot_touches[2] &
+                          ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
+                          rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
+                          line >= input$rb_off_line[1] & line <= input$rb_off_line[2]) %>%
+                          .[rb_off_s1,]
+      
+      ## Defense
+      rb_def_s1 <- input$def_rb_rows_selected
+      
+      reactive_def_rb <-  subset(rb_def,
+                               rush_def_dvoa >= input$rush_dvoa[1] & rush_def_dvoa <= input$rush_dvoa[2] &
+                               net_adj_line_yd_diff >= input$net_yds_diff[1] & net_adj_line_yd_diff <= input$net_yds_diff[2] &
+                               DVOA_Advantage >= input$dvoa_advantage[1] & DVOA_Advantage <= input$dvoa_advantage[2] &
+                               pts_vs_total_touch >= input$total_touches[1] & pts_vs_total_touch <= input$total_touches[2]) %>%
+                        .[rb_def_s1,]
+      
+      ## Join Togeather
+      all_rb <- full_join(rb_def, rb_off, by = c("proj_player", "proj_opp"))
+      
+      all_rb_plot <- full_join(reactive_def_rb, reactive_off_rb, by = c("proj_player", "proj_opp")) %>%
+                     select(proj_player, proj_opp) %>%
+                     left_join(all_rb, by = c("proj_player", "proj_opp"))
+      
+      return(all_rb_plot)
+    })
+    
+   # Making into a plot
+   output$rbplot <- renderPlot({
+      
+      rb_plot_data <- rb_reactive()
+      
+      ggplot(rb_plot_data, aes(x = rb_plot_data[[input$rb_x_axis]], rb_plot_data[[input$rb_y_axis]])) +
+        xlab(input$rb_x_axis) +
+        ylab(input$rb_y_axis) +
+        geom_point(aes(size = rb_plot_data[[input$rb_size]]), color = "#0000b7", alpha = 0.5) +
+        scale_size(name = input$rb_size) +
+        geom_text(aes(label = proj_player), hjust = 0, vjust = -1) +
+        theme_bw() +
+        theme(
+          axis.title = element_text(size = 12, face = "bold")
+        )
+    })  
+      
 
 # WR Tab Data -------------------------------------------------------------
     
