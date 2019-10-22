@@ -766,24 +766,29 @@ tabPanel("WR",
                               selected = c("plus", "minus", "neutral")))),
          
          fluidRow(column(12,
-                  div(DT::dataTableOutput("off_wr"), style = "font-size: 90%")))
+                  div(DT::dataTableOutput("off_wr"), style = "font-size: 90%"))),
         
-         # #
-         # # WR Plot
-         # #
-         # fluidRow(
-         #   column(2,
-         #          selectInput("wr_y_axis",
-         #                      h3("Y Axis"),
-         #                      choices = as.list(names(wr)),
-         #                      selected = "fd_sal")),
-         #   column(2,
-         #          selectInput("wr_x_axis",
-         #                      h3("X Axis"),
-         #                      choices = as.list(as.list(names(wr))),
-         #                      selected = "defense_dvoa")),
-         #   column(6,
-         #          plotOutput('wr_plot', height = 500)))
+         #
+         # WR Plot
+         #
+         fluidRow(
+           column(2,
+                  selectInput("wr_y_axis",
+                              h3("Y Axis"),
+                              choices = as.list(c(names(wr_def), names(wr_off))),
+                              selected = "fd_sal")),
+           column(2,
+                  selectInput("wr_x_axis",
+                              h3("X Axis"),
+                              choices = as.list(c(names(wr_def), names(wr_off))),
+                              selected = "defense_dvoa")),
+           column(2,
+                  selectInput("wr_size",
+                              h3("Size"),
+                              choices = as.list(c(names(wr_def), names(wr_off))),
+                              selected = "pts_vs_rec_tgt")),
+           column(6,
+                  plotOutput('wrplot', height = 500)))
          
          
 ),
@@ -863,7 +868,7 @@ tabPanel("TE",
                   ))),
            
          fluidRow(column(12,
-                         div(DT::dataTableOutput("off_te"))))
+                         div(DT::dataTableOutput("off_te")))),
          
          # fluidRow(
          #   column(3,
@@ -928,22 +933,28 @@ tabPanel("TE",
          #                     Dline = Defensive Line Ratings,
          #                     def_ = Raw Defense Stats"))),
          # 
-         # #
-         # # TE Plot
-         # #
-         # fluidRow(
-         #   column(2,
-         #          selectInput("te_y_axis",
-         #                      h3("Y Axis"),
-         #                      choices = as.list(names(te)),
-         #                      selected = "fd_sal")),
-         #   column(2,
-         #          selectInput("te_x_axis",
-         #                      h3("X Axis"),
-         #                      choices = as.list(as.list(names(te))),
-         #                      selected = "defense_dvoa")),
-         #   column(6,
-         #          plotOutput('te_plot', height = 500)))
+         
+         #
+         # WR Plot
+         #
+         fluidRow(
+           column(2,
+                  selectInput("te_y_axis",
+                              h3("Y Axis"),
+                              choices = as.list(c(names(te_def), names(te_off))),
+                              selected = "fd_sal")),
+           column(2,
+                  selectInput("te_x_axis",
+                              h3("X Axis"),
+                              choices = as.list(c(names(te_def), names(te_off))),
+                              selected = "defense_dvoa")),
+           column(2,
+                  selectInput("te_size",
+                              h3("Size"),
+                              choices = as.list(c(names(te_def), names(te_off))),
+                              selected = "pts_vs_rec_tgt")),
+           column(6,
+                  plotOutput('teplot', height = 500)))
          
          
 ))
@@ -1591,7 +1602,55 @@ server <- function(input, output) {
     #     )
     # })
     
-  
+    # WR Offense  Graph Output
+    wr_reactive <- reactive({
+      
+      ## Offense
+      wr_off_s1 <- input$off_wr_rows_selected
+      
+      reactive_off_wr <-  subset(wr_off, 
+                                 ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] &
+                                 receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] &
+                                 vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2]) %>%
+                          .[wr_off_s1,]
+      
+      ## Defense
+      wr_def_s1 <- input$def_wr_rows_selected
+      
+      reactive_def_wr <-  subset(wr_def, 
+                                 pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm_wr[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm_wr[2] &
+                                 pts_vs_rec_tgt >= input$wr_tg_vs[1] & pts_vs_rec_tgt <= input$wr_tg_vs[2] &
+                                 def_pass_yds_per_gm >= input$pass_yds_gm[1] & def_pass_yds_per_gm <= input$pass_yds_gm[2] &
+                                 DVOA_Advantage >= input$wr_dvoa_advantage[1] & DVOA_Advantage <= input$wr_dvoa_advantage[2]) %>%
+                          .[wr_def_s1,]
+      
+      ## Join Togeather
+      all_wr <- full_join(wr_def, wr_off, by = c("proj_player", "proj_opp"))
+      
+      all_wr_plot <- full_join(reactive_def_wr, reactive_off_wr, by = c("proj_player", "proj_opp")) %>%
+                     select(proj_player, proj_opp) %>%
+                     left_join(all_wr, by = c("proj_player", "proj_opp"))
+      
+      return(all_wr_plot)
+    })
+    
+    # Making into a plot
+    output$wrplot <- renderPlot({
+      
+      wr_plot_data <- wr_reactive()
+      
+      ggplot(wr_plot_data, aes(x = wr_plot_data[[input$wr_x_axis]], wr_plot_data[[input$wr_y_axis]])) +
+        xlab(input$wr_x_axis) +
+        ylab(input$wr_y_axis) +
+        geom_point(aes(size = wr_plot_data[[input$wr_size]]), color = "#0000b7", alpha = 0.5) +
+        scale_size(name = input$wr_size) +
+        geom_text(aes(label = proj_player), hjust = 0, vjust = -1) +
+        theme_bw() +
+        theme(
+          axis.title = element_text(size = 12, face = "bold")
+        )
+    })
+    
 # TE Tab Data -------------------------------------------------------------
 
     # Def TE Table
@@ -1743,6 +1802,59 @@ server <- function(input, output) {
     #       axis.title = element_text(size = 12, face = "bold")
     #     )
     # })
+    
+    
+    
+    # TE Offense  Graph Output
+    te_reactive <- reactive({
+      
+      ## Offense
+      te_off_s1 <- input$off_te_rows_selected
+      
+      reactive_off_te <-  subset(te_off, 
+                                 ytd_rec_target >= input$te_tgt[1] & ytd_rec_target <= input$te_tgt[2] &
+                                 ytd_rec_td >= input$te_rec_td[1] & ytd_rec_td <= input$te_rec_td[2] &
+                                 receiving_twenty_per_tgt >= input$te_rz_20[1] & receiving_twenty_per_tgt <= input$te_rz_20[2] &
+                                 pass_off_dvoa >= input$pass_off_dvoa_te[1] & pass_off_dvoa <= input$pass_off_dvoa_te[2]) %>%
+                          .[te_off_s1,]
+      
+      ## Defense
+      te_def_s1 <- input$def_te_rows_selected
+      
+      reactive_def_te <-  subset(te_def, 
+                                 pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm_te[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm_te[2] &
+                                 pts_vs_rec_tgt >= input$te_tg_vs[1] & pts_vs_rec_tgt <= input$te_tg_vs[2] &
+                                 def_pass_yds_per_gm >= input$pass_yds_gm_te[1] & def_pass_yds_per_gm <= input$pass_yds_gm_te[2] &
+                                 DVOA_Advantage >= input$te_dvoa_advantage[1] & DVOA_Advantage <= input$te_dvoa_advantage[2]) %>%
+                          .[te_def_s1,]
+      
+      ## Join Togeather
+      all_te <- full_join(te_def, te_off, by = c("proj_player", "proj_opp"))
+      
+      all_te_plot <- full_join(reactive_def_te, reactive_off_te, by = c("proj_player", "proj_opp")) %>%
+                     select(proj_player, proj_opp) %>%
+                     left_join(all_te, by = c("proj_player", "proj_opp"))
+      
+      
+      return(all_te_plot)
+    })
+    
+    # Making into a plot
+    output$teplot <- renderPlot({
+      
+      te_plot_data <- te_reactive()
+      
+      ggplot(te_plot_data, aes(x = te_plot_data[[input$te_x_axis]], te_plot_data[[input$te_y_axis]])) +
+        xlab(input$te_x_axis) +
+        ylab(input$te_y_axis) +
+        geom_point(aes(size = te_plot_data[[input$te_size]]), color = "#0000b7", alpha = 0.5) +
+        scale_size(name = input$te_size) +
+        geom_text(aes(label = proj_player), hjust = 0, vjust = -1) +
+        theme_bw() +
+        theme(
+          axis.title = element_text(size = 12, face = "bold")
+        )
+    })
     
 }
 
