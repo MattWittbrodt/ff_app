@@ -467,6 +467,12 @@ ui <- navbarPage("DFS Data",
 
     tabPanel("QB",
              
+             fluidRow(column(3,
+                             checkboxGroupInput("qb_select",
+                                                "Plot All Returned Players in Tables",
+                                                choices = list("yes"),
+                                                selected = c("yes")))),
+             
              fluidRow(
                column(3,
                       sliderInput("qb_salary",
@@ -1128,11 +1134,15 @@ server <- function(input, output) {
       qb_s1 <- input$off_qb_rows_selected
 
       qb_render_table <- subset(off_qb,
-                                fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
-                                line >= input$qb_line[1] & line <= input$qb_line[2]) %>%
-                         .[qb_s1,]
-
-      return(qb_render_table) #datatable(test, rownames = F)
+                               fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
+                                 line >= input$qb_line[1] & line <= input$qb_line[2] &
+                                 pass_off_dvoa >= input$pass_dvoa[1] & pass_off_dvoa <= input$pass_dvoa[2] &
+                                 ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2])
+      
+      if(length(input$qb_select) == 0) {qb_render_table <- qb_render_table[qb_s1,]}
+      
+  
+      return(qb_render_table)
     })
     
     # Output variable creation for QB
@@ -1205,7 +1215,13 @@ server <- function(input, output) {
       
       def_qb_s1 <- input$def_qb_rows_selected
       
-      qb_def_render_table <- def_qb %>% .[def_qb_s1,]
+      qb_def_render_table <- subset(def_qb, 
+                                    pts_vs_passing_td >= input$td_g[1] & pts_vs_passing_td <= input$td_g[2] &
+                                    pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm[2] &
+                                    DVOA_Diff >= input$qb_dvoa_diff[1] & DVOA_Diff <= input$qb_dvoa_diff[2] &
+                                    def_pass_adj_net_yds_per_att >= input$adj_net_yd_att[1] & def_pass_adj_net_yds_per_att <= input$adj_net_yd_att[2])
+      
+      if(length(input$qb_select) == 0) {qb_def_render_table <- qb_def_render_table[def_qb_s1,]}
       
       return(qb_def_render_table) #datatable(test, rownames = F)
     })
