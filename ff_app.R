@@ -605,6 +605,11 @@ ui <- navbarPage("DFS Data",
 
 tabPanel("RB",
          
+         fluidRow(column(3,
+                         checkboxGroupInput("rb_select",
+                                            "Plot All Returned Players in Tables",
+                                            choices = list("yes"),
+                                            selected = c("yes")))),
          fluidRow(
            column(3,
                   sliderInput("rush_dvoa",
@@ -688,7 +693,7 @@ tabPanel("RB",
                   selectInput("rb_y_axis",
                               h3("Y Axis"),
                               choices = as.list(c(names(rb_def), names(rb_off))),
-                              selected = "fd_sal")),
+                              selected = "pts_vs_total_touch")),
            column(2,
                   selectInput("rb_x_axis",
                               h3("X Axis"),
@@ -706,6 +711,11 @@ tabPanel("RB",
 # WR Panel ----------------------------------------------------------------
 tabPanel("WR",
          
+         fluidRow(column(3,
+                         checkboxGroupInput("wr_select",
+                                            "Plot All Returned Players in Tables",
+                                            choices = list("yes"),
+                                            selected = c("yes")))),
          fluidRow(
            column(3,
                   sliderInput("fd_pts_gm_wr",
@@ -801,6 +811,12 @@ tabPanel("WR",
 
 # TE Panel ----------------------------------------------------------------
 tabPanel("TE",
+         
+         fluidRow(column(3,
+                         checkboxGroupInput("te_select",
+                                            "Plot All Returned Players in Tables",
+                                            choices = list("yes"),
+                                            selected = c("yes")))),
          
          #
          # TE Defense Stats
@@ -1421,8 +1437,9 @@ server <- function(input, output) {
                           total_touches >= input$tot_touches[1] & total_touches <= input$tot_touches[2] &
                           ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
                           rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
-                          line >= input$rb_off_line[1] & line <= input$rb_off_line[2]) %>%
-                          .[rb_off_s1,]
+                          line >= input$rb_off_line[1] & line <= input$rb_off_line[2])
+      
+      if(length(input$rb_select) == 0) {reactive_off_rb <- reactive_off_rb[rb_off_s1,]}
       
       ## Defense
       rb_def_s1 <- input$def_rb_rows_selected
@@ -1431,8 +1448,9 @@ server <- function(input, output) {
                                rush_def_dvoa >= input$rush_dvoa[1] & rush_def_dvoa <= input$rush_dvoa[2] &
                                net_adj_line_yd_diff >= input$net_yds_diff[1] & net_adj_line_yd_diff <= input$net_yds_diff[2] &
                                DVOA_Advantage >= input$dvoa_advantage[1] & DVOA_Advantage <= input$dvoa_advantage[2] &
-                               pts_vs_total_touch >= input$total_touches[1] & pts_vs_total_touch <= input$total_touches[2]) %>%
-                        .[rb_def_s1,]
+                               pts_vs_total_touch >= input$total_touches[1] & pts_vs_total_touch <= input$total_touches[2])
+      
+      if(length(input$rb_select) == 0) {reactive_def_rb <- reactive_def_rb[rb_def_s1,]}
       
       ## Join Togeather
       all_rb <- full_join(rb_def, rb_off, by = c("proj_player", "proj_opp"))
@@ -1627,8 +1645,9 @@ server <- function(input, output) {
       reactive_off_wr <-  subset(wr_off, 
                                  ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] &
                                  receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] &
-                                 vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2]) %>%
-                          .[wr_off_s1,]
+                                 vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2])
+      
+      if(length(input$wr_select) == 0) {reactive_off_wr <- reactive_off_wr[rw_off_s1,]}
       
       ## Defense
       wr_def_s1 <- input$def_wr_rows_selected
@@ -1637,9 +1656,10 @@ server <- function(input, output) {
                                  pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm_wr[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm_wr[2] &
                                  pts_vs_rec_tgt >= input$wr_tg_vs[1] & pts_vs_rec_tgt <= input$wr_tg_vs[2] &
                                  def_pass_yds_per_gm >= input$pass_yds_gm[1] & def_pass_yds_per_gm <= input$pass_yds_gm[2] &
-                                 DVOA_Advantage >= input$wr_dvoa_advantage[1] & DVOA_Advantage <= input$wr_dvoa_advantage[2]) %>%
-                          .[wr_def_s1,]
+                                 DVOA_Advantage >= input$wr_dvoa_advantage[1] & DVOA_Advantage <= input$wr_dvoa_advantage[2])
       
+      if(length(input$wr_select) == 0) {reactive_def_wr <- reactive_def_wr[wr_def_s1,]}
+
       ## Join Togeather
       all_wr <- full_join(wr_def, wr_off, by = c("proj_player", "proj_opp"))
       
@@ -1831,8 +1851,9 @@ server <- function(input, output) {
                                  ytd_rec_target >= input$te_tgt[1] & ytd_rec_target <= input$te_tgt[2] &
                                  ytd_rec_td >= input$te_rec_td[1] & ytd_rec_td <= input$te_rec_td[2] &
                                  receiving_twenty_per_tgt >= input$te_rz_20[1] & receiving_twenty_per_tgt <= input$te_rz_20[2] &
-                                 pass_off_dvoa >= input$pass_off_dvoa_te[1] & pass_off_dvoa <= input$pass_off_dvoa_te[2]) %>%
-                          .[te_off_s1,]
+                                 pass_off_dvoa >= input$pass_off_dvoa_te[1] & pass_off_dvoa <= input$pass_off_dvoa_te[2])
+      
+      if(length(input$te_select) == 0) {reactive_off_te <- reactive_off_te[te_off_s1,]}
       
       ## Defense
       te_def_s1 <- input$def_te_rows_selected
@@ -1841,8 +1862,9 @@ server <- function(input, output) {
                                  pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm_te[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm_te[2] &
                                  pts_vs_rec_tgt >= input$te_tg_vs[1] & pts_vs_rec_tgt <= input$te_tg_vs[2] &
                                  def_pass_yds_per_gm >= input$pass_yds_gm_te[1] & def_pass_yds_per_gm <= input$pass_yds_gm_te[2] &
-                                 DVOA_Advantage >= input$te_dvoa_advantage[1] & DVOA_Advantage <= input$te_dvoa_advantage[2]) %>%
-                          .[te_def_s1,]
+                                 DVOA_Advantage >= input$te_dvoa_advantage[1] & DVOA_Advantage <= input$te_dvoa_advantage[2])
+      
+      if(length(input$te_select) == 0) {reactive_def_te <- reactive_def_te[te_def_s1,]}
       
       ## Join Togeather
       all_te <- full_join(te_def, te_off, by = c("proj_player", "proj_opp"))
