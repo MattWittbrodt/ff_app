@@ -242,6 +242,7 @@ leverage[["tm"]] <- sapply(leverage[["tm"]], function(x) find_names(x, "fff_abbr
 leverage[["player"]] <- str_replace(leverage[["player"]], "Mitch", "Mitchell")
 
 
+
 # Adding into full DF
 all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "player",
                                                            "proj_pos" = "pos",
@@ -250,7 +251,7 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(7, "10/20")
+df <- shiny_df(9, "11/03")
 
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_7.xlsx")
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_9.xlsx")
