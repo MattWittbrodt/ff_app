@@ -139,7 +139,9 @@ dvoa <- function() {
     str_to_lower() %>%
     str_replace_all("[^\\w]+","_") %>% 
     str_replace_all("(?<=defense)dvoa","_dvoa") %>%
-    str_remove("_\\d")
+    str_remove("_\\d") %>%
+    str_replace("powersuccess", "power_success") %>%
+    str_replace("lineyards", "line_yards")
   
   for(ii in 1:length(dline_names)) {
     if(dline_names[ii] != "team") {
