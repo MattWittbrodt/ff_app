@@ -6,9 +6,9 @@ library(shiny)
 library(tidyverse)
 library(DT)
 
-df <- readxl::read_xlsx("data/all_data_wk_7.xlsx") %>%
+df <- readxl::read_xlsx("data/all_data_wk_9.xlsx") %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_7.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_8.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -40,7 +40,7 @@ names(dfs_df) <- str_remove(names(dfs_df), "proj_")
 # QB Data -----------------------------------------------------------------
 
 # QB Opponent Defense Stats
-def_qb <- filter(df, proj_pos == "QB") %>%
+def_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
           select(proj_player,
                 proj_opp,
                 pts_vs_g,
@@ -74,7 +74,7 @@ def_qb <- filter(df, proj_pos == "QB") %>%
   )
 
 # QB Offense Stats
-off_qb <- filter(df, proj_pos == "QB") %>%
+off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
           select(proj_player,
                  proj_opp,
                  ytd_pass_comp_per,
@@ -98,7 +98,7 @@ off_qb <- filter(df, proj_pos == "QB") %>%
 # RB Defense and Oline Table
 #
 
-rb_def <- filter(df, proj_pos == "RB") %>%
+rb_def <- filter(df, proj_pos == "RB" & is.na(line) == F) %>%
           select(proj_player,
                  ytd_rush_att,
                  proj_opp,
@@ -121,13 +121,13 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  dline_power_success,
                  dline_adj_line_yards,
                  dline_stuffed,
-                 dline_2nd_levelyards,
-                 dline_open_fieldyards,
+                 dline_2nd_level_yards,
+                 dline_open_field_yards,
                  oline_adj_line_yards,
                  oline_power_success,
                  oline_stuffed,
-                 oline_open_fieldyards,
-                 oline_2nd_levelyards
+                 oline_open_field_yards,
+                 oline_2nd_level_yards
                  ) %>%
           mutate(pts_vs_g =  as.numeric(pts_vs_g),
                  pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt),
@@ -138,11 +138,11 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  pts_vs_rush_yds = as.numeric(pts_vs_rush_yds),                           
                  pts_vs_rush_td = as.numeric(pts_vs_rush_td),
                  dline_adj_line_yards = as.numeric(dline_adj_line_yards),
-                 dline_2nd_levelyards = as.numeric(dline_2nd_levelyards),
-                 dline_open_fieldyards = as.numeric(dline_open_fieldyards),
+                 dline_2nd_level_yards = as.numeric(dline_2nd_level_yards),
+                 dline_open_field_yards = as.numeric(dline_open_field_yards),
                  oline_adj_line_yards = as.numeric(oline_adj_line_yards),
-                 oline_2nd_levelyards = as.numeric(oline_2nd_levelyards),
-                 oline_open_fieldyards = as.numeric(oline_open_fieldyards),
+                 oline_2nd_level_yards = as.numeric(oline_2nd_level_yards),
+                 oline_open_field_yards = as.numeric(oline_open_field_yards),
                  pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
                  pts_vs_rec_yds = round(pts_vs_rec_yds/pts_vs_g,1),
                  pts_vs_rec_td = round(pts_vs_rec_td/pts_vs_g,1),
@@ -154,8 +154,8 @@ rb_def <- filter(df, proj_pos == "RB") %>%
                  DVOA_Difference = rush_def_dvoa - defense_dvoa,
                  net_adj_line_yd_diff = round(oline_adj_line_yards - dline_adj_line_yards,1),
                  power_success_diff = oline_power_success - dline_power_success,
-                 second_level_yds_diff = oline_2nd_levelyards - oline_2nd_levelyards,
-                 open_fieldyards_diff = oline_open_fieldyards - dline_open_fieldyards) %>%
+                 second_level_yds_diff = oline_2nd_level_yards - oline_2nd_level_yards,
+                 open_fieldyards_diff = oline_open_field_yards - dline_open_field_yards) %>%
           filter(ytd_rush_att > 5) %>%
           select(proj_player,
                  proj_opp,
@@ -179,7 +179,7 @@ rb_def <- filter(df, proj_pos == "RB") %>%
 # RB Offense Table
 #
 
-rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5) %>%
+rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
           select(proj_player,
                  proj_opp,
                  ytd_rec_target,
@@ -210,7 +210,7 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5) %>%
 # WR Defense and Oline Table
 #
 
-wr_def <- filter(df, proj_pos == "WR" & ytd_rec_target > 2) %>%
+wr_def <- filter(df, proj_pos == "WR" & ytd_rec_target > 2 & is.na(line) == F) %>%
   select(proj_player,
          proj_opp,
          pts_vs_g,
@@ -261,7 +261,7 @@ wr_def <- filter(df, proj_pos == "WR" & ytd_rec_target > 2) %>%
 # WR Offense Table
 #
 
-wr_off <- filter(df, proj_pos == "WR" & ytd_rec_target > 2) %>%
+wr_off <- filter(df, proj_pos == "WR" & ytd_rec_target > 2 & is.na(line) == F) %>%
   select(proj_player,
          proj_opp,
          ytd_rec_target,
@@ -296,7 +296,7 @@ wr_off <- filter(df, proj_pos == "WR" & ytd_rec_target > 2) %>%
 # TE Defense and Oline Table
 #
 
-te_def <- filter(df, proj_pos == "TE" & ytd_rec_target > 2) %>%
+te_def <- filter(df, proj_pos == "TE" & ytd_rec_target > 2 & is.na(line) == F) %>%
   select(proj_player,
          proj_opp,
          pts_vs_g,
@@ -347,7 +347,7 @@ te_def <- filter(df, proj_pos == "TE" & ytd_rec_target > 2) %>%
 # TE Offense Table
 #
 
-te_off <- filter(df, proj_pos == "TE" & ytd_rec_target > 2) %>%
+te_off <- filter(df, proj_pos == "TE" & ytd_rec_target > 2 & is.na(line) == F) %>%
   select(proj_player,
          proj_opp,
          ytd_rec_target,
@@ -1413,7 +1413,7 @@ server <- function(input, output) {
                                total_touches >= input$tot_touches[1] & total_touches <= input$tot_touches[2] &
                                ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
                                rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
-                               line >= input$rb_off_line[1] & line <= input$rb_off_line[2])
+                               line >= input$rb_off_line[1] & line <= input$rb_off_line[2] | is.na(total_touches) | is.na(rushing_ten_per_rush))
 
       datatable(render_off_rb,
                 rownames = F,
@@ -1578,7 +1578,7 @@ server <- function(input, output) {
       wr_off_render <- subset(wr_off, 
                               ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] &
                               receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] &
-                              vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2])
+                              vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2] | is.na(vs_cb_fpt))
       
       # for +/-/neutral CB pairings
       if(length(input$cb_matchup) == 1) {wr_off_render <- filter(wr_off_render, vs_cb_matchup == input$cb_matchup)
