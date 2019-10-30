@@ -15,9 +15,11 @@ vegas_lines <- function(date) {
   
   # New data cleaning
   df <- d %>% 
-         filter(str_detect(X1,"/") == T & str_detect(X1, date) == T) %>%
-         select(X1,X3) %>%
-         .[-1,]
+        filter(str_detect(X1,"/") == T & 
+               str_detect(X1, date) == T &
+               str_detect(X1, "8:") == F & 
+               str_detect(X1, "9:") == F) %>%
+        select(X1,X3)
   
   names(df) <- c("game", "total")
          
@@ -32,10 +34,12 @@ vegas_lines <- function(date) {
                 home = map_chr(teams, last),
                 away = map_chr(teams, first),
                 line = str_extract(total, "(-\\d+\\.\\d|-\\d+)"),
+                line = ifelse(str_detect(total, "PK") == T, 0, line),
                 favorite = ifelse(str_detect(total, ("^-")) == T, away, home),
                 total = str_remove(total, "(-\\d+\\.\\d|-\\d+)"),
                 total = str_remove(total, "-10"),
-                total = str_remove(total, "EV")) %>%
+                total = str_remove(total, "EV"),
+                total = str_remove(total, "PK")) %>%
         select(-teams, -game) %>%
         # moving into final df form
         gather(key = "home_or_away", value = "team", -total, -favorite, -line) %>%
