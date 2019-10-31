@@ -280,6 +280,7 @@ position_stats <- function(position, wk_num, data, tm_names) {
     subset(Pos == position) %>%
     select(-PID,-Season,-XP,-Fum,-FG,-Grade,-Pa1D,-Ru1D,-Rec1D) %>%
     mutate(Player = str_remove_all(as.character(Player), "[:punct:]"),
+           Player = str_replace(as.character(Player), "Mitch", "Mitchell"),
            Pos = as.character(Pos),
            Team = as.character(Team),
            field = ifelse(str_detect(Opp, "@") == T, 2, 1),
