@@ -8,7 +8,7 @@ library(DT)
 
 df <- readxl::read_xlsx("data/all_data_wk_9.xlsx") %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_8.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_9.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -151,8 +151,8 @@ rb_def <- filter(df, proj_pos == "RB" & is.na(line) == F) %>%
                  pts_vs_rush_td = round(pts_vs_rush_td/pts_vs_g,1),                           
                  pts_vs_total_touch = round(pts_vs_rush_att + pts_vs_rec_tgt,1),
                  DVOA_Advantage = round(rush_def_dvoa + rush_off_dvoa,1),
-                 DVOA_Difference = rush_def_dvoa - defense_dvoa,
-                 net_adj_line_yd_diff = round(oline_adj_line_yards - dline_adj_line_yards,1),
+                 DVOA_Difference = round(rush_def_dvoa - defense_dvoa,1),
+                 net_adj_line_yd_diff = round(oline_adj_line_yards - dline_adj_line_yards,2),
                  power_success_diff = oline_power_success - dline_power_success,
                  second_level_yds_diff = oline_2nd_level_yards - oline_2nd_level_yards,
                  open_fieldyards_diff = oline_open_field_yards - dline_open_field_yards) %>%
@@ -1131,7 +1131,7 @@ server <- function(input, output) {
                            fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
                            line >= input$qb_line[1] & line <= input$qb_line[2] &
                            pass_off_dvoa >= input$pass_dvoa[1] & pass_off_dvoa <= input$pass_dvoa[2] &
-                           ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2])
+                           ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2] | is.na(fd_sal))
       
       #DT::datatable(render_qb, rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
       
@@ -1153,7 +1153,7 @@ server <- function(input, output) {
                                fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
                                  line >= input$qb_line[1] & line <= input$qb_line[2] &
                                  pass_off_dvoa >= input$pass_dvoa[1] & pass_off_dvoa <= input$pass_dvoa[2] &
-                                 ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2])
+                                 ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2]| is.na(fd_sal))
       
       if(length(input$qb_select) == 0) {qb_render_table <- qb_render_table[qb_s1,]}
       
@@ -1437,7 +1437,7 @@ server <- function(input, output) {
                           total_touches >= input$tot_touches[1] & total_touches <= input$tot_touches[2] &
                           ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
                           rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
-                          line >= input$rb_off_line[1] & line <= input$rb_off_line[2])
+                          line >= input$rb_off_line[1] & line <= input$rb_off_line[2] | is.na(total_touches) | is.na(rushing_ten_per_rush))
       
       if(length(input$rb_select) == 0) {reactive_off_rb <- reactive_off_rb[rb_off_s1,]}
       
