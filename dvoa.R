@@ -10,7 +10,6 @@ dvoa <- function() {
 
 # Total Team Efficiency ---------------------------------------------------
 
-  
   # Total Team Efficiency
   total_efficiency <- "https://www.footballoutsiders.com/stats/teameff/2019" %>%
          read_html() %>%
@@ -35,7 +34,7 @@ dvoa <- function() {
                              -contains("s_t_"),
                              -w_l) %>%
                       mutate(total_dvoa = as.numeric(sapply(total_dvoa, function(x) str_remove(x, '%'))),
-                             total_dave = as.numeric(sapply(total_dave, function(x) str_remove(x, '%'))),
+                             wei_dvoa = as.numeric(sapply(wei_dvoa, function(x) str_remove(x, '%'))),
                              offense_dvoa = as.numeric(sapply(offense_dvoa, function(x) str_remove(x, '%'))),
                              defense_dvoa = as.numeric(sapply(defense_dvoa, function(x) str_remove(x, '%'))))
   
@@ -76,7 +75,7 @@ dvoa <- function() {
   offense <- offense %>% 
              select(-contains("last"),
                     -offense_dvoa) %>%
-             mutate(offense_dave = as.numeric(sapply(offense_dave, function(x) str_remove(x, '%'))),
+             mutate(wei_offense_dvoa = as.numeric(sapply(wei_offense_dvoa, function(x) str_remove(x, '%'))),
                     pass_off_dvoa = as.numeric(sapply(pass_off_dvoa, function(x) str_remove(x, '%'))),
                     rush_off_dvoa = as.numeric(sapply(rush_off_dvoa, function(x) str_remove(x, '%'))))
 
@@ -117,7 +116,7 @@ dvoa <- function() {
   defense <- defense %>% 
     select(-contains("last"),
            -defense_dvoa) %>%
-    mutate(defense_dave = as.numeric(sapply(defense_dave, function(x) str_remove(x, '%'))),
+    mutate(wei_defense_dvoa = as.numeric(sapply(wei_defense_dvoa, function(x) str_remove(x, '%'))),
            pass_def_dvoa = as.numeric(sapply(pass_def_dvoa, function(x) str_remove(x, '%'))),
            rush_def_dvoa = as.numeric(sapply(rush_def_dvoa, function(x) str_remove(x, '%'))))
   
@@ -154,7 +153,8 @@ dvoa <- function() {
   dline <- dline %>%
            subset(team != "NFL") %>%
            mutate(dline_power_success = as.numeric(sapply(dline_power_success, function(x) str_remove(x, '%'))),
-                  dline_stuffed = as.numeric(sapply(dline_stuffed, function(x) str_remove(x, '%'))))
+                  dline_stuffed = as.numeric(sapply(dline_stuffed, function(x) str_remove(x, '%'))),
+                  dline_adj_line_yards = round(as.numeric(dline_adj_line_yards) - mean(as.numeric(dline_adj_line_yards)),2))
   
   # Quick dline passing stats (on website as same table but not same rank)
   dline_pass <- "https://www.footballoutsiders.com/stats/dl/2019" %>%
@@ -217,7 +217,8 @@ dvoa <- function() {
   oline <- oline %>%
     subset(team != "NFL") %>%
     mutate(oline_power_success = as.numeric(sapply(oline_power_success, function(x) str_remove(x, '%'))),
-           oline_stuffed = as.numeric(sapply(oline_stuffed, function(x) str_remove(x, '%'))))
+           oline_stuffed = as.numeric(sapply(oline_stuffed, function(x) str_remove(x, '%'))),
+           oline_adj_line_yards = round(as.numeric(oline_adj_line_yards) - mean(as.numeric(oline_adj_line_yards)),2))
   
   # Quick dline passing stats (on website as same table but not same rank)
   oline_pass <- "https://www.footballoutsiders.com/stats/ol/2019" %>%
