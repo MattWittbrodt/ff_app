@@ -152,7 +152,7 @@ rb_def <- filter(df, proj_pos == "RB" & is.na(line) == F) %>%
                  pts_vs_total_touch = round(pts_vs_rush_att + pts_vs_rec_tgt,1),
                  DVOA_Advantage = round(rush_def_dvoa + rush_off_dvoa,1),
                  DVOA_Difference = round(rush_def_dvoa - defense_dvoa,1),
-                 net_adj_line_yd_diff = round(oline_adj_line_yards - dline_adj_line_yards,2),
+                 net_adj_line_yd_diff = round(oline_adj_line_yards - (dline_adj_line_yards*-1),2),
                  power_success_diff = oline_power_success - dline_power_success,
                  second_level_yds_diff = oline_2nd_level_yards - oline_2nd_level_yards,
                  open_fieldyards_diff = oline_open_field_yards - dline_open_field_yards) %>%
