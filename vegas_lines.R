@@ -39,7 +39,8 @@ vegas_lines <- function(date) {
                 total = str_remove(total, "(-\\d+\\.\\d|-\\d+)"),
                 total = str_remove(total, "-10"),
                 total = str_remove(total, "EV"),
-                total = str_remove(total, "PK")) %>%
+                total = str_remove(total, "PK"),
+                total = str_remove(total, "-20")) %>%
         select(-teams, -game) %>%
         # moving into final df form
         gather(key = "home_or_away", value = "team", -total, -favorite, -line) %>%
