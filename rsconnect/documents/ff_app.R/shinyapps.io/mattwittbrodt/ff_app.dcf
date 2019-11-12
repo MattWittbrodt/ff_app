@@ -5,9 +5,9 @@ account: mattwittbrodt
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1183242
-bundleId: 2559588
+bundleId: 2576494
 url: https://mattwittbrodt.shinyapps.io/ff_app/
-when: 1572725080.06466
+when: 1573332529.89036
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: position_information.R|shiny_df_creation.R
