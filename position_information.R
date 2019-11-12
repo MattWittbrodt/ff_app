@@ -284,7 +284,8 @@ position_stats <- function(position, wk_num, data, tm_names) {
            Pos = as.character(Pos),
            Team = as.character(Team),
            field = ifelse(str_detect(Opp, "@") == T, 2, 1),
-           Opp = str_remove(Opp, "@")) 
+           Opp = str_remove(Opp, "@")) %>%
+  filter(Opp != "BYE")
   
   # Column Processing
   proj_names <- colnames(proj_data) %>%
