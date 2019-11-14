@@ -5,8 +5,9 @@
 library(shiny)
 library(tidyverse)
 library(DT)
+library(ggrepel)
 
-df <- readxl::read_xlsx("data/all_data_wk_10.xlsx") %>%
+df <- readxl::read_xlsx("data/all_data_wk_11.xlsx") %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 #df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_9.xlsx")
 
@@ -754,28 +755,34 @@ tabPanel("WR",
          #
          
          fluidRow(
-           column(3,
+           column(2,
                   sliderInput("wr_tgt",
                               "YTD Targets Per Game",
                               min = min(wr_off[["ytd_rec_target"]], na.rm = T),
                               max = max(wr_off[["ytd_rec_target"]], na.rm = T),
                               value = c(min,max)
                   )),
-           column(3,
+           column(2,
                   sliderInput("wr_rz_20",
                               "% Targets Receiving Inside 20yd",
                               min = min(wr_off[["receiving_twenty_per_tgt"]], na.rm = T),
                               max = max(wr_off[["receiving_twenty_per_tgt"]], na.rm = T),
                               value = c(min,max)
                   )),
-           column(3,
+           column(2,
                   sliderInput("cb_pts_tgt",
                               "CB Matchup FD Pts/Tgt",
                               min = min(wr_off[["vs_cb_fpt"]],  na.rm = T),
                               max = max(wr_off[["vs_cb_fpt"]],  na.rm = T),
                               value = c(min,max)
                   )),
-           column(3,
+           column(2, 
+                  sliderInput("wr_salary",
+                              "Salary",
+                              min = min(wr_off[["fd_sal"]],  na.rm = T),
+                              max = max(wr_off[["fd_sal"]],  na.rm = T),
+                              value = c(min,max))),
+           column(2,
                   checkboxGroupInput("cb_matchup",
                               "CB Matchup Advantage",
                               choices = list("plus", "minus", "neutral"),
@@ -860,28 +867,34 @@ tabPanel("TE",
          #
          
          fluidRow(
-           column(3,
+           column(2,
                   sliderInput("te_tgt",
                               "YTD Targets Per Game",
                               min = min(te_off[["ytd_rec_target"]], na.rm = T),
                               max = max(te_off[["ytd_rec_target"]], na.rm = T),
                               value = c(min,max)
                   )),
-           column(3,
+           column(2,
                   sliderInput("te_rec_td",
                               "Receiving TD",
                               min = min(te_off[["ytd_rec_td"]],  na.rm = T),
                               max = max(te_off[["ytd_rec_td"]],  na.rm = T),
                               value = c(min,max)
                   )),
-           column(3,
+           column(2,
                   sliderInput("te_rz_20",
                               "% Targets Receiving Inside 20yd",
                               min = min(te_off[["receiving_twenty_per_tgt"]], na.rm = T),
                               max = max(te_off[["receiving_twenty_per_tgt"]], na.rm = T),
                               value = c(min,max)
                   )),
-           column(3,
+           column(2, 
+                  sliderInput("te_salary",
+                              "Salary",
+                              min = min(te_off[["fd_sal"]],  na.rm = T),
+                              max = max(te_off[["fd_sal"]],  na.rm = T),
+                              value = c(min,max))),
+           column(2,
                   sliderInput("pass_off_dvoa_te",
                               "Pass Off DVOA",
                               min = min(te_off[["pass_off_dvoa"]],  na.rm = T),
@@ -1082,7 +1095,7 @@ server <- function(input, output) {
               xlab(input$x_axis) +
               ylab(input$y_axis) +
               geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
-              geom_text(aes(label = player), hjust = 0, vjust = -1) +
+              geom_text_repel(aes(label = player), hjust = 0, vjust = -1) +
               theme_bw() +
               theme(
                 axis.title = element_text(size = 12, face = "bold")
@@ -1250,7 +1263,7 @@ server <- function(input, output) {
         xlab(input$def_qb_x_axis) +
         ylab(input$def_qb_y_axis) +
         geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
-        geom_text(aes(label = proj_player), hjust = 0, vjust = -1) +
+        geom_text_repel(aes(label = proj_player), hjust = 0, vjust = -1) +
         theme_bw() +
         theme(
           axis.title = element_text(size = 12, face = "bold")
@@ -1284,7 +1297,7 @@ server <- function(input, output) {
           ylab(input$qb_y_axis) +
           geom_point(aes(size = qb_plot_data[[input$qb_size]]), color = "#0000b7", alpha = 0.5) +
           scale_size(name = input$qb_size) +
-          geom_text(aes(label = proj_player), hjust = 0, vjust = -1) +
+          geom_text_repel(aes(label = proj_player), hjust = 0, vjust = -1) +
           theme_bw() +
           theme(
             axis.title = element_text(size = 12, face = "bold")
@@ -1472,7 +1485,7 @@ server <- function(input, output) {
         ylab(input$rb_y_axis) +
         geom_point(aes(size = rb_plot_data[[input$rb_size]]), color = "#0000b7", alpha = 0.5) +
         scale_size(name = input$rb_size) +
-        geom_text(aes(label = proj_player), hjust = 0, vjust = -1) +
+        geom_text_repel(aes(label = proj_player), hjust = 0, vjust = -1) +
         theme_bw() +
         theme(
           axis.title = element_text(size = 12, face = "bold")
@@ -1578,7 +1591,8 @@ server <- function(input, output) {
       wr_off_render <- subset(wr_off, 
                               ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] &
                               receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] &
-                              vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2] | is.na(vs_cb_fpt))
+                              vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2] &
+                              fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2] | is.na(vs_cb_fpt))
       
       # for +/-/neutral CB pairings
       if(length(input$cb_matchup) == 1) {wr_off_render <- filter(wr_off_render, vs_cb_matchup == input$cb_matchup)
@@ -1680,7 +1694,7 @@ server <- function(input, output) {
         ylab(input$wr_y_axis) +
         geom_point(aes(size = wr_plot_data[[input$wr_size]]), color = "#0000b7", alpha = 0.5) +
         scale_size(name = input$wr_size) +
-        geom_text(aes(label = proj_player), hjust = 0, vjust = -1) +
+        geom_text_repel(aes(label = proj_player), hjust = 0, vjust = -1) +
         theme_bw() +
         theme(
           axis.title = element_text(size = 12, face = "bold")
@@ -1787,7 +1801,8 @@ server <- function(input, output) {
                               ytd_rec_target >= input$te_tgt[1] & ytd_rec_target <= input$te_tgt[2] &
                               ytd_rec_td >= input$te_rec_td[1] & ytd_rec_td <= input$te_rec_td[2] &
                               receiving_twenty_per_tgt >= input$te_rz_20[1] & receiving_twenty_per_tgt <= input$te_rz_20[2] &
-                              pass_off_dvoa >= input$pass_off_dvoa_te[1] & pass_off_dvoa <= input$pass_off_dvoa_te[2])
+                              pass_off_dvoa >= input$pass_off_dvoa_te[1] & pass_off_dvoa <= input$pass_off_dvoa_te[2] &
+                              fd_sal >= input$te_salary[1] & fd_sal <= input$te_salary[2])
       
       datatable(te_off_render,
                 rownames = F,
@@ -1887,7 +1902,7 @@ server <- function(input, output) {
         ylab(input$te_y_axis) +
         geom_point(aes(size = te_plot_data[[input$te_size]]), color = "#0000b7", alpha = 0.5) +
         scale_size(name = input$te_size) +
-        geom_text(aes(label = proj_player), hjust = 0, vjust = -1) +
+        geom_text_repel(aes(label = proj_player), hjust = 0, vjust = -1) +
         theme_bw() +
         theme(
           axis.title = element_text(size = 12, face = "bold")
