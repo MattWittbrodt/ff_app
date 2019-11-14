@@ -96,14 +96,17 @@ ytd_df <- lapply(ytd_types, function(x) {
   if(x == "passing" | x == "receiving") {
     d <- d  %>%
       subset(Pos != "Pos") %>%
-      select(-Age, -GS, -Lng)
+      select(-Age, -GS, -Lng) %>%
+      mutate(Pos = str_to_upper(Pos))
+    
   } else {
     
     # Rush is divided into two rows
     colnames(d) <- d[1,]
     d <- d[-1,] %>%
       subset(Pos != "Pos" & as.numeric(Att) > 4) %>%
-      select(-Age, -GS, -Lng)
+      select(-Age, -GS, -Lng) %>%
+      mutate(Pos = str_to_upper(Pos))
     
   }
   
@@ -251,7 +254,7 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(10, "11/10")
+df <- shiny_df(11, "11/17")
 
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_10.xlsx")
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_11.xlsx")
