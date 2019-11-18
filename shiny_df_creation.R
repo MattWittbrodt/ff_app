@@ -6,6 +6,7 @@ library(tidyverse)
 
 # Reading in team name chart ----------------------------------------------
 source("~/ff_shiny_app/ff_app/find_names.R", local = T)
+source("~/ff_shiny_app/ff_app/name_fixes.R", local = T)
 
 # Vegas Lines -------------------------------------------------------------
 source("~/ff_shiny_app/ff_app/vegas_lines.R", local = T)
@@ -40,6 +41,8 @@ wk_data <- lapply(list("QB", "RB", "WR", "TE"), function(position) {
             .[[1]]
 })
 
+
+# Red Zone Data -----------------------------------------------------------
 rz_types <- list("passing","rushing","receiving")
 
 rz_df <- lapply(rz_types,
@@ -77,11 +80,13 @@ rz_df <- lapply(rz_types,
                     select(-contains("link"))
                   
                 })
+# Fixing Names
+rz_df <- lapply(rz_df, function(x) {name_fixes(x, 1, 2, 0)})
 
-# YTD data
-ytd_types <- list("passing","rushing","receiving")
 
-ytd_df <- lapply(ytd_types, function(x) {
+# Year to Date Data -------------------------------------------------------
+
+ytd_df <- lapply(list("passing","rushing","receiving"), function(x) {
   
   # Reading in Data
   d <- paste("http://www.pro-football-reference.com/years/2019/",
@@ -176,6 +181,10 @@ ytd_df <- lapply(ytd_types, function(x) {
   
 })
 
+ytd_df <- lapply(ytd_df, function(x) {name_fixes(x, 1, 2, 3)})
+
+
+# Combinging into one list ------------------------------------------------
 data <- list(wk_data = wk_data,
              rz_df = rz_df,
              ytd_df = ytd_df)
