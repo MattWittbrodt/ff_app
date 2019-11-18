@@ -281,7 +281,7 @@ wr_off <- filter(df, proj_pos == "WR" & ytd_rec_target > 2 & is.na(line) == F) %
          vs_cb_fpt,
          vs_cb_matchup,
          fd_sal,
-         line) %>%
+         implied_total) %>%
       mutate(vs_cb_fpt = as.numeric(vs_cb_fpt))
          #proj_rec_yds,
          #proj_rec_td)#,
@@ -786,7 +786,12 @@ tabPanel("WR",
                   checkboxGroupInput("cb_matchup",
                               "CB Matchup Advantage",
                               choices = list("plus", "minus", "neutral"),
-                              selected = c("plus", "minus", "neutral")))),
+                              selected = c("plus", "minus", "neutral"))),
+           column(2, 
+                  selectInput("wr_opponent",
+                              "Opponent",
+                              choices = as.list(c("all", unique(wr_off$proj_opp))),
+                              selected = "all"))),
          
          fluidRow(column(12,
                   div(DT::dataTableOutput("off_wr"), style = "font-size: 90%"))),
@@ -1547,7 +1552,8 @@ server <- function(input, output) {
                           style = 'caption-side: bottom; text-align: left;',
                           'Legend: Pass Adv = Pass D DVOA + Pass Off DVOA, higher is better ||| 
                                 Difference = Pass DVOA - Defense DVOA, lower means passing d is a strength (i.e., compartively better than overall) |||
-                                Adj Sack Rate = sacks (plus intentional grounding penalties) per pass attempt adjusted for down, distance, and opponent'))
+                                Adj Sack Rate = sacks (plus intentional grounding penalties) per pass attempt adjusted for down, distance, and opponent |||
+                                Sack Rate Difference = round(oline_pass_adjusted_sack_rate - dline_pass_adjusted_sack_rate,1))'))
     
       })
     
@@ -1585,14 +1591,17 @@ server <- function(input, output) {
             th(colspan = 1, 'PPR Pt / Tgt'),
             th(colspan = 1, 'Matchup'),
             th(colspan = 1, 'Salary ($)'),
-            th(colspan = 1, 'Line'))
+            th(colspan = 1, 'Implied Total'))
         )))
       
       wr_off_render <- subset(wr_off, 
                               ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] &
-                              receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] &
-                              vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2] &
-                              fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2] | is.na(vs_cb_fpt))
+                              (receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] | is.na(receiving_twenty_per_tgt)) &
+                              (vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2] | is.na(vs_cb_fpt)) &
+                              fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2])
+      # Team Selection
+      if(input$wr_opponent != 'all') {wr_off_render <- subset(wr_off_render, proj_opp == input$wr_opponent)}
+                       
       
       # for +/-/neutral CB pairings
       if(length(input$cb_matchup) == 1) {wr_off_render <- filter(wr_off_render, vs_cb_matchup == input$cb_matchup)
@@ -1635,21 +1644,6 @@ server <- function(input, output) {
       return(wr_render_table)
     })
     
-    # Output variable creation for QB
-    # output$wr_plot = renderPlot({
-    #   
-    #   wr_plot_data <- wr_dat()
-    #   ggplot(wr_plot_data, aes(x = wr_plot_data[[input$wr_x_axis]], wr_plot_data[[input$wr_y_axis]])) +
-    #     xlab(input$wr_x_axis) +
-    #     ylab(input$wr_y_axis) +
-    #     geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
-    #     geom_text(aes(label = player), hjust = 0, vjust = -1) +
-    #     theme_bw() +
-    #     theme(
-    #       axis.title = element_text(size = 12, face = "bold")
-    #     )
-    # })
-    
     # WR Offense  Graph Output
     wr_reactive <- reactive({
       
@@ -1661,7 +1655,7 @@ server <- function(input, output) {
                                  receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] &
                                  vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2])
       
-      if(length(input$wr_select) == 0) {reactive_off_wr <- reactive_off_wr[rw_off_s1,]}
+      if(length(input$wr_select) == 0) {reactive_off_wr <- reactive_off_wr[wr_off_s1,]}
       
       ## Defense
       wr_def_s1 <- input$def_wr_rows_selected
