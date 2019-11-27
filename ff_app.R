@@ -7,9 +7,9 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-df <- readxl::read_xlsx("data/all_data_wk_11.xlsx") %>%
+df <- readxl::read_xlsx("data/all_data_wk_13.xlsx") %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_9.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_12.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -37,7 +37,6 @@ dfs_df <- select(df,
 names(dfs_df) <- str_remove(names(dfs_df), "proj_")
                  
             
-
 # QB Data -----------------------------------------------------------------
 
 # QB Opponent Defense Stats
@@ -198,12 +197,16 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
                  rushing_five_att,
                  rushing_five_td,
                  rushing_five_per_rush,
-                 line) %>%
-          mutate(total_touches = ytd_rush_att + ytd_rec_target) %>%
+                 line,
+                 fd_sal) %>%
+          mutate(ytd_rec_target = ifelse(is.na(ytd_rec_target) == T, 0, ytd_rec_target),
+                 total_touches = ytd_rush_att + ytd_rec_target,
+                 tt_per_thousand = round(total_touches / (fd_sal/1000),2)) %>%
           select(proj_player, proj_opp,
                  total_touches, ytd_rush_att:ytd_rush_yds_per_gm,
                  ytd_rec_target,ytd_rec_yds_per_gm,
-                 receiving_ten_tgt:line)
+                 receiving_ten_tgt:line,
+                 fd_sal, tt_per_thousand)
 
 # WR Data -----------------------------------------------------------------
 
@@ -282,7 +285,8 @@ wr_off <- filter(df, proj_pos == "WR" & ytd_rec_target > 2 & is.na(line) == F) %
          vs_cb_matchup,
          fd_sal,
          implied_total) %>%
-      mutate(vs_cb_fpt = as.numeric(vs_cb_fpt))
+      mutate(vs_cb_fpt = as.numeric(vs_cb_fpt),
+             tgt_per_thousand = round(ytd_rec_target / (fd_sal/1000),2))
          #proj_rec_yds,
          #proj_rec_td)#,
          # vs_cb_tar,
@@ -430,30 +434,12 @@ ui <- navbarPage("DFS Data",
             column(2,
                    selectInput("y_axis",
                                h3("Y Axis"),
-                               choices = list("fd_sal",
-                                              "projected_own",
-                                              "cash_odds",
-                                              "gpp_odds",
-                                              "fd_lev",
-                                              "proj_ffpts",
-                                              "points_per_1k",
-                                              "line",
-                                              "total",
-                                              "implied_total"),
+                               choices = as.list(names(dfs_df)),
                                selected = "fd_sal")),
             column(2,
                    selectInput("x_axis",
                                h3("X Axis"),
-                               choices = list("fd_sal",
-                                              "projected_own",
-                                              "cash_odds",
-                                              "gpp_odds",
-                                              "fd_lev",
-                                              "proj_ffpts",
-                                              "points_per_1k",
-                                              "line",
-                                              "total",
-                                              "implied_total"),
+                               choices = as.list(names(dfs_df)),
                                selected = "gpp_odds")),
             column(6,
                    plotOutput('plot', height = 500))
@@ -652,34 +638,41 @@ tabPanel("RB",
          
          ## Sliders
          fluidRow(
-           column(3,
+           column(2,
                   sliderInput("tot_touches",
                               "Total Touches",
                               min = min(rb_off[["total_touches"]], na.rm = T),
                               max = max(rb_off[["total_touches"]], na.rm = T),
                               value = c(min,max)
                   )),
-           column(3,
+           column(2,
                   sliderInput("rush_att",
                               "Rushing Attempts / Gm",
                               min = min(rb_off[["ytd_rush_att"]], na.rm = T),
                               max = max(rb_off[["ytd_rush_att"]], na.rm = T),
                               value = c(min,max)
                   )),
-           column(3,
+           column(2,
                   sliderInput("rush_10_per",
                               "% Rushing Att Inside 10y",
                               min = min(rb_off[["rushing_ten_per_rush"]],  na.rm = T),
                               max = max(rb_off[["rushing_ten_per_rush"]],  na.rm = T),
                               value = c(min,max)
                   )),
-           column(3,
+           column(2,
                   sliderInput("rb_off_line",
                               "Line",
                               min = min(rb_off[["line"]], na.rm = T),
                               max = max(rb_off[["line"]], na.rm = T),
                               value = c(min,max)
-                  ))),
+                  )),
+           column(2, 
+                  sliderInput("rb_salary",
+                              "Salary",
+                              min = min(rb_off[["fd_sal"]],  na.rm = T),
+                              max = max(rb_off[["fd_sal"]],  na.rm = T),
+                              value = c(min,max)))
+           ),
          
          ## RB Offense Table
          column(12,
@@ -1370,21 +1363,6 @@ server <- function(input, output) {
                                 Difference vs Off = Adj Net Yds from Offense - Defense, higher is better'))
     })
     
-    # Output variable creation for QB
-    # output$rb_plot = renderPlot({
-    #   
-    #   rb_plot_data <- rb_dat()
-    #   ggplot(rb_plot_data, aes(x = rb_plot_data[[input$rb_x_axis]], rb_plot_data[[input$rb_y_axis]])) +
-    #     xlab(input$rb_x_axis) +
-    #     ylab(input$rb_y_axis) +
-    #     geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
-    #     geom_text(aes(label = player), hjust = 0, vjust = -1) +
-    #     theme_bw() +
-    #     theme(
-    #       axis.title = element_text(size = 12, face = "bold")
-    #     )
-    # })
-    
     #
     # Offense RB
     #
@@ -1402,7 +1380,7 @@ server <- function(input, output) {
             th(class = 'dt-center', colspan = 3, 'RZ Rec inside 10y'),
             th(class = 'dt-center', colspan = 3, 'RZ Rush inside 10y'),
             th(class = 'dt-center', colspan = 3, 'RZ Rush inside 5y'),
-            th(class = 'dt-center', colspan = 1, '')
+            th(class = 'dt-center', colspan = 3, 'DFS')
           ),
           tr(
             th(colspan = 1, 'Player'),
@@ -1423,7 +1401,9 @@ server <- function(input, output) {
             th(colspan = 1, 'Att'),
             th(colspan = 1, 'TD'),
             th(colspan = 1, 'Att %'),
-            th(colspan = 1, 'Line'))
+            th(colspan = 1, 'Line'),
+            th(colspan = 1, '$'),
+            th(colspan = 1, 'Touches / $1k'))
         )
       ))
 
@@ -1431,7 +1411,8 @@ server <- function(input, output) {
                                total_touches >= input$tot_touches[1] & total_touches <= input$tot_touches[2] &
                                ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
                                rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
-                               line >= input$rb_off_line[1] & line <= input$rb_off_line[2] | is.na(total_touches) | is.na(rushing_ten_per_rush))
+                               line >= input$rb_off_line[1] & line <= input$rb_off_line[2] &
+                               fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2 ]| is.na(total_touches) | is.na(rushing_ten_per_rush))
 
       datatable(render_off_rb,
                 rownames = F,
@@ -1571,7 +1552,7 @@ server <- function(input, output) {
             th(class = 'dt-center', colspan = 3, 'RZ Within 10y'),
             th(class = 'dt-center', colspan = 1, 'DVOA'),
             th(class = 'dt-center', colspan = 3, 'CB Matchup'),
-            th(class = 'dt-center', colspan = 2, 'DFS Info')),
+            th(class = 'dt-center', colspan = 3, 'DFS Info')),
           tr(
             th(colspan = 1, 'Player'),
             th(colspan = 1, 'Opp'),
@@ -1591,7 +1572,8 @@ server <- function(input, output) {
             th(colspan = 1, 'PPR Pt / Tgt'),
             th(colspan = 1, 'Matchup'),
             th(colspan = 1, 'Salary ($)'),
-            th(colspan = 1, 'Implied Total'))
+            th(colspan = 1, 'Implied Total'),
+            th(colspan = 1, 'Target / $1k'))
         )))
       
       wr_off_render <- subset(wr_off, 
