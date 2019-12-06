@@ -203,7 +203,7 @@ wr <- position_stats("WR",wk_num,data,tm_names)
 source("~/ff_shiny_app/ff_app/wr_vs_cb.R")
 wr_matchup <- wr_vs_cv(paste("~/ff_shiny_app/ff_app/data/wide-receiver-vs-cornerback-matchup-analysis-week-",
                              wk_num,
-                             "-table.csv",
+                             "-table.html",
                              sep = ""))
 
 # Adding in matchup stats
@@ -263,6 +263,6 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(13, "12/01")
+df <- shiny_df(14, "12/08")
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_13.xlsx")
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_14.xlsx")
