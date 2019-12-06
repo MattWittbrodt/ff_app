@@ -7,9 +7,9 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-df <- readxl::read_xlsx("data/all_data_wk_13.xlsx") %>%
+df <- readxl::read_xlsx("data/all_data_wk_14.xlsx") %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_12.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_14.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -280,8 +280,8 @@ wr_off <- filter(df, proj_pos == "WR" & ytd_rec_target > 2 & is.na(line) == F) %
          receiving_ten_per_tgt,
          pass_off_dvoa,
          vs_cb_tar,
-         #vs_cb_c,
          vs_cb_fpt,
+         vs_cb_shad,
          vs_cb_matchup,
          fd_sal,
          implied_total) %>%
@@ -334,8 +334,8 @@ te_def <- filter(df, proj_pos == "TE" & ytd_rec_target > 2 & is.na(line) == F) %
          pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
          pts_vs_rec_yds = round(pts_vs_rec_yds/pts_vs_g,1),
          pts_vs_rec_td = round(pts_vs_rec_td/pts_vs_g,1),
-         DVOA_Advantage = pass_def_dvoa + pass_off_dvoa,
-         DVOA_Difference = pass_def_dvoa - defense_dvoa,
+         DVOA_Advantage = round(pass_def_dvoa + pass_off_dvoa,2),
+         DVOA_Difference = round(pass_def_dvoa - defense_dvoa,2),
          sack_rate_diff = round(oline_pass_adjusted_sack_rate - dline_pass_adjusted_sack_rate,1)) %>%
   select(proj_player,
          proj_opp,
@@ -1008,7 +1008,7 @@ server <- function(input, output) {
                                points_per_1k >= input$value[1] & points_per_1k <= input$value[2] &
                                fd_lev >= input$lev[1] & fd_lev <= input$lev[2] &
                                line >= input$line[1] & line <= input$line[2] &
-                               pos == input$pos) %>%
+                               pos == input$pos | is.na(fd_sal)) %>%
                         select(-implied_own)
         
         # Selecting program
@@ -1551,7 +1551,7 @@ server <- function(input, output) {
             th(class = 'dt-center', colspan = 3, 'RZ Within 20y'),
             th(class = 'dt-center', colspan = 3, 'RZ Within 10y'),
             th(class = 'dt-center', colspan = 1, 'DVOA'),
-            th(class = 'dt-center', colspan = 3, 'CB Matchup'),
+            th(class = 'dt-center', colspan = 4, 'CB Matchup'),
             th(class = 'dt-center', colspan = 3, 'DFS Info')),
           tr(
             th(colspan = 1, 'Player'),
@@ -1568,8 +1568,8 @@ server <- function(input, output) {
             th(colspan = 1, '%Tgt'),
             th(colspan = 1, 'Offense'),
             th(colspan = 1, 'Target (%)'),
-            #th(colspan = 1, 'Catch (%)'),
-            th(colspan = 1, 'PPR Pt / Tgt'),
+            th(colspan = 1, 'Pt / Tgt'),
+            th(colspan = 1, 'Shadow'),
             th(colspan = 1, 'Matchup'),
             th(colspan = 1, 'Salary ($)'),
             th(colspan = 1, 'Implied Total'),
