@@ -12,8 +12,8 @@ wr_vs_cv <- function(file) {
        select(-Day, -Tm, -Pos, -CB, -'M/U', -YPT, -Opp) %>%
        mutate('Tar %' = as.numeric(str_remove(`Tar %`, "%")),
               'C %' = as.numeric(str_remove(`C %`, "%")),
-              matchup = factor(ifelse("(+/-)" == " ", "plus",
-                              ifelse("(+/-)" == "N", "neutral", "minus")), 
+              matchup = factor(ifelse(`(+/-)` == "+", "plus",
+                              ifelse(`(+/-)` == "N", "neutral", "minus")), 
                               ordered = T, levels = c("minus", "neutral", "plus")),
               WR = str_remove_all(as.character(WR), "[:punct:]")) %>%
        select(-"(+/-)")
