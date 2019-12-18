@@ -7,7 +7,7 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-df <- readxl::read_xlsx("data/all_data_wk_14.xlsx") %>%
+df <- readxl::read_xlsx("data/all_data_wk_16.xlsx") %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 #df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_14.xlsx")
 
