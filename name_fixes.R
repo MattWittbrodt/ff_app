@@ -48,6 +48,14 @@ name_fixes <- function(df, player_col, team_col, pos_col) {
                                 "Chris Herndon" = "TE",
                                 "Breshad Perriman" = "WR",
                                 "Russell Shepard" = "WR",
+                                "Michael Thomas" = "WR",
+                                "Cooper Kupp" = "WR",
+                                "Robert Woods" = "WR",
+                                "Jared Cook" = "TE",
+                                "George Kittle" = "TE",
+                                "Tyler Higbee" = "TE",
+                                "Deebo Samuel" = "WR",
+                                "DK Metcalf" = "WR",
                                 df[p, pos_col])
     }
   }
