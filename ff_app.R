@@ -9,7 +9,7 @@ library(ggrepel)
 
 df <- readxl::read_xlsx("data/all_data_wk_16.xlsx") %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_14.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_16.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -1577,7 +1577,7 @@ server <- function(input, output) {
         )))
       
       wr_off_render <- subset(wr_off, 
-                              ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] &
+                              (ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] | is.na(ytd_rec_target)) &
                               (receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] | is.na(receiving_twenty_per_tgt)) &
                               (vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2] | is.na(vs_cb_fpt)) &
                               fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2])

@@ -56,7 +56,7 @@ name_fixes <- function(df, player_col, team_col, pos_col) {
                                 "Tyler Higbee" = "TE",
                                 "Deebo Samuel" = "WR",
                                 "DK Metcalf" = "WR",
-                                df[p, pos_col])
+                                str_to_upper(df[p, pos_col]))
     }
   }
   

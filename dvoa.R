@@ -2,7 +2,7 @@
 # https://www.r-bloggers.com/using-rvest-to-scrape-an-html-table/
 
 
-dvoa <- function() {
+dvoa <- function(playoffs) {
   
   library(rvest)
   library(tidyverse)
@@ -18,6 +18,21 @@ dvoa <- function() {
          .[[1]] %>%
          .[,-1]
   
+  if(playoffs == T) {
+    
+    total_efficiency2 <- "https://www.footballoutsiders.com/stats/teameff/2019" %>%
+      read_html() %>%
+      html_nodes(xpath = '//*[@id="node-62599"]/div/div/table[2]') %>%
+      html_table() %>%
+      .[[1]] %>%
+      .[,-1]
+    
+    total_efficiency <- left_join(total_efficiency,total_efficiency2, by = "TEAM") %>%
+                        select(-contains("WINS"),
+                               -contains("W-L"))
+  }
+  
+  
   total_names <- colnames(total_efficiency) %>%
                  str_to_lower() %>%
                  str_replace_all("[^\\w]+","_") %>% 
@@ -30,9 +45,9 @@ dvoa <- function() {
   
   # subsetting columns
   total_efficiency <- total_efficiency %>%
-                      select(-last_week,
+                      select(-one_of("last_week","w_l"),
                              -contains("s_t_"),
-                             -w_l) %>%
+                             ) %>%
                       mutate(total_dvoa = as.numeric(sapply(total_dvoa, function(x) str_remove(x, '%'))),
                              wei_dvoa = as.numeric(sapply(wei_dvoa, function(x) str_remove(x, '%'))),
                              offense_dvoa = as.numeric(sapply(offense_dvoa, function(x) str_remove(x, '%'))),

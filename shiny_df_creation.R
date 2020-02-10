@@ -12,6 +12,8 @@ source("~/ff_shiny_app/ff_app/name_fixes.R", local = T)
 source("~/ff_shiny_app/ff_app/vegas_lines.R", local = T)
 vegas <- vegas_lines(date)
 vegas[["team"]] <- sapply(vegas[["team"]], function(x) find_names(x, "vegas"))
+print('Vegas Lines Successful')
+
 
 # DVOA Data ---------------------------------------------------------------
 source("~/ff_shiny_app/ff_app/dvoa.R", local = T)
@@ -21,7 +23,7 @@ dvoa_offense <- dvoa$offense
 
 dvoa_defense[["team"]] <- sapply(dvoa_defense[["team"]], function(x) find_names(x, "fff_abbreviation"))
 dvoa_offense[["team"]] <- sapply(dvoa_offense[["team"]], function(x) find_names(x, "fff_abbreviation"))
-
+print('DVOA Successful')
 
 # Last Week Data ----------------------------------------------------------
 
@@ -263,6 +265,6 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(16, "12/22")
+df <- shiny_df(19, "1/10")
 
 #writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_16.xlsx")
