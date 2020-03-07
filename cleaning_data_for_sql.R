@@ -2,8 +2,10 @@
 
 # Reading in players- getting the unique ones -----------------------------
 d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/tmp_update_for_SQL.xlsx") %>%
-     .[,c(2:4)] %>%
+     .[,c(2:4)]%>%
      unique() %>%
+     arrange(proj_player) %>%
+     .[-c(99, 131, 165, 276, 337, 346, 463),] %>%
      mutate(proj_player = str_split(proj_player, " "),
             first_name = NA,
             last_name = NA)
@@ -15,10 +17,12 @@ for(ii in 1:nrow(d)) {
 }
 
 # Getting player_id (first four of first name, first three of last name)
-d <- d %>%
+d2 <- d %>%
      select(-proj_player) %>%
-     mutate(player_id = paste0(str_to_lower(substr(first_name,1,4)),str_to_lower(substr(last_name,1,3))))
+     mutate(player_id = paste0(str_to_lower(substr(first_name,1,3)),str_to_lower(last_name)),
+            player_id = paste0(substr(player_id, 1,7), str_to_lower(proj_pos)))
 
+print(paste0("There are ", length(unique(d2$player_id)), " unique player Id"))
 
 # Preparing for insert ----------------------------------------------------
 # Table Columns 
@@ -34,6 +38,11 @@ colnames(d) <- c("position","team","first_name","last_name","player_id")
 # Reorder columns
 col_order <- c("player_id", "first_name", "last_name", "team", "position")
 d <- d[, col_order]
+
+
+
+# Importing into SQL ------------------------------------------------------
+
 
 
 
