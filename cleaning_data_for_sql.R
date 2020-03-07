@@ -19,3 +19,21 @@ d <- d %>%
      select(-proj_player) %>%
      mutate(player_id = paste0(str_to_lower(substr(first_name,1,4)),str_to_lower(substr(last_name,1,3))))
 
+
+# Preparing for insert ----------------------------------------------------
+# Table Columns 
+# CREATE TABLE players(
+#   player_id VARCHAR(7) PRIMARY KEY,
+#   first_name VARCHAR (50) NOT NULL,
+#   last_name VARCHAR (50) NOT NULL,
+#   team VARCHAR (3) NOT NULL,
+#   position VARCHAR (2) NOT NULL
+
+colnames(d) <- c("position","team","first_name","last_name","player_id")
+
+# Reorder columns
+col_order <- c("player_id", "first_name", "last_name", "team", "position")
+d <- d[, col_order]
+
+
+
