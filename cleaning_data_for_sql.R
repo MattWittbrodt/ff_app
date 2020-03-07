@@ -20,7 +20,7 @@ for(ii in 1:nrow(d)) {
 d2 <- d %>%
      select(-proj_player) %>%
      mutate(player_id = paste0(str_to_lower(substr(first_name,1,3)),str_to_lower(last_name)),
-            player_id = paste0(substr(player_id, 1,7), str_to_lower(proj_pos)))
+            player_id = paste0(substr(player_id, 1,6), str_to_lower(proj_pos)))
 
 print(paste0("There are ", length(unique(d2$player_id)), " unique player Id"))
 
