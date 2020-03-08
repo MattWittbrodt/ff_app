@@ -33,11 +33,11 @@ print(paste0("There are ", length(unique(d2$player_id)), " unique player Id"))
 #   team VARCHAR (3) NOT NULL,
 #   position VARCHAR (2) NOT NULL
 
-colnames(d) <- c("position","team","first_name","last_name","player_id")
+colnames(d2) <- c("position","team","first_name","last_name","player_id")
 
 # Reorder columns
 col_order <- c("player_id", "first_name", "last_name", "team", "position")
-d <- d[, col_order]
+d2 <- d2[, col_order]
 
 
 
