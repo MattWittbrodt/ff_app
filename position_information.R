@@ -296,8 +296,8 @@ position_stats <- function(position, wk_num, data, tm_names) {
   colnames(proj_data) <- paste("proj", proj_names, sep = "_") 
   
   # Making abbreviations
-  proj_data[["proj_tm"]] <- sapply(proj_data[["proj_tm"]], function(x) find_names(x, "fff_abbreviation"))
-  proj_data[["proj_opp"]] <- sapply(proj_data[["proj_opp"]], function(x) find_names(x, "fff_abbreviation"))
+  proj_data[["proj_tm"]] <- as.character(sapply(proj_data[["proj_tm"]], function(x) find_names(x, "fff_abbreviation")))
+  proj_data[["proj_opp"]] <- as.character(sapply(proj_data[["proj_opp"]], function(x) find_names(x, "fff_abbreviation")))
   
 
 # Fantasy Points Against Data ---------------------------------------------
@@ -314,7 +314,7 @@ position_stats <- function(position, wk_num, data, tm_names) {
                 full_join(ytd_data, by = c("proj_player"= "ytd_pass_player", 
                                                      "proj_tm" = "ytd_pass_tm",
                                                      "proj_pos" = "ytd_pass_pos")) %>%
-                inner_join(rz_data, by = c("proj_player" = "passing_player")) %>%
+                left_join(rz_data, by = c("proj_player" = "passing_player")) %>% # look at inner join later - issues with RZ information currently
                 inner_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
                 left_join(pts_vs, by = c("proj_opp" = "pts_vs_tm")) %>%
                 select(-ytd_pass_qbrec,
