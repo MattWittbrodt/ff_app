@@ -2,6 +2,9 @@
 library(tidyverse)
 
 # Getting files, reading in, and putting into a list -----
+
+# The initial read goes into the last 10 weeks, which included more or less
+# the same data
 f <- as.list(list.files("~/ff_shiny_app/ff_app/data/analysis_data/",
                 pattern = "all_data",
                 full.names = T)) %>%
@@ -20,28 +23,43 @@ f <- as.list(list.files("~/ff_shiny_app/ff_app/data/analysis_data/",
     
       return(d)
       }) %>% 
-    bind_rows()
+      bind_rows()
 
-# Putting into one dataframe ----
-
-f2 <- bind_rows(f)
-
-
-
-
-
+unique(f$proj_week)
 
 # Workspace for later adding w4,w6,w5 etc-----------------------------------------------------------------------
-w4 <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4.xlsx") %>% names()
-w6 <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_6_2.xlsx") %>% names()
-w5 <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5.xlsx") %>% names()
+w4 <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4.xlsx")
+w6 <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_6.xlsx")
+w5 <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5.xlsx")
 w15 <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_15.xlsx") %>%
-       select(-ytd_rec_1d,-ytd_pass_1d, -ytd_rush_1d) %>% names()
+       select(-ytd_rec_1d,-ytd_pass_1d, -ytd_rush_1d)
+w14 <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_14.xlsx")
+w16 <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_16.xlsx") %>%
+       select(-ytd_rec_1d,-ytd_pass_1d, -ytd_rush_1d)
 
-ttt <- as.data.frame(cbind(w15,w6,w5,w4)) %>% 
-       mutate(w15_w6 = ifelse(as.character(w15) == as.character(w6),1,0),
-              w15_w4 = ifelse(as.character(w15) == as.character(w4),1,0),
-              w15_w5 = ifelse(as.character(w15) == as.character(w5),1,0))
+
+# Before processing further, checking names. -------
+w4_names <- w4 %>% names()
+w5_names <- w5 %>% names()
+w6_names <- w6 %>% names()
+w14_names <- w14 %>% names()
+w15_names <- w15 %>% names()
+w16_names <- w16 %>% names()
+
+# Week 6, 14, 15, and 16 seem similar, so checking
+ttt <- as.data.frame(cbind(w6_names, w14_names, w15_names, w16_names)) %>% 
+       mutate(w6_w14 = ifelse(as.character(w6_names) == as.character(w14_names),1,0),
+              w6_w15 = ifelse(as.character(w6_names) == as.character(w15_names),1,0),
+              w6_w16 = ifelse(as.character(w6_names) == as.character(w16_names),1,0),
+              w14_w15 = ifelse(as.character(w14_names) == as.character(w15_names),1,0),
+              w14_w16 = ifelse(as.character(w14_names) == as.character(w16_names),1,0),
+              w15_w16 = ifelse(as.character(w15_names) == as.character(w16_names),1,0))
+
+ttt$sum <- apply(ttt[,c(5:10)],1,sum)
+
+# Getting columns which have some disagreement
+ttt2 <- filter(ttt, sum < 6)
+
 
 # So far, this works with wk 15-10
 dd <- rbind(w15,w14,w13,w12,w11)
