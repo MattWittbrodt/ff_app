@@ -4,6 +4,7 @@ name_fixes <- function(df, player_col, team_col, pos_col) {
   
   # Removing punctuation
   for(n in 1:nrow(df)) {df[n,player_col] <- str_remove_all(df[n,player_col], "[:punct:]")}
+  for(n in 1:nrow(df)) {df[n,player_col] <- str_remove_all(df[n,player_col], "\\W{1,2}$")} # Removing any weird '+' for pro bowl
   
   # Adjusting Team Names
   if(team_col > 0) {
