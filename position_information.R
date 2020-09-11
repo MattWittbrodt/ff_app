@@ -308,6 +308,9 @@ position_stats <- function(position, wk_num, data, tm_names) {
   
   if(position == "QB") {
     
+    # Currently, PFR does not have many QB under position, so fixing that
+    ytd_data <- ytd_data %>% filter(ytd_pass_yds > 10) %>% mutate(ytd_pass_pos = "QB")
+    
     all_data <- full_join(proj_data, wk_data2, by = c("proj_player" = "prev_wk_player",
                                                        "proj_tm" = "prev_wk_tm",
                                                        "proj_pos" = "prev_wk_pos")) %>%
