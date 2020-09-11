@@ -11,7 +11,7 @@ vegas_lines <- function(date) {
   d <- "http://www.vegasinsider.com/nfl/odds/las-vegas/" %>%
         read_html() %>% 
         html_table(fill = T) %>%
-        .[[7]]
+        .[[12]]
   
   # New data cleaning
   df <- d %>% 
