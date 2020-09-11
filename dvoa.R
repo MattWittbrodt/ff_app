@@ -32,7 +32,7 @@ dvoa <- function(playoffs) {
                                -contains("W-L"))
   }
   
-  
+  # Getting into a standardized set of names
   total_names <- colnames(total_efficiency) %>%
                  str_to_lower() %>%
                  str_replace_all("[^\\w]+","_") %>% 
@@ -45,11 +45,12 @@ dvoa <- function(playoffs) {
   
   # subsetting columns
   total_efficiency <- total_efficiency %>%
-                      select(-one_of("last_week","w_l"),
+                      select(-any_of(c("last_week","w_l")),
                              -contains("s_t_"),
                              ) %>%
                       mutate(total_dvoa = as.numeric(sapply(total_dvoa, function(x) str_remove(x, '%'))),
-                             wei_dvoa = as.numeric(sapply(wei_dvoa, function(x) str_remove(x, '%'))),
+                             #wei_dvoa = as.numeric(sapply(wei_dvoa, function(x) str_remove(x, '%'))),
+                             non_adj_tot_voa = as.numeric(sapply(non_adj_tot_voa, function(x) str_remove(x, '%'))),
                              offense_dvoa = as.numeric(sapply(offense_dvoa, function(x) str_remove(x, '%'))),
                              defense_dvoa = as.numeric(sapply(defense_dvoa, function(x) str_remove(x, '%'))))
   
