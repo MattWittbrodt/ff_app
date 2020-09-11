@@ -14,10 +14,9 @@ vegas <- vegas_lines(date)
 vegas[["team"]] <- sapply(vegas[["team"]], function(x) find_names(x, "vegas"))
 print('Vegas Lines Successful')
 
-
 # DVOA Data ---------------------------------------------------------------
 source("~/ff_shiny_app/ff_app/dvoa.R", local = T)
-dvoa <- dvoa() 
+dvoa <- dvoa(playoffs = FALSE) 
 dvoa_defense <- dvoa$defense
 dvoa_offense <- dvoa$offense
 
@@ -28,19 +27,24 @@ print('DVOA Successful')
 # Last Week Data ----------------------------------------------------------
 
 wk_data <- lapply(list("QB", "RB", "WR", "TE"), function(position) {
-
-           wk_data <-  paste("https://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2019&year_max=2019&season_start=1&season_end=-1&pos%5B%5D=",
-                  position,
-                  "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=",
-                  as.character(wk_num - 1),
-                  "&week_num_max=",
-                  as.character(wk_num -1),
-                  "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=1&week_num_max=1&c1stat=rush_att&c1comp=gt&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c5val=1.0&order_by=fanduel_points",
-                  #"&c1stat=rush_att&c1comp=gt&c1val=0&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c4val=0&c5val=1.0&order_by=pass_rating",
-                  sep = "") %>%                
-            read_html() %>%
-            html_table(fill = T) %>%
-            .[[1]]
+          
+          # If week is 1, use last year's data
+          if(wk_num == 1) {
+            old_wk <- 16
+            wk_data <-  paste("https://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2019&year_max=2019&season_start=1&season_end=-1&pos%5B%5D=",
+                              position,
+                              "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=",
+                              as.character(old_wk - 1),
+                              "&week_num_max=",
+                              as.character(old_wk -1),
+                              "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=1&week_num_max=1&c1stat=rush_att&c1comp=gt&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c5val=1.0&order_by=fanduel_points",
+                              #"&c1stat=rush_att&c1comp=gt&c1val=0&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c4val=0&c5val=1.0&order_by=pass_rating",
+                              sep = "") %>%                
+              read_html() %>%
+              html_table(fill = T) %>%
+              .[[1]] 
+          }
+           
 })
 
 
@@ -194,17 +198,23 @@ data <- list(wk_data = wk_data,
 source("~/ff_shiny_app/ff_app/position_information.R", local = T)
 
 # QB
-qb <- position_stats("QB",wk_num,data, tm_names)
+qb <- position_stats("QB",wk_num, data, tm_names) %>%
+      mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
+             proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
 
 # RB
-rb <- position_stats("RB",wk_num,data, tm_names)
+rb <- position_stats("RB",wk_num,data, tm_names) %>%
+  mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
+         proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
 
 # WR
-wr <- position_stats("WR",wk_num,data,tm_names)
+wr <- position_stats("WR",wk_num,data,tm_names) %>%
+  mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
+         proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
 
 source("~/ff_shiny_app/ff_app/wr_vs_cb.R")
 wr_matchup <- wr_vs_cv(paste("~/ff_shiny_app/ff_app/data/wide-receiver-vs-cornerback-matchup-analysis-week-",
-                             wk_num,
+                             1, #wk_num,
                              "-table.html",
                              sep = ""))
 
@@ -212,7 +222,9 @@ wr_matchup <- wr_vs_cv(paste("~/ff_shiny_app/ff_app/data/wide-receiver-vs-corner
 wr <- left_join(wr, wr_matchup, by = c("proj_player" = "vs_cb_wr"))
 
 # TE
-te <- position_stats("TE",wk_num,data, tm_names)
+te <- position_stats("TE",wk_num,data, tm_names) %>%
+  mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
+         proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
 
 
 # Combinng into one DF ----------------------------------------------------
@@ -233,7 +245,7 @@ names(dvoa_previous) <- paste("prev_wk_dvoa", names(dvoa_previous), sep = "_")
 all_positions <- left_join(all_positions, dvoa_previous, by = c("prev_wk_opp" = "prev_wk_dvoa_team"))
 
 # Adding Leverage Scores --------------------------------------------------
-leverage <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4-fantasy-football-gpp-leverage-scores-table_wk",
+leverage <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4-gpp-leverage-scores-table_wk",
                      wk_num,
                      ".csv", sep = "")) %>%
             select(-Opp) %>%
@@ -252,8 +264,10 @@ leverage_names <- colnames(leverage) %>%
 colnames(leverage) <- leverage_names
 
 # fixing team names and some select player names
-leverage[["tm"]] <- sapply(leverage[["tm"]], function(x) find_names(x, "fff_abbreviation"))
+leverage[["tm"]] <- as.character(sapply(leverage[["tm"]], function(x) find_names(x, "fff_abbreviation")))
 leverage[["player"]] <- str_replace(leverage[["player"]], "Mitch", "Mitchell")
+
+leverage <- leverage %>% mutate(tm = ifelse(tm == "character(0)", "LVE", tm))
 
 
 
@@ -265,6 +279,6 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(19, "1/10")
+df <- shiny_df(1, "09/13")
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_16.xlsx")
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_1_2020.xlsx")
