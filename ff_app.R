@@ -212,9 +212,9 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
 
 #
 # WR Defense and Oline Table
-#
+#& ytd_rec_target > 2 --> hiding for week 1
 
-wr_def <- filter(df, proj_pos == "WR" & ytd_rec_target > 2 & is.na(line) == F) %>%
+wr_def <- filter(df, proj_pos == "WR" & is.na(line) == F) %>%
   select(proj_player,
          proj_opp,
          pts_vs_g,
@@ -263,9 +263,9 @@ wr_def <- filter(df, proj_pos == "WR" & ytd_rec_target > 2 & is.na(line) == F) %
 
 #
 # WR Offense Table
-#
+# & ytd_rec_target > 2 --> hiding for week 1
 
-wr_off <- filter(df, proj_pos == "WR" & ytd_rec_target > 2 & is.na(line) == F) %>%
+wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F) %>%
   select(proj_player,
          proj_opp,
          ytd_rec_target,
@@ -299,9 +299,9 @@ wr_off <- filter(df, proj_pos == "WR" & ytd_rec_target > 2 & is.na(line) == F) %
 
 #
 # TE Defense and Oline Table
-#
+# & ytd_rec_target > 2 --> hiding for week 1
 
-te_def <- filter(df, proj_pos == "TE" & ytd_rec_target > 2 & is.na(line) == F) %>%
+te_def <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
   select(proj_player,
          proj_opp,
          pts_vs_g,
@@ -350,9 +350,9 @@ te_def <- filter(df, proj_pos == "TE" & ytd_rec_target > 2 & is.na(line) == F) %
 
 #
 # TE Offense Table
-#
+# & ytd_rec_target > 2 --> hiding for week 1
 
-te_off <- filter(df, proj_pos == "TE" & ytd_rec_target > 2 & is.na(line) == F) %>%
+te_off <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
   select(proj_player,
          proj_opp,
          ytd_rec_target,
