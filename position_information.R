@@ -351,13 +351,14 @@ position_stats <- function(position, wk_num, data, tm_names) {
       all_data <- full_join(proj_data, wk_data2, by = c("proj_player" = "prev_wk_player",
                                                          "proj_tm" = "prev_wk_tm",
                                                          "proj_pos" = "prev_wk_pos")) %>%
-                  full_join(ytd_data, by = c("proj_player"= "ytd_rec_player", 
-                                                       "proj_tm" = "ytd_rec_tm",
-                                                       "proj_pos" = "ytd_rec_pos")) %>%
+                  left_join(ytd_data, by = c("proj_player"= "ytd_rec_player", 
+                                                       "proj_tm" = "ytd_rec_tm")) %>%
+                                                       #"proj_pos" = "ytd_rec_pos")) %>% issues current with WR as position
                   left_join(rz_data, by = c("proj_player" = "receiving_player")) %>%
                   left_join(all_d_data, by = c("proj_opp" = "def_tm")) %>% 
                   left_join(pts_vs, by = c("proj_opp" = "pts_vs_tm")) %>%
-                  filter(proj_ffpts > 0) #, proj_pos != "RB", proj_pos != "TE", proj_pos != "HB")
+                  filter(proj_ffpts > 0) %>% #, proj_pos != "RB", proj_pos != "TE", proj_pos != "HB")
+                  select(-ytd_rec_pos) # removing the position from before
       }
   }
 
