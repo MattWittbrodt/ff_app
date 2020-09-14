@@ -203,7 +203,7 @@ position_stats <- function(position, wk_num, data, tm_names) {
   # Rushing D
   #
   
-  rush_d <- d_data[[3]] %>% .[,-c(1,3)]
+  rush_d <- d_data[[4]] %>% .[,-c(1,3)]
   
   rush_d_names <- colnames(rush_d) %>%
                   str_to_lower() %>%
