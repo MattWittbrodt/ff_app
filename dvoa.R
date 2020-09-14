@@ -11,9 +11,9 @@ dvoa <- function(playoffs) {
 # Total Team Efficiency ---------------------------------------------------
 
   # Total Team Efficiency
-  total_efficiency <- "https://www.footballoutsiders.com/stats/teameff/2019" %>%
+  total_efficiency <- "https://www.footballoutsiders.com/stats/nfl/team-efficiency/2020" %>%
          read_html() %>%
-         html_nodes(xpath = '//*[@id="node-62599"]/div/div/table[1]') %>%
+         html_nodes(xpath = '//*[@id="node-76118"]/div/div/table[1]') %>%
          html_table() %>%
          .[[1]] %>%
          .[,-1]
@@ -49,17 +49,18 @@ dvoa <- function(playoffs) {
                              -contains("s_t_"),
                              ) %>%
                       mutate(total_dvoa = as.numeric(sapply(total_dvoa, function(x) str_remove(x, '%'))),
+                             total_dave = as.numeric(sapply(total_dave, function(x) str_remove(x, '%'))),
                              #wei_dvoa = as.numeric(sapply(wei_dvoa, function(x) str_remove(x, '%'))),
-                             non_adj_tot_voa = as.numeric(sapply(non_adj_tot_voa, function(x) str_remove(x, '%'))),
+                             #non_adj_tot_voa = as.numeric(sapply(non_adj_tot_voa, function(x) str_remove(x, '%'))),
                              offense_dvoa = as.numeric(sapply(offense_dvoa, function(x) str_remove(x, '%'))),
                              defense_dvoa = as.numeric(sapply(defense_dvoa, function(x) str_remove(x, '%'))))
   
 
 # Offense Efficiency ------------------------------------------------------
 
-  offense <- "https://www.footballoutsiders.com/stats/teamoff/2019" %>%
+  offense <- "https://www.footballoutsiders.com/stats/nfl/team-offense/2020" %>%
               read_html() %>%
-              html_nodes(xpath = '//*[@id="node-62600"]/div/div/table[1]') %>%
+              html_nodes(xpath = '//*[@id="node-76119"]/div/div/table[1]') %>%
               html_table() %>%
               .[[1]] %>%
               .[,-1]
@@ -90,16 +91,16 @@ dvoa <- function(playoffs) {
   # subsetting columns
   offense <- offense %>% 
              select(-contains("last"),
-                    -offense_dvoa) %>%
-             mutate(wei_offense_dvoa = as.numeric(sapply(wei_offense_dvoa, function(x) str_remove(x, '%'))),
+                    -offense_dave) %>%
+             mutate(#wei_offense_dvoa = as.numeric(sapply(wei_offense_dvoa, function(x) str_remove(x, '%'))),
                     pass_off_dvoa = as.numeric(sapply(pass_off_dvoa, function(x) str_remove(x, '%'))),
                     rush_off_dvoa = as.numeric(sapply(rush_off_dvoa, function(x) str_remove(x, '%'))))
 
 # Defense Efficiency ------------------------------------------------------
 
-  defense <- "https://www.footballoutsiders.com/stats/teamdef/2019" %>%
+  defense <- "https://www.footballoutsiders.com/stats/nfl/team-defense/2020" %>%
     read_html() %>%
-    html_nodes(xpath = '//*[@id="node-62602"]/div/div/table[1]') %>%
+    html_nodes(xpath = '//*[@id="node-76120"]/div/div/table[1]') %>%
     html_table() %>%
     .[[1]] %>%
     .[,-1]
@@ -132,7 +133,7 @@ dvoa <- function(playoffs) {
   defense <- defense %>% 
     select(-contains("last"),
            -defense_dvoa) %>%
-    mutate(wei_defense_dvoa = as.numeric(sapply(wei_defense_dvoa, function(x) str_remove(x, '%'))),
+    mutate(#wei_defense_dvoa = as.numeric(sapply(wei_defense_dvoa, function(x) str_remove(x, '%'))),
            pass_def_dvoa = as.numeric(sapply(pass_def_dvoa, function(x) str_remove(x, '%'))),
            rush_def_dvoa = as.numeric(sapply(rush_def_dvoa, function(x) str_remove(x, '%'))))
   
