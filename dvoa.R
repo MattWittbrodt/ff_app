@@ -139,9 +139,9 @@ dvoa <- function(playoffs) {
   
 # D Line Stats ------------------------------------------------------------
 
-  dline <- "https://www.footballoutsiders.com/stats/dl/2019" %>%
+  dline <- "https://www.footballoutsiders.com/stats/nfl/defensive-line/2020" %>%
     read_html() %>%
-    html_nodes(xpath = '//*[@id="node-62608"]/div/div/table[1]') %>%
+    html_nodes(xpath = '//*[@id="node-76127"]/div/div/table[1]') %>%
     html_table() %>%
     .[[1]] %>%
     .[,-c(1,(ncol(.)-3):ncol(.))]
@@ -174,9 +174,9 @@ dvoa <- function(playoffs) {
                   dline_adj_line_yards = round(as.numeric(dline_adj_line_yards) - mean(as.numeric(dline_adj_line_yards)),2))
   
   # Quick dline passing stats (on website as same table but not same rank)
-  dline_pass <- "https://www.footballoutsiders.com/stats/dl/2019" %>%
+  dline_pass <- "https://www.footballoutsiders.com/stats/nfl/defensive-line/2020" %>%
     read_html() %>%
-    html_nodes(xpath = '//*[@id="node-62608"]/div/div/table[1]') %>%
+    html_nodes(xpath = '//*[@id="node-76127"]/div/div/table[1]') %>%
     html_table() %>%
     .[[1]] %>%
     .[,c((ncol(.)-3):ncol(.))]
@@ -205,9 +205,9 @@ dvoa <- function(playoffs) {
 
 # OLine Stats -------------------------------------------------------------
 
-  oline <- "https://www.footballoutsiders.com/stats/ol/2019" %>%
+  oline <- "https://www.footballoutsiders.com/stats/nfl/offensive-line/2020" %>%
     read_html() %>%
-    html_nodes(xpath = '//*[@id="node-62607"]/div/div/table[1]') %>%
+    html_nodes(xpath = '//*[@id="node-76126"]/div/div/table[1]') %>%
     html_table() %>%
     .[[1]] %>%
     .[,-c(1,(ncol(.)-3):ncol(.))]
@@ -238,9 +238,9 @@ dvoa <- function(playoffs) {
            oline_adj_line_yards = round(as.numeric(oline_adj_line_yards) - mean(as.numeric(oline_adj_line_yards)),2))
   
   # Quick dline passing stats (on website as same table but not same rank)
-  oline_pass <- "https://www.footballoutsiders.com/stats/ol/2019" %>%
+  oline_pass <- "https://www.footballoutsiders.com/stats/nfl/offensive-line/2020" %>%
     read_html() %>%
-    html_nodes(xpath = '//*[@id="node-62607"]/div/div/table[1]') %>%
+    html_nodes(xpath = '//*[@id="node-76126"]/div/div/table[1]') %>%
     html_table() %>%
     .[[1]] %>%
     .[,c((ncol(.)-3):ncol(.))]
@@ -276,6 +276,12 @@ dvoa <- function(playoffs) {
              left_join(dline_pass, by = "team") %>%
              left_join(dline, by = "team")
   
+  # Make all columns more distinguishable from later on
+  d_all_col <- colnames(def_all) %>%
+               str_remove("def_") %>%
+               str_remove("defense") %>%
+               str_remove("^_")
+  d_all_col <- paste("def", d_all_col, sep = "_")
   
 # Offense
   # Removing defense stats
