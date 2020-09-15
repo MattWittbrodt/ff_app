@@ -20,8 +20,8 @@ dvoa <- dvoa(playoffs = FALSE)
 dvoa_defense <- dvoa$defense
 dvoa_offense <- dvoa$offense
 
-dvoa_defense[["team"]] <- sapply(dvoa_defense[["team"]], function(x) find_names(x, "fff_abbreviation"))
-dvoa_offense[["team"]] <- sapply(dvoa_offense[["team"]], function(x) find_names(x, "fff_abbreviation"))
+dvoa_defense[["def_team"]] <- sapply(dvoa_defense[["def_team"]], function(x) find_names(x, "fff_abbreviation"))
+dvoa_offense[["off_team"]] <- sapply(dvoa_offense[["off_team"]], function(x) find_names(x, "fff_abbreviation"))
 print('DVOA Successful')
 
 # Last Week Data ----------------------------------------------------------
