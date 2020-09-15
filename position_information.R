@@ -116,7 +116,7 @@ position_stats <- function(position, wk_num, data, tm_names) {
 # Team Defense Integration ------------------------------------------------
   
   # Sub tables are commented out; need to read in and then eliminate comments
-  d_data <- "https://www.pro-football-reference.com/years/2019/opp.htm" %>%
+  d_data <- "https://www.pro-football-reference.com/years/2020/opp.htm" %>%
              read_html()
   
   d_data <-  gsub("!--","", d_data)
