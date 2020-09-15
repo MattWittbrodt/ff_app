@@ -6,7 +6,7 @@ pts_against <- function(position) {
   library(tidyverse)
   
   # Read in Data from Pro-Football-Reference
-  pts_vs <-  paste("https://www.pro-football-reference.com/years/2019/fantasy-points-against-",
+  pts_vs <-  paste("https://www.pro-football-reference.com/years/2020/fantasy-points-against-",
                     position,
                     ".htm",
                     sep = "") %>%                
