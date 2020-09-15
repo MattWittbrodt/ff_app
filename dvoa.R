@@ -91,7 +91,8 @@ dvoa <- function(playoffs) {
   # subsetting columns
   offense <- offense %>% 
              select(-contains("last"),
-                    -offense_dave) %>%
+                    -offense_dave,
+                    -offense_dvoa) %>%
              mutate(#wei_offense_dvoa = as.numeric(sapply(wei_offense_dvoa, function(x) str_remove(x, '%'))),
                     pass_off_dvoa = as.numeric(sapply(pass_off_dvoa, function(x) str_remove(x, '%'))),
                     rush_off_dvoa = as.numeric(sapply(rush_off_dvoa, function(x) str_remove(x, '%'))))
@@ -283,6 +284,8 @@ dvoa <- function(playoffs) {
                str_remove("^_")
   d_all_col <- paste("def", d_all_col, sep = "_")
   
+  colnames(def_all) <- d_all_col
+  
 # Offense
   # Removing defense stats
   total_efficiency_o <- dplyr::select(total_efficiency, -contains("def"))
@@ -290,6 +293,15 @@ dvoa <- function(playoffs) {
   off_all <- left_join(total_efficiency_o,offense, by = "team") %>%
              left_join(oline_pass, by = "team") %>%
              left_join(oline, by = "team")
+  
+  # Make all columns more distinguishable from later on
+  o_all_col <- colnames(off_all) %>%
+               str_remove("off_") %>%
+               str_remove("offense") %>%
+               str_remove("^_")
+  o_all_col <- paste("off", o_all_col, sep = "_")
+  
+  colnames(off_all) <- o_all_col
   
   
   return(list(defense = def_all,
