@@ -7,9 +7,9 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-#df <- readxl::read_xlsx("data/all_data_wk_1_2020.xlsx") %>%
-#      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_2_2020.xlsx")
+df <- readxl::read_xlsx("data/all_data_wk_2_2020.xlsx") %>%
+      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_2_2020.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -85,8 +85,8 @@ off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
                  passing_twenty_td,
                  passing_ten_att,
                  passing_ten_td,
-                 offense_dvoa,
-                 pass_off_dvoa,
+                 off_dvoa,
+                 off_pass_dvoa,
                  fd_sal,
                  line)
                
@@ -115,19 +115,19 @@ rb_def <- filter(df, proj_pos == "RB" & is.na(line) == F) %>%
                  #def_rush_yds_per_gm,
                  def_red_zone_td,
                  def_red_zone_pct,
-                 defense_dvoa,
-                 rush_def_dvoa,
-                 rush_off_dvoa,
-                 dline_power_success,
-                 dline_adj_line_yards,
-                 dline_stuffed,
-                 dline_2nd_level_yards,
-                 dline_open_field_yards,
-                 oline_adj_line_yards,
-                 oline_power_success,
-                 oline_stuffed,
-                 oline_open_field_yards,
-                 oline_2nd_level_yards
+                 def_dvoa,
+                 def_rush_dvoa,
+                 off_rush_dvoa,
+                 def_dline_power_success,
+                 def_dline_adj_line_yards,
+                 def_dline_stuffed,
+                 def_dline_2nd_level_yards,
+                 def_dline_open_field_yards,
+                 off_oline_adj_line_yards,
+                 off_oline_power_success,
+                 off_oline_stuffed,
+                 off_oline_open_field_yards,
+                 off_oline_2nd_level_yards
                  ) %>%
           mutate(pts_vs_g =  as.numeric(pts_vs_g),
                  pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt),
@@ -137,12 +137,12 @@ rb_def <- filter(df, proj_pos == "RB" & is.na(line) == F) %>%
                  pts_vs_rush_att = as.numeric(pts_vs_rush_att),
                  pts_vs_rush_yds = as.numeric(pts_vs_rush_yds),                           
                  pts_vs_rush_td = as.numeric(pts_vs_rush_td),
-                 dline_adj_line_yards = as.numeric(dline_adj_line_yards),
-                 dline_2nd_level_yards = as.numeric(dline_2nd_level_yards),
-                 dline_open_field_yards = as.numeric(dline_open_field_yards),
-                 oline_adj_line_yards = as.numeric(oline_adj_line_yards),
-                 oline_2nd_level_yards = as.numeric(oline_2nd_level_yards),
-                 oline_open_field_yards = as.numeric(oline_open_field_yards),
+                 dline_adj_line_yards = as.numeric(def_dline_adj_line_yards),
+                 dline_2nd_level_yards = as.numeric(def_dline_2nd_level_yards),
+                 dline_open_field_yards = as.numeric(def_dline_open_field_yards),
+                 oline_adj_line_yards = as.numeric(off_oline_adj_line_yards),
+                 oline_2nd_level_yards = as.numeric(off_oline_2nd_level_yards),
+                 oline_open_field_yards = as.numeric(off_oline_open_field_yards),
                  pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
                  pts_vs_rec_yds = round(pts_vs_rec_yds/pts_vs_g,1),
                  pts_vs_rec_td = round(pts_vs_rec_td/pts_vs_g,1),
@@ -150,12 +150,12 @@ rb_def <- filter(df, proj_pos == "RB" & is.na(line) == F) %>%
                  pts_vs_rush_yds = round(pts_vs_rush_yds/pts_vs_g,1),    
                  pts_vs_rush_td = round(pts_vs_rush_td/pts_vs_g,1),                           
                  pts_vs_total_touch = round(pts_vs_rush_att + pts_vs_rec_tgt,1),
-                 DVOA_Advantage = round(rush_def_dvoa + rush_off_dvoa,1),
-                 DVOA_Difference = round(rush_def_dvoa - defense_dvoa,1),
-                 net_adj_line_yd_diff = round(oline_adj_line_yards - (dline_adj_line_yards*-1),2),
-                 power_success_diff = oline_power_success - dline_power_success,
-                 second_level_yds_diff = oline_2nd_level_yards - oline_2nd_level_yards,
-                 open_fieldyards_diff = oline_open_field_yards - dline_open_field_yards) %>%
+                 DVOA_Advantage = round(def_rush_dvoa + off_rush_dvoa,1),
+                 DVOA_Difference = round(def_rush_dvoa - def_dvoa,1),
+                 net_adj_line_yd_diff = round(off_oline_adj_line_yards - (def_dline_adj_line_yards*-1),2),
+                 power_success_diff = off_oline_power_success - def_dline_power_success,
+                 second_level_yds_diff = as.numeric(off_oline_2nd_level_yards) - as.numeric(def_dline_2nd_level_yards),
+                 open_fieldyards_diff = as.numeric(off_oline_open_field_yards) - as.numeric(def_dline_open_field_yards)) %>%
           filter(ytd_rush_att > 5) %>%
           select(proj_player,
                  proj_opp,
@@ -166,13 +166,13 @@ rb_def <- filter(df, proj_pos == "RB" & is.na(line) == F) %>%
                  pts_vs_rush_td,
                  pts_vs_rec_tgt,
                  pts_vs_rec_yds,
-                 defense_dvoa,
-                 rush_def_dvoa,
+                 def_dvoa,
+                 def_rush_dvoa,
                  DVOA_Advantage,
                  DVOA_Difference,
-                 dline_power_success,
+                 def_dline_power_success,
                  power_success_diff,
-                 dline_adj_line_yards,
+                 def_dline_adj_line_yards,
                  net_adj_line_yd_diff)
 
 #
@@ -214,7 +214,7 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
 # WR Defense and Oline Table
 #& ytd_rec_target > 2 --> hiding for week 1
 
-wr_def <- filter(df, proj_pos == "WR" & is.na(line) == F) %>%
+wr_def <- filter(df, proj_pos == "WR" & is.na(line) == F & ytd_rec_target > 2) %>%
   select(proj_player,
          proj_opp,
          pts_vs_g,
@@ -227,35 +227,35 @@ wr_def <- filter(df, proj_pos == "WR" & is.na(line) == F) %>%
          def_pass_adj_net_yds_per_att,
          def_pass_yds_per_gm,
          def_tot_yds_per_play,
-         defense_dvoa,
-         pass_def_dvoa,
-         pass_off_dvoa,
-         oline_pass_adjusted_sack_rate,
-         dline_pass_rank,
-         dline_pass_sacks,
-         dline_pass_adjusted_sack_rate
+         def_dvoa,
+         def_pass_dvoa,
+         off_pass_dvoa,
+         off_oline_pass_adjusted_sack_rate,
+         def_dline_pass_rank,
+         def_dline_pass_sacks,
+         def_dline_pass_adjusted_sack_rate
   ) %>%
   mutate(pts_vs_g =  as.numeric(pts_vs_g),
          pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt),
          pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
          pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
          pts_vs_rec_td = round(as.numeric(pts_vs_rec_td),1),
-         oline_pass_adjusted_sack_rate = as.numeric(oline_pass_adjusted_sack_rate),
-         dline_pass_rank = as.numeric(dline_pass_rank),
-         dline_pass_sacks = as.numeric(dline_pass_sacks),
-         dline_pass_adjusted_sack_rate = as.numeric(dline_pass_adjusted_sack_rate),
+         oline_pass_adjusted_sack_rate = as.numeric(off_oline_pass_adjusted_sack_rate),
+         dline_pass_rank = as.numeric(def_dline_pass_rank),
+         dline_pass_sacks = as.numeric(def_dline_pass_sacks),
+         dline_pass_adjusted_sack_rate = as.numeric(def_dline_pass_adjusted_sack_rate),
          pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
          pts_vs_rec_yds = round(pts_vs_rec_yds/pts_vs_g,1),
          pts_vs_rec_td = round(pts_vs_rec_td/pts_vs_g,1),
-         DVOA_Advantage = pass_def_dvoa + pass_off_dvoa,
-         DVOA_Difference = pass_def_dvoa - defense_dvoa,
-         sack_rate_diff = round(oline_pass_adjusted_sack_rate - dline_pass_adjusted_sack_rate,1)) %>%
+         DVOA_Advantage = def_pass_dvoa + off_pass_dvoa,
+         DVOA_Difference = def_pass_dvoa - def_dvoa,
+         sack_rate_diff = round(off_oline_pass_adjusted_sack_rate - def_dline_pass_adjusted_sack_rate,1)) %>%
   select(proj_player,
          proj_opp,
          pts_vs_fantasy_per_game_fdpt:pts_vs_rec_td,
          def_red_zone_td:def_tot_yds_per_play,
-         defense_dvoa,
-         pass_def_dvoa,
+         def_dvoa,
+         def_pass_dvoa,
          DVOA_Advantage, 
          DVOA_Difference,
          dline_pass_rank:dline_pass_adjusted_sack_rate,
@@ -265,7 +265,7 @@ wr_def <- filter(df, proj_pos == "WR" & is.na(line) == F) %>%
 # WR Offense Table
 # & ytd_rec_target > 2 --> hiding for week 1
 
-wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F) %>%
+wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 2) %>%
   select(proj_player,
          proj_opp,
          ytd_rec_target,
@@ -278,7 +278,7 @@ wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F) %>%
          receiving_ten_tgt,
          receiving_ten_td,
          receiving_ten_per_tgt,
-         pass_off_dvoa,
+         off_pass_dvoa,
          vs_cb_tar,
          vs_cb_fpt,
          vs_cb_shad,
@@ -314,35 +314,35 @@ te_def <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
          def_pass_adj_net_yds_per_att,
          def_pass_yds_per_gm,
          def_tot_yds_per_play,
-         defense_dvoa,
-         pass_def_dvoa,
-         pass_off_dvoa,
-         oline_pass_adjusted_sack_rate,
-         dline_pass_rank,
-         dline_pass_sacks,
-         dline_pass_adjusted_sack_rate
+         def_dvoa,
+         def_pass_dvoa,
+         off_pass_dvoa,
+         off_oline_pass_adjusted_sack_rate,
+         def_dline_pass_rank,
+         def_dline_pass_sacks,
+         def_dline_pass_adjusted_sack_rate
   ) %>%
   mutate(pts_vs_g =  as.numeric(pts_vs_g),
          pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt),
          pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
          pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
          pts_vs_rec_td = round(as.numeric(pts_vs_rec_td),1),
-         oline_pass_adjusted_sack_rate = as.numeric(oline_pass_adjusted_sack_rate),
-         dline_pass_rank = as.numeric(dline_pass_rank),
-         dline_pass_sacks = as.numeric(dline_pass_sacks),
-         dline_pass_adjusted_sack_rate = as.numeric(dline_pass_adjusted_sack_rate),
+         oline_pass_adjusted_sack_rate = as.numeric(off_oline_pass_adjusted_sack_rate),
+         dline_pass_rank = as.numeric(def_dline_pass_rank),
+         dline_pass_sacks = as.numeric(def_dline_pass_sacks),
+         dline_pass_adjusted_sack_rate = as.numeric(def_dline_pass_adjusted_sack_rate),
          pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
          pts_vs_rec_yds = round(pts_vs_rec_yds/pts_vs_g,1),
          pts_vs_rec_td = round(pts_vs_rec_td/pts_vs_g,1),
-         DVOA_Advantage = round(pass_def_dvoa + pass_off_dvoa,2),
-         DVOA_Difference = round(pass_def_dvoa - defense_dvoa,2),
-         sack_rate_diff = round(oline_pass_adjusted_sack_rate - dline_pass_adjusted_sack_rate,1)) %>%
+         DVOA_Advantage = round(def_pass_dvoa + off_pass_dvoa,2),
+         DVOA_Difference = round(def_pass_dvoa - def_dvoa,2),
+         sack_rate_diff = round(off_oline_pass_adjusted_sack_rate - def_dline_pass_adjusted_sack_rate,1)) %>%
   select(proj_player,
          proj_opp,
          pts_vs_fantasy_per_game_fdpt:pts_vs_rec_td,
          def_red_zone_td:def_tot_yds_per_play,
-         defense_dvoa,
-         pass_def_dvoa,
+         def_dvoa,
+         def_pass_dvoa,
          DVOA_Advantage, 
          DVOA_Difference,
          dline_pass_rank:dline_pass_adjusted_sack_rate,
@@ -365,7 +365,7 @@ te_off <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
          receiving_ten_tgt,
          receiving_ten_td,
          receiving_ten_per_tgt,
-         pass_off_dvoa,
+         off_pass_dvoa,
          fd_sal,
          line,
          proj_rec_yds,
@@ -471,8 +471,8 @@ ui <- navbarPage("DFS Data",
                column(3,
                       sliderInput("pass_dvoa",
                                   "Passing Offense DVOA",
-                                  min = min(off_qb$pass_off_dvoa, na.rm = T),
-                                  max = max(off_qb$pass_off_dvoa, na.rm = T),
+                                  min = min(off_qb$off_pass_dvoa, na.rm = T),
+                                  max = max(off_qb$off_pass_dvoa, na.rm = T),
                                   value = c(min,max)
                       )),
                column(3,
@@ -601,8 +601,8 @@ tabPanel("RB",
            column(3,
                   sliderInput("rush_dvoa",
                               "Rushing DVOA",
-                              min = min(rb_def$rush_def_dvoa, na.rm = T),
-                              max = max(rb_def$rush_def_dvoa, na.rm = T),
+                              min = min(rb_def$def_rush_dvoa, na.rm = T),
+                              max = max(rb_def$def_rush_dvoa, na.rm = T),
                               value = c(min,max)
                   )),
            column(3,
@@ -893,10 +893,10 @@ tabPanel("TE",
                               max = max(te_off[["fd_sal"]],  na.rm = T),
                               value = c(min,max))),
            column(2,
-                  sliderInput("pass_off_dvoa_te",
+                  sliderInput("off_pass_dvoa_te",
                               "Pass Off DVOA",
-                              min = min(te_off[["pass_off_dvoa"]],  na.rm = T),
-                              max = max(te_off[["pass_off_dvoa"]],  na.rm = T),
+                              min = min(te_off[["off_pass_dvoa"]],  na.rm = T),
+                              max = max(te_off[["off_pass_dvoa"]],  na.rm = T),
                               value = c(min,max)
                   ))),
            
@@ -1141,7 +1141,7 @@ server <- function(input, output) {
       render_qb <-  subset(off_qb,
                            fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
                            line >= input$qb_line[1] & line <= input$qb_line[2] &
-                           pass_off_dvoa >= input$pass_dvoa[1] & pass_off_dvoa <= input$pass_dvoa[2] &
+                           off_pass_dvoa >= input$pass_dvoa[1] & off_pass_dvoa <= input$pass_dvoa[2] &
                            ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2] | is.na(fd_sal))
       
       #DT::datatable(render_qb, rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
@@ -1163,7 +1163,7 @@ server <- function(input, output) {
       qb_render_table <- subset(off_qb,
                                fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
                                  line >= input$qb_line[1] & line <= input$qb_line[2] &
-                                 pass_off_dvoa >= input$pass_dvoa[1] & pass_off_dvoa <= input$pass_dvoa[2] &
+                                 off_pass_dvoa >= input$pass_dvoa[1] & off_pass_dvoa <= input$pass_dvoa[2] &
                                  ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2]| is.na(fd_sal))
       
       if(length(input$qb_select) == 0) {qb_render_table <- qb_render_table[qb_s1,]}
@@ -1341,7 +1341,7 @@ server <- function(input, output) {
       ))
       
       render_def_rb <-  subset(rb_def,
-                               rush_def_dvoa >= input$rush_dvoa[1] & rush_def_dvoa <= input$rush_dvoa[2] &
+                               def_rush_dvoa >= input$rush_dvoa[1] & def_rush_dvoa <= input$rush_dvoa[2] &
                                net_adj_line_yd_diff >= input$net_yds_diff[1] & net_adj_line_yd_diff <= input$net_yds_diff[2] &
                                DVOA_Advantage >= input$dvoa_advantage[1] & DVOA_Advantage <= input$dvoa_advantage[2] &
                                pts_vs_total_touch >= input$total_touches[1] & pts_vs_total_touch <= input$total_touches[2])
@@ -1444,7 +1444,7 @@ server <- function(input, output) {
       rb_def_s1 <- input$def_rb_rows_selected
       
       reactive_def_rb <-  subset(rb_def,
-                               rush_def_dvoa >= input$rush_dvoa[1] & rush_def_dvoa <= input$rush_dvoa[2] &
+                               def_rush_dvoa >= input$rush_dvoa[1] & def_rush_dvoa <= input$rush_dvoa[2] &
                                net_adj_line_yd_diff >= input$net_yds_diff[1] & net_adj_line_yd_diff <= input$net_yds_diff[2] &
                                DVOA_Advantage >= input$dvoa_advantage[1] & DVOA_Advantage <= input$dvoa_advantage[2] &
                                pts_vs_total_touch >= input$total_touches[1] & pts_vs_total_touch <= input$total_touches[2])
@@ -1777,7 +1777,7 @@ server <- function(input, output) {
                               ytd_rec_target >= input$te_tgt[1] & ytd_rec_target <= input$te_tgt[2] &
                               ytd_rec_td >= input$te_rec_td[1] & ytd_rec_td <= input$te_rec_td[2] &
                               receiving_twenty_per_tgt >= input$te_rz_20[1] & receiving_twenty_per_tgt <= input$te_rz_20[2] &
-                              pass_off_dvoa >= input$pass_off_dvoa_te[1] & pass_off_dvoa <= input$pass_off_dvoa_te[2] &
+                              off_pass_dvoa >= input$off_pass_dvoa_te[1] & off_pass_dvoa <= input$off_pass_dvoa_te[2] &
                               fd_sal >= input$te_salary[1] & fd_sal <= input$te_salary[2])
       
       datatable(te_off_render,
@@ -1842,7 +1842,7 @@ server <- function(input, output) {
                                  ytd_rec_target >= input$te_tgt[1] & ytd_rec_target <= input$te_tgt[2] &
                                  ytd_rec_td >= input$te_rec_td[1] & ytd_rec_td <= input$te_rec_td[2] &
                                  receiving_twenty_per_tgt >= input$te_rz_20[1] & receiving_twenty_per_tgt <= input$te_rz_20[2] &
-                                 pass_off_dvoa >= input$pass_off_dvoa_te[1] & pass_off_dvoa <= input$pass_off_dvoa_te[2])
+                                 off_pass_dvoa >= input$off_pass_dvoa_te[1] & off_pass_dvoa <= input$off_pass_dvoa_te[2])
       
       if(length(input$te_select) == 0) {reactive_off_te <- reactive_off_te[te_off_s1,]}
       
