@@ -29,21 +29,19 @@ print('DVOA Successful')
 wk_data <- lapply(list("QB", "RB", "WR", "TE"), function(position) {
           
           # If week is 1, use last year's data
-          if(wk_num == 1) {
-            old_wk <- 16
-            wk_data <-  paste("https://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2019&year_max=2019&season_start=1&season_end=-1&pos%5B%5D=",
+          wk_data <-  paste("https://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2020&year_max=2020&season_start=1&season_end=-1&pos%5B%5D=",
                               position,
                               "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=",
-                              as.character(old_wk - 1),
+                              as.character(wk_num - 1),
                               "&week_num_max=",
-                              as.character(old_wk -1),
+                              as.character(wk_num -1),
                               "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=1&week_num_max=1&c1stat=rush_att&c1comp=gt&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c5val=1.0&order_by=fanduel_points",
                               #"&c1stat=rush_att&c1comp=gt&c1val=0&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c4val=0&c5val=1.0&order_by=pass_rating",
-                              sep = "") %>%                
-              read_html() %>%
-              html_table(fill = T) %>%
-              .[[1]] 
-          }
+                              sep = "") %>%
+                      read_html() %>%
+                      html_table(fill = T) %>%
+                      .[[1]] 
+          
            
 })
 
@@ -55,7 +53,7 @@ rz_df <- lapply(rz_types,
                 function(x) {
                   
                   # Reading in Data
-                  d <- paste("http://www.pro-football-reference.com/years/2019/redzone-",
+                  d <- paste("http://www.pro-football-reference.com/years/2020/redzone-",
                              x,
                              ".htm",
                              sep = "") %>%
@@ -95,7 +93,7 @@ rz_df <- lapply(rz_df, function(x) {name_fixes(x, 1, 2, 0)})
 ytd_df <- lapply(list("passing","rushing","receiving"), function(x) {
   
   # Reading in Data
-  d <- paste("http://www.pro-football-reference.com/years/2019/",
+  d <- paste("http://www.pro-football-reference.com/years/2020/",
              x,
              ".htm",
              sep = "") %>%
@@ -233,8 +231,8 @@ all_positions <- merge(qb,rb, all = TRUE) %>%
                  merge(wr, all = TRUE) %>%
                  merge(te, all = TRUE) %>%
                  left_join(vegas, by = c("proj_tm" = "team")) %>%
-                 left_join(dvoa_defense, by = c("proj_opp" = "team")) %>%
-                 left_join(dvoa_offense, by = c("proj_tm" = "team"))
+                 left_join(dvoa_defense, by = c("proj_opp" = "def_team")) %>%
+                 left_join(dvoa_offense, by = c("proj_tm" = "off_team"))
 
 
 # Adding previous week DVOA -----------------------------------------------
@@ -242,7 +240,7 @@ all_positions <- merge(qb,rb, all = TRUE) %>%
 dvoa_previous <- dvoa_defense
 names(dvoa_previous) <- paste("prev_wk_dvoa", names(dvoa_previous), sep = "_")
 
-all_positions <- left_join(all_positions, dvoa_previous, by = c("prev_wk_opp" = "prev_wk_dvoa_team"))
+all_positions <- left_join(all_positions, dvoa_previous, by = c("prev_wk_opp" = "prev_wk_dvoa_def_team"))
 
 # Adding Leverage Scores --------------------------------------------------
 leverage <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4-gpp-leverage-scores-table_wk",
@@ -267,7 +265,7 @@ colnames(leverage) <- leverage_names
 leverage[["tm"]] <- as.character(sapply(leverage[["tm"]], function(x) find_names(x, "fff_abbreviation")))
 leverage[["player"]] <- str_replace(leverage[["player"]], "Mitch", "Mitchell")
 
-leverage <- leverage %>% mutate(tm = ifelse(tm == "character(0)", "LVE", tm))
+leverage <- leverage %>% mutate(tm = ifelse(tm == "character(0)", "LVR", tm))
 
 
 
@@ -279,6 +277,6 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(1, "09/13")
+df <- shiny_df(2, "09/20")
 
 #writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_1_2020.xlsx")
