@@ -279,4 +279,4 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 # Getting full dataframe --------------------------------------------------
 df <- shiny_df(2, "09/20")
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_1_2020.xlsx")
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_2_2020.xlsx")
