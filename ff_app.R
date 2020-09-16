@@ -7,9 +7,9 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-df <- readxl::read_xlsx("data/all_data_wk_1_2020.xlsx") %>%
-      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_1_2020.xlsx")
+#df <- readxl::read_xlsx("data/all_data_wk_1_2020.xlsx") %>%
+#      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_2_2020.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -50,15 +50,15 @@ def_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
                 pts_vs_fantasy_per_game_fdpt,
                 def_red_zone_td,
                 def_red_zone_pct,
-                defense_dvoa,
-                pass_def_dvoa,
-                dline_pass_rank,
-                dline_pass_adjusted_sack_rate,
+                def_dvoa,
+                def_pass_dvoa,
+                def_dline_pass_rank,
+                def_dline_pass_adjusted_sack_rate,
                 def_pass_qb_rating_allowed,
                 def_pass_adj_net_yds_per_att,
-                oline_pass_adjusted_sack_rate
+                off_oline_pass_adjusted_sack_rate
                 ) %>%
-  mutate(DVOA_Diff = pass_def_dvoa - defense_dvoa,
+  mutate(DVOA_Diff = def_pass_dvoa - def_dvoa,
          pts_vs_passing_att = round(as.numeric(pts_vs_passing_att) / as.numeric(pts_vs_g),2),
          pts_vs_passing_yds = round(as.numeric(pts_vs_passing_yds) / as.numeric(pts_vs_g),2),
          pts_vs_passing_td = round(as.numeric(pts_vs_passing_td) / as.numeric(pts_vs_g),2),
@@ -67,10 +67,10 @@ def_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
   select(proj_player, proj_opp, 
          pts_vs_passing_att, pts_vs_passing_yds, pts_vs_passing_td, pts_vs_fantasy_per_game_fdpt,
          def_red_zone_td, def_red_zone_pct,
-         defense_dvoa, pass_def_dvoa, DVOA_Diff,
-         dline_pass_rank, dline_pass_adjusted_sack_rate, 
+         def_dvoa, def_pass_dvoa, DVOA_Diff,
+         def_dline_pass_rank, def_dline_pass_adjusted_sack_rate, 
          def_pass_qb_rating_allowed, 
-         def_pass_adj_net_yds_per_att, oline_pass_adjusted_sack_rate
+         def_pass_adj_net_yds_per_att, off_oline_pass_adjusted_sack_rate
   )
 
 # QB Offense Stats
