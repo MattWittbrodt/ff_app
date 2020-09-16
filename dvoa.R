@@ -282,6 +282,9 @@ dvoa <- function(playoffs) {
                str_remove("def_") %>%
                str_remove("defense") %>%
                str_remove("^_")
+  # Fixing issue when col name is just 'rank'
+  for(ii in 1:length(d_all_col)) {if(d_all_col[ii] == "rank") d_all_col[ii] <- paste(d_all_col[[ii-1]],d_all_col[ii], sep = "_")}
+  
   d_all_col <- paste("def", d_all_col, sep = "_")
   
   colnames(def_all) <- d_all_col
