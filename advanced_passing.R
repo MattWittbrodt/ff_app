@@ -8,6 +8,8 @@ advanced_passing_stats <- function() {
   
   link2 <- lapply(link, function(x) {
     
+    print(x)
+    
     # Make first row into column names
     colnames(x) <- x[1,]
     x <- x[-1,]
@@ -29,6 +31,8 @@ advanced_passing_stats <- function() {
                  -adv_passing_cmp,
                  -adv_passing_att,
                  -adv_passing_yds)
+    
+    print("The last table processing has been completed")
       
     return(x2)
     
