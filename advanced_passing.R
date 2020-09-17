@@ -58,3 +58,33 @@ advanced_passing_stats <- function() {
   return(all_df)
   
 }
+
+advanced_rushing_stats <- function() {
+  
+  # Reading in data
+  link <- "https://www.pro-football-reference.com/years/2020/rushing_advanced.htm" %>%
+          read_html()
+  link_comments <- gsub("!--","", link) # the actual information is commented out, so need to remove in HTML
+  
+  link2 <- read_html(link_comments) %>% html_table(fill = T)
+  link_data <- link2[[1]]
+  
+}
+  
+
+
+
+advanced_receiving_stats <- function() {
+  
+  # Reading in data
+  link <- "https://www.pro-football-reference.com/years/2020/receiving_advanced.htm" %>%
+    read_html() %>%
+    html_nodes(xpath = '//*[@id="node-76118"]/div/div/table[1]') %>%
+    html_table()html_table(header= T)
+}
+
+
+
+
+
+
