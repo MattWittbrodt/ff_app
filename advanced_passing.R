@@ -6,7 +6,7 @@ advanced_passing_stats <- function() {
            read_html() %>%
            html_table(fill = T)
   
-  link2 <- lapply(link, function(x) {
+  dfs <- lapply(link, function(x) {
     
     print(x)
     
@@ -21,7 +21,9 @@ advanced_passing_stats <- function() {
       
       names[ii] <- paste("adv",names[ii],descriptions[ii], sep = "_") %>%
                    str_to_lower() %>%
-                   str_replace("__","_")
+                   str_replace("__","_") %>%
+                   str_replace("/", "_per_") %>%
+                   str_replace("%","_per")
     }
     print(names)
     # Alter / standardize the column names - adding adv_passing as prefix
@@ -37,10 +39,11 @@ advanced_passing_stats <- function() {
                  -adv_age,
                  -adv_pos,
                  -adv_games_g,
-                 -adv_passing_gs,
+                 -adv_games_gs,
                  -adv_passing_cmp,
                  -adv_passing_att,
-                 -adv_passing_yds)
+                 -adv_passing_yds) %>%
+          filter(adv_player != "Player")
     
     print("The last table processing has been completed")
       
@@ -48,7 +51,10 @@ advanced_passing_stats <- function() {
     
   })
   
-  
+  # Merging into one DF
+  all_df <- left_join(dfs[[1]], dfs[[2]], by = "adv_player") %>%
+            left_join(dfs[[3]], by = "adv_player") %>%
+            left_join(dfs[[4]], by = "adv_player")
   
   
   
