@@ -56,6 +56,8 @@ advanced_passing_stats <- function() {
             left_join(dfs[[3]], by = "adv_player") %>%
             left_join(dfs[[4]], by = "adv_player")
   
+  # Fixing a few issues with columns
+  all_df[,-1] <- apply(all_df[,-1], c(1,2), function(x) {str_remove(x, "%") %>% as.numeric()})
   
   
   
