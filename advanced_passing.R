@@ -102,29 +102,56 @@ advanced_rushing_stats <- function() {
   
 }
 
-# Merging into one DF
-all_df <- left_join(dfs[[1]], dfs[[2]], by = "adv_player") %>%
-  left_join(dfs[[3]], by = "adv_player") %>%
-  left_join(dfs[[4]], by = "adv_player")
-
-# Fixing a few issues with columns
-all_df[,-1] <- apply(all_df[,-1], c(1,2), function(x) {str_remove(x, "%") %>% as.numeric()})
-
-return(all_df)
-  
-  
-}
-  
-
-
-
 advanced_receiving_stats <- function() {
   
   # Reading in data
   link <- "https://www.pro-football-reference.com/years/2020/receiving_advanced.htm" %>%
-    read_html() %>%
-    html_nodes(xpath = '//*[@id="node-76118"]/div/div/table[1]') %>%
-    html_table()html_table(header= T)
+          read_html()
+  link_comments <- gsub("!--","", link) # the actual information is commented out, so need to remove in HTML
+  
+  link2 <- read_html(link_comments) %>% html_table(fill = T)
+  link_data <- link2[[1]]
+  
+  # Fixing column names
+  names <- colnames(link_data)
+  
+  # Creating a combination column name
+  for(ii in 1:length(names)) {
+    
+    names[ii] <- paste("adv_receiving",names[ii], sep = "_") %>%
+      str_to_lower() %>%
+      str_replace("__","_") %>%
+      str_replace("/", "_per_") %>%
+      str_replace("%","_per")
+  }
+  
+  # Add back into the DF
+  colnames(link_data) <- names
+  
+  # Selecting onl the relevant columns
+  link_data2 <- link_data %>%
+                select(-adv_receiving_rk,
+                       -adv_receiving_tm,
+                       -adv_receiving_age,
+                       -adv_receiving_pos,
+                       -adv_receiving_g,
+                       -adv_receiving_gs,
+                       -adv_receiving_tgt,
+                       -adv_receiving_yds,
+                       -adv_receiving_td) %>%
+                filter(adv_receiving_player != "Player")
+  
+  return(link_data2)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 }
 
 
