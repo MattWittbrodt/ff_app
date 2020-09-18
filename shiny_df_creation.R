@@ -41,8 +41,6 @@ wk_data <- lapply(list("QB", "RB", "WR", "TE"), function(position) {
                       read_html() %>%
                       html_table(fill = T) %>%
                       .[[1]] 
-          
-           
 })
 
 print("Last Week Data Successful")
