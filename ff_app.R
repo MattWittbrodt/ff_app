@@ -1151,7 +1151,9 @@ server <- function(input, output) {
                 container = off_qb_container, 
                 options = list(pageLength = 10, 
                                lengthMenu = c(10,20,30),
-                               columnDefs = list(list(className = 'dt-center', targets = 'all'))))
+                               columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
+                formatStyle(c('ytd_pass_comp_per', 'ytd_pass_td', 'ytd_pass_yds_per_gm', 
+                              'ytd_pass_net_yds_per_att','off_dvoa','off_pass_dvoa'), backgroundColor = '#F2F3F4')
       
     })
     
