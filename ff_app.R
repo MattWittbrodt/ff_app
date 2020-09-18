@@ -7,9 +7,9 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-df <- readxl::read_xlsx("data/all_data_wk_2_2020.xlsx") %>%
-      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_2_2020.xlsx")
+#df <- readxl::read_xlsx("data/all_data_wk_2_2020.xlsx") %>%
+#      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_2_2020.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -1631,6 +1631,7 @@ server <- function(input, output) {
       
       ## Offense
       wr_off_s1 <- input$off_wr_rows_selected
+      print(wr_off_s1)
       
       reactive_off_wr <-  subset(wr_off, 
                                  ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] &
