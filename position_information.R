@@ -193,7 +193,7 @@ position_stats <- function(position, wk_num, data, tm_names) {
   # Removing first row with column name information
   conversion_d <- conversion_d[-1,] %>%
             subset(tm != "Avg Team" & tm != "League Total" & tm != "Avg Tm/G") %>%
-            select(-g,-contains("datt"),-contains("dconv"),-red_zone_att) %>%
+            select(-g,-contains("datt"),-contains("dconv")) %>%
             mutate(third_d_per = as.numeric(sapply(third_d_per, function(x) str_remove(x, '%'))),
                    fourth_d_per = as.numeric(sapply(fourth_d_per, function(x) str_remove(x, '%'))),
                    red_zone_pct = as.numeric(sapply(red_zone_pct, function(x) str_remove(x, '%'))),
@@ -248,11 +248,33 @@ position_stats <- function(position, wk_num, data, tm_names) {
                    -pass_sack_yds,
                    -pass_sacks_per)
   
+  #
+  # Team Advanced Defense
+  #
+  
+  # Reading in table and removing selected columns which are returned elsewhere
+  adv_d <- d_data[[2]] %>% select(-G, -Att, -Cmp, -Yds, -TD)
+  
+  adv_d_names <- colnames(adv_d) %>%
+                 str_to_lower() %>%
+                 str_replace("%", "_per")
+  
+  colnames(adv_d) <- paste("adv", adv_d_names, sep = "_")
+  
+  #
+  # Drives Against Defense
+  #
+  
+  # Reading in table and removing selected columns which are returned elsewhere
+  drive_d <- d_data[[9]] %>% select(-G, -Att, -Cmp, -Yds, -TD)
+  
+  
   
   ## Merging into one dataframe
   all_d_data <- inner_join(team_d, conversion_d, by = "tm") %>%
                 inner_join(rush_d, by = c("tm" = "rush_tm")) %>%
-                inner_join(pass_d, by = c("tm" = "pass_tm")) 
+                inner_join(pass_d, by = c("tm" = "pass_tm")) %>%
+                inner_join(adv_d, by = c("tm" = "adv_tm"))
   
   # Making abbreviations
   all_d_data[["tm"]] <- sapply(all_d_data[["tm"]], function(x) find_names(x, "full_name"))
