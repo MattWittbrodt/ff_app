@@ -45,6 +45,7 @@ wk_data <- lapply(list("QB", "RB", "WR", "TE"), function(position) {
            
 })
 
+print("Last Week Data Successful")
 
 # Red Zone Data -----------------------------------------------------------
 rz_types <- list("passing","rushing","receiving")
@@ -87,6 +88,7 @@ rz_df <- lapply(rz_types,
 # Fixing Names
 rz_df <- lapply(rz_df, function(x) {name_fixes(x, 1, 2, 0)})
 
+print("Red Zone Offensive Data Successful")
 
 # Year to Date Data -------------------------------------------------------
 
@@ -187,6 +189,7 @@ ytd_df <- lapply(list("passing","rushing","receiving"), function(x) {
 
 ytd_df <- lapply(ytd_df, function(x) {name_fixes(x, 1, 2, 3)})
 
+print("Year to Data Data Successful")
 
 # Combinging into one list ------------------------------------------------
 data <- list(wk_data = wk_data,
@@ -224,6 +227,7 @@ te <- position_stats("TE",wk_num,data, tm_names) %>%
   mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
          proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
 
+print("Positional Data Successful")
 
 # Combinng into one DF ----------------------------------------------------
 
@@ -241,6 +245,7 @@ dvoa_previous <- dvoa_defense
 names(dvoa_previous) <- paste("prev_wk_dvoa", names(dvoa_previous), sep = "_")
 
 all_positions <- left_join(all_positions, dvoa_previous, by = c("prev_wk_opp" = "prev_wk_dvoa_def_team"))
+print("Previous Week DVOA Successful")
 
 # Adding Leverage Scores --------------------------------------------------
 leverage <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4-gpp-leverage-scores-table_wk",
@@ -273,8 +278,25 @@ leverage <- leverage %>% mutate(tm = ifelse(tm == "character(0)", "LVR", tm))
 all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "player",
                                                            "proj_pos" = "pos",
                                                            "proj_tm" = "tm"))
-}
 
+
+print("Leverage Score Successful")
+
+# Adding in the advanced stats information ----
+source("~/ff_shiny_app/ff_app/advanced_stats.R")
+adv_pass <- advanced_passing_stats()
+adv_rush <- advanced_rushing_stats()
+adv_rec <- advanced_receiving_stats()
+
+# Joining into one large dataframe
+all_data <- all_positions %>% 
+            left_join(adv_pass, by = c("player" = "adv_player")) %>% 
+            left_join(adv_rush, by = c("player" = "adv_player")) %>% 
+            left_join(adv_rec, by = c("player" = "adv_receiving_player"))
+
+# Returning full DF ----
+return(all_data)
+}
 
 # Getting full dataframe --------------------------------------------------
 df <- shiny_df(2, "09/20")
