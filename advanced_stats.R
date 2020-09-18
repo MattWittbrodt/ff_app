@@ -39,7 +39,8 @@ advanced_passing_stats <- function() {
                  -adv_passing_cmp,
                  -adv_passing_att,
                  -adv_passing_yds) %>%
-          filter(adv_player != "Player")
+          filter(adv_player != "Player") %>%
+          mutate(adv_player = str_remove(adv_player, "[:punct:]"))
     
     return(x2)
     
@@ -96,7 +97,8 @@ advanced_rushing_stats <- function() {
                        -adv_games_gs,
                        -adv_rushing_att,
                        -adv_rushing_yds) %>%
-                filter(adv_player != "Player")
+                filter(adv_player != "Player") %>%
+                mutate(adv_player = str_remove(adv_player, "[:punct:]"))
   
   return(link_data2)
   
@@ -139,18 +141,10 @@ advanced_receiving_stats <- function() {
                        -adv_receiving_tgt,
                        -adv_receiving_yds,
                        -adv_receiving_td) %>%
-                filter(adv_receiving_player != "Player")
+                filter(adv_receiving_player != "Player") %>%
+                mutate(adv_receiving_player = str_remove(adv_receiving_player, "[:punct:]"))
   
   return(link_data2)
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
 }
 
