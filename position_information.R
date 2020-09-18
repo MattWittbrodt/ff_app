@@ -266,15 +266,46 @@ position_stats <- function(position, wk_num, data, tm_names) {
   #
   
   # Reading in table and removing selected columns which are returned elsewhere
-  drive_d <- d_data[[9]] %>% select(-G, -Att, -Cmp, -Yds, -TD)
+  drive_d <- d_data[[9]]
   
+  # Creating new column names
+  new_names <- ""
+  for(ii in 1:ncol(drive_d)) {
+    
+    if(colnames(drive_d)[ii] == ""){
+      new_names <- append(new_names, drive_d[1,ii])  
+    } else {
+      new_names <- append(new_names, paste(colnames(drive_d)[ii],drive_d[1,ii], sep = "_"))
+    }
+    
+  }
   
+  # Doing some further processing
+  new_names <- str_to_lower(new_names) %>%
+               str_replace("#", "num_") %>%
+               str_replace("%", "_per") %>%
+               str_replace("average", "avg") %>%
+               str_replace(" ", "_")
+  
+  colnames(drive_d) <- new_names[-1] # first is a blank from the initial set up
+  
+  # Doing a little more processing on the data
+  drive_d2 <- drive_d[-1,] %>%
+              select(-rk, -g) %>%
+              mutate(avg_drive_time = lubridate::ms(avg_drive_time),
+                     avg_drive_time = as.numeric(lubridate::minute(avg_drive_time)*60 + lubridate::seconds(avg_drive_time)),
+                     avg_drive_start = str_replace(avg_drive_start, "Own ", "-"),
+                     avg_drive_start = str_remove(avg_drive_start, "Opp ")
+              )
+  
+  drive_d2[,2:ncol(drive_d2)] <- apply(drive_d2[,2:ncol(drive_d2)], 2, function(x) as.numeric(x))
   
   ## Merging into one dataframe
   all_d_data <- inner_join(team_d, conversion_d, by = "tm") %>%
                 inner_join(rush_d, by = c("tm" = "rush_tm")) %>%
                 inner_join(pass_d, by = c("tm" = "pass_tm")) %>%
-                inner_join(adv_d, by = c("tm" = "adv_tm"))
+                inner_join(adv_d, by = c("tm" = "adv_tm")) %>%
+                inner_join(drive_d2, by = "tm")
   
   # Making abbreviations
   all_d_data[["tm"]] <- sapply(all_d_data[["tm"]], function(x) find_names(x, "full_name"))
