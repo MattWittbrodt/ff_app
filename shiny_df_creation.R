@@ -290,9 +290,11 @@ adv_rec <- advanced_receiving_stats()
 
 # Joining into one large dataframe
 all_data <- all_positions %>% 
-            left_join(adv_pass, by = c("player" = "adv_player")) %>% 
-            left_join(adv_rush, by = c("player" = "adv_player")) %>% 
-            left_join(adv_rec, by = c("player" = "adv_receiving_player"))
+            left_join(adv_pass, by = c("proj_player" = "adv_player")) %>% 
+            left_join(adv_rush, by = c("proj_player" = "adv_player")) %>% 
+            left_join(adv_rec, by = c("proj_player" = "adv_receiving_player"))
+
+print("Advanced Stats Successful")
 
 # Returning full DF ----
 return(all_data)
