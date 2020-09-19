@@ -7,8 +7,8 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-#df <- readxl::read_xlsx("data/all_data_wk_2_2020.xlsx") %>%
-#      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+# df <- readxl::read_xlsx("data/all_data_wk_2_2020.xlsx") %>%
+#       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_2_2020.xlsx")
 
 #NOTE: 16 columns per table works relatively well
@@ -1136,8 +1136,12 @@ server <- function(input, output) {
               container = qb_def_container, 
               options = list(pageLength = 10, 
                              lengthMenu = c(10,20,30),
-                             columnDefs = list(list(className = 'dt-center', targets = 'all'))))
+                             columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
+              formatStyle(c('pts_vs_passing_att','pts_vs_passing_yds','pts_vs_passing_td',
+                          'pts_vs_fantasy_per_game_fdpt','def_dvoa','def_pass_dvoa','DVOA_Diff'), 
+                          backgroundColor = '#F2F3F4')
     })
+   
     
     # QB Graph Output
     qb_def_reactive <- reactive({
