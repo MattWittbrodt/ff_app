@@ -1351,8 +1351,12 @@ server <- function(input, output) {
                                 Power Success = % runs on 3rd/4th down OR 1st/2nd & goal from <= 2 yds which were successful |||
                                 Difference = O Line success (rank) - D Line Success (rank) |||
                                 Adj Net Yards = Adjusted Yds allowed by D line |||
-                                Difference vs Off = Adj Net Yds from Offense - Defense, higher is better'))
-    })
+                                Difference vs Off = Adj Net Yds from Offense - Defense, higher is better')) %>%
+                formatStyle(c('pts_vs_total_touch','pts_vs_fantasy_per_game_fdpt','pts_vs_rush_att',
+                              'pts_vs_rush_yds','pts_vs_rush_td','pts_vs_rec_tgt','pts_vs_rec_yds',
+                              'def_dline_power_success','power_success_diff','def_dline_adj_line_yards',
+                              'net_adj_line_yd_diff'), backgroundColor = '#F2F3F4')
+    })           
     
     #
     # Offense RB
@@ -1410,8 +1414,12 @@ server <- function(input, output) {
                 container = off_rb_container,
                 options = list(pageLength = 10,
                                lengthMenu = c(10,20,30),
-                               columnDefs = list(list(className = 'dt-center', targets = 'all'))))
-
+                               columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
+                formatStyle(c('ytd_rush_att','ytd_rush_td','ytd_rush_yds_per_att','ytd_rush_yds_per_gm',
+                              'receiving_ten_tgt','receiving_ten_td','receiving_ten_per_tgt',
+                              'rushing_five_att','rushing_five_td','rushing_five_per_rush'), 
+                            backgroundColor = '#F2F3F4')
+      
     })
     
     
@@ -1485,7 +1493,7 @@ server <- function(input, output) {
               th(class = 'dt-center', colspan = 4, 'Points Against to WR'),
               th(class = 'dt-center', colspan = 2, 'RZ Defense'),
               th(class = 'dt-center', colspan = 3, 'Defense Efficiency'),
-              th(class = 'dt-center', colspan = 5, 'DVOA'),
+              th(class = 'dt-center', colspan = 4, 'DVOA'),
               th(class = 'dt-center', colspan = 4, 'D Line Performance')
             ),
             tr(
@@ -1525,7 +1533,11 @@ server <- function(input, output) {
                           'Legend: Pass Adv = Pass D DVOA + Pass Off DVOA, higher is better ||| 
                                 Difference = Pass DVOA - Defense DVOA, lower means passing d is a strength (i.e., compartively better than overall) |||
                                 Adj Sack Rate = sacks (plus intentional grounding penalties) per pass attempt adjusted for down, distance, and opponent |||
-                                Sack Rate Difference = round(oline_pass_adjusted_sack_rate - dline_pass_adjusted_sack_rate,1))'))
+                                Sack Rate Difference = round(oline_pass_adjusted_sack_rate - dline_pass_adjusted_sack_rate,1))')) %>%
+                formatStyle(c('pts_vs_fantasy_per_game_fdpt','pts_vs_rec_tgt','pts_vs_rec_yds','pts_vs_rec_td',
+                              'def_pass_adj_net_yds_per_att','def_pass_yds_per_gm','def_tot_yds_per_play',
+                              'dline_pass_rank','dline_pass_sacks','dline_pass_adjusted_sack_rate','sack_rate_diff'), 
+                            backgroundColor = '#F2F3F4')
     
       })
     
@@ -1585,7 +1597,11 @@ server <- function(input, output) {
       datatable(wr_off_render,
                 rownames = F,
                 container = off_wr_container,
-                options = list(pageLength = 15, lengthMenu = c(10,15,20)))
+                options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
+                formatStyle(c("ytd_rec_target","ytd_rec_yds_per_target","ytd_rec_yds_per_gm","ytd_rec_td",
+                              "receiving_ten_tgt","receiving_ten_td","receiving_ten_per_tgt",
+                              "vs_cb_tar","vs_cb_fpt","vs_cb_shad","vs_cb_matchup"),
+                            backgroundColor = '#F2F3F4')
     })
     
     
@@ -1681,7 +1697,7 @@ server <- function(input, output) {
         thead(
           tr(
             th(colspan = 2,''),
-            th(class = 'dt-center', colspan = 4, 'Points Against to WR'),
+            th(class = 'dt-center', colspan = 4, 'Points Against to TE'),
             th(class = 'dt-center', colspan = 2, 'RZ Defense'),
             th(class = 'dt-center', colspan = 3, 'Defense Efficiency'),
             th(class = 'dt-center', colspan = 5, 'DVOA'),
@@ -1723,8 +1739,11 @@ server <- function(input, output) {
                   style = 'caption-side: bottom; text-align: left;',
                   'Legend: Pass Adv = Pass D DVOA + Pass Off DVOA, higher is better ||| 
                                 Difference = Pass DVOA - Defense DVOA, lower means passing d is a strength (i.e., compartively better than overall) |||
-                                Adj Sack Rate = sacks (plus intentional grounding penalties) per pass attempt adjusted for down, distance, and opponent'))
-      
+                                Adj Sack Rate = sacks (plus intentional grounding penalties) per pass attempt adjusted for down, distance, and opponent')) %>%
+        formatStyle(c('pts_vs_fantasy_per_game_fdpt','pts_vs_rec_tgt','pts_vs_rec_yds','pts_vs_rec_td',
+                      'def_pass_adj_net_yds_per_att','def_pass_yds_per_gm','def_tot_yds_per_play',
+                      'dline_pass_rank','dline_pass_sacks','dline_pass_adjusted_sack_rate','sack_rate_diff'), 
+                    backgroundColor = '#F2F3F4')
     })
     
     # Offense TE
@@ -1775,8 +1794,13 @@ server <- function(input, output) {
       datatable(te_off_render,
                 rownames = F,
                 container = off_te_container,
-                options = list(pageLength = 15, lengthMenu = c(10,15,20)))
-    })
+                options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
+                formatStyle(c('ytd_rec_target','ytd_rec_yds_per_target','ytd_rec_yds_per_gm','ytd_rec_td',
+                              'receiving_ten_tgt','receiving_ten_td','receiving_ten_per_tgt',
+                              'fd_sal','line'),
+                            backgroundColor = '#F2F3F4')
+      
+      })
     
     
     # # TE Table
