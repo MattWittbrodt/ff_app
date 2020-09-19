@@ -5,9 +5,9 @@ account: mattwittbrodt
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1183242
-bundleId: 3637113
+bundleId: 3643791
 url: https://mattwittbrodt.shinyapps.io/ff_app/
-when: 1600297555.26684
+when: 1600436943.07377
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: advanced_passing.R|cleaning_data_for_sql.R|connect_to_sql_Db.R|data_merging.R|dvoa.R|find_names.R|name_fixes.R|position_information.R|pts_against_function.R|shiny_df_creation.R|vegas_lines.R|wr_vs_cb.R
+ignoredFiles: cleaning_data_for_sql.R|connect_to_sql_Db.R|data_merging.R|dvoa.R|find_names.R|name_fixes.R|position_information.R|pts_against_function.R|shiny_df_creation.R|vegas_lines.R|wr_vs_cb.R
