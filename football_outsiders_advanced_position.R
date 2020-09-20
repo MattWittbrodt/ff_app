@@ -33,8 +33,6 @@ fo_qb <- function() {
   return(df_all)
 }
 
-
-
 fo_rb <- function() {
   
   
@@ -69,7 +67,32 @@ fo_rb <- function() {
   return(df_all)
 }
   
+fo_pass_catchers <- function(position) {
   
+  # Getting node number for position
+  num <- switch(position, 
+                "wr" = 76125,
+                "te" = 76124)
   
+  ## Read in data for receiving ----
+  df <- paste('https://www.footballoutsiders.com/stats/nfl/',
+              position,
+              '/2020', sep = "") %>%
+    read_html() %>%
+    html_nodes(xpath = paste('//*[@id="node-', as.character(num), '"]/div/div/table[1]',sep = "")) %>%
+    html_table() %>%
+    .[[1]] %>%
+    .[,-c(4,6)] %>%
+    select(-Passes, -Yards, -TD, -FUM, -DPI)
+  
+  colnames(df) <- str_to_lower(paste('rec',colnames(df), sep = "_")) %>%
+    str_remove_all("\t") %>% str_replace("\n", "_")
+  
+  # Removing % from DVOA
+  df[,c(3:ncol(df))] <- apply(df[,c(3:ncol(df))], 2, function(x) {as.numeric(str_remove_all(as.character(x), "%"))})
+  
+  return(df)
+  
+}
   
   
