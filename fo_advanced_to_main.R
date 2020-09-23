@@ -16,15 +16,11 @@ f <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/fo_advanced_stats.
 f[["pass_team"]] <- sapply(f[["pass_team"]], function(x) find_names(x, "fff_abbreviation"))
 
 # Combining
-combined_df <- left_join(d, f, by = c("proj_player_new" = "pass_player", "proj_tm" = "pass_team"))
+combined_df <- left_join(d, f, by = c("proj_player_new" = "pass_player", "proj_tm" = "pass_team")) %>%
+               select(-proj_player_new)
 
-rb2 <- filter(combined_df, is.na(pass_dyar) == T) %>% select(-starts_with("pass"))
+writexl::write_xlsx(combined_df, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_2_2020_advanced_FO.xlsx")
 
-
-# Name issues
-proj player | new_proj_player
-CeeDee Lamb	| CeeD Lamb
-A.J. Green
 
 
 
