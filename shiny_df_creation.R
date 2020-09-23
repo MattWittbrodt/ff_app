@@ -299,6 +299,6 @@ return(all_data)
 }
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(2, "09/20")
+df <- shiny_df(3, "09/27")
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_2_2020.xlsx")
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_3_2020.xlsx")
