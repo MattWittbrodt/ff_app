@@ -286,6 +286,9 @@ adv_pass <- advanced_passing_stats()
 adv_rush <- advanced_rushing_stats()
 adv_rec <- advanced_receiving_stats()
 
+# Adding in individual Football Outsider Stats ----
+source("~/ff_shiny_app/ff_app/football_outsiders_advanced_position.R")
+
 # Joining into one large dataframe
 all_data <- all_positions %>% 
             left_join(adv_pass, by = c("proj_player" = "adv_player")) %>% 
