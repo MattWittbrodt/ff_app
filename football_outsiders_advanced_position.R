@@ -94,5 +94,3 @@ fo_pass_catchers <- function(position) {
   return(df)
   
 }
-  
-  
