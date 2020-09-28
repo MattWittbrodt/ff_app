@@ -2,7 +2,7 @@ library(tidyverse)
 source("~/ff_shiny_app/ff_app/find_names.R", local = T)
 
 # Reading in main DF
-d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_2_2020.xlsx") %>%
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_3_2020.xlsx") %>%
      mutate(proj_player_new = str_remove_all(proj_player, "(?<=[:upper:])[:alpha:]{1,}(?=[:space:])"))
 
 
