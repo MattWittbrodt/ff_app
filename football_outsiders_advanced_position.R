@@ -112,4 +112,17 @@ df_all <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player")) %>%
           pass_player = str_remove_all(pass_player, "-"))
 f[["pass_team"]] <- sapply(f[["pass_team"]], function(x) find_names(x, "fff_abbreviation"))         
 
+# Merging with main file
+#Read in DF
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_3_2020.xlsx") %>%
+  mutate(proj_player_new = str_remove_all(proj_player, "(?<=[:upper:])[:alpha:]{1,}(?=[:space:])"))
+
+
+# Combining
+combined_df <- left_join(d, df_all, by = c("proj_player_new" = "pass_player", "proj_tm" = "pass_team")) %>%
+  select(-proj_player_new)
+
+writexl::write_xlsx(combined_df, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_3_2020_advanced_FO.xlsx")
+
+
 
