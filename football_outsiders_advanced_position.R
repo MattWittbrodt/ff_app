@@ -94,3 +94,22 @@ fo_pass_catchers <- function(position) {
   return(df)
   
 }
+
+# Getting all data
+qb_df <- fo_qb()
+rb_df <- fo_rb()
+wr_df <- fo_pass_catchers("wr")
+te_df <- fo_pass_catchers("te")
+
+# Merging into 1 DF
+df_all <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player")) %>%
+          full_join(wr_df, by = c("pass_player" = "rec_player")) %>%
+          full_join(te_df, by = c("pass_player" = "rec_player")) %>%
+          mutate(pass_player = ifelse(is.na(str_extract(pass_player, "^[:upper:]\\.[:upper:]\\.")) == T,
+                            pass_player,
+                            str_remove(pass_player, "\\.")),
+          pass_player = str_replace(pass_player, "[:punct:]", " "),
+          pass_player = str_remove_all(pass_player, "-"))
+f[["pass_team"]] <- sapply(f[["pass_team"]], function(x) find_names(x, "fff_abbreviation"))         
+
+
