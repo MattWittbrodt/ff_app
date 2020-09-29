@@ -1,0 +1,9 @@
+{
+    "path" : "~/ff_shiny_app/ff_app",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}
