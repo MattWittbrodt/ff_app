@@ -3,13 +3,13 @@
 shiny_df <- function(wk_num,date) {
 
 library(tidyverse)
+library(mattDFS)
 
 # Reading in team name chart ----------------------------------------------
 source("~/ff_shiny_app/ff_app/find_names.R", local = T)
 source("~/ff_shiny_app/ff_app/name_fixes.R", local = T)
 
 # Vegas Lines -------------------------------------------------------------
-source("~/ff_shiny_app/ff_app/vegas_lines.R", local = T)
 vegas <- vegas_lines(date)
 vegas[["team"]] <- sapply(vegas[["team"]], function(x) find_names(x, "vegas"))
 print('Vegas Lines Successful')
@@ -304,9 +304,15 @@ wr_df <- fo_pass_catchers("wr")
 te_df <- fo_pass_catchers("te")
 
 # Merging into 1 DF
-fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player")) %>%
-                    full_join(wr_df, by = c("pass_player" = "rec_player")) %>%
-                    full_join(te_df, by = c("pass_player" = "rec_player")) %>%
+fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player",
+                                                   "pass_team" = "rush_team",
+                                                   "rush_dyar", "rush_eyds")) %>%
+                    full_join(wr_df, by = c("pass_player" = "rec_player",
+                                            "pass_team" = "rec_team",
+                                            "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate")) %>%
+                    full_join(te_df, by = c("pass_player" = "rec_player",
+                                            "pass_team" = "rec_team",
+                                            "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate")) %>%
                     mutate(pass_player = ifelse(is.na(str_extract(pass_player, "^[:upper:]\\.[:upper:]\\.")) == T,
                                         pass_player,
                                         str_remove(pass_player, "\\.")),
@@ -314,13 +320,15 @@ fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player"
                     pass_player = str_remove_all(pass_player, "-"))
 fo_all_positions[["pass_team"]] <- sapply(fo_all_positions[["pass_team"]], function(x) find_names(x, "fff_abbreviation"))
 
+print("FO All Advanced Position Stats Combined")
+
 # Merging with rest of data
 all_data2 <- all_data %>%
              mutate(proj_player_new = str_remove_all(proj_player, "(?<=[:upper:])[:alpha:]{1,}(?=[:space:])"))
 
 
 # Combining
-all_data_fo_pos <- left_join(all_data, fo_all_positions, by = c("proj_player_new" = "pass_player", "proj_tm" = "pass_team")) %>%
+all_data_fo_pos <- left_join(all_data2, fo_all_positions, by = c("proj_player_new" = "pass_player", "proj_tm" = "pass_team")) %>%
                    select(-proj_player_new)
 
 # Returning full DF ----
@@ -328,6 +336,6 @@ return(all_data_fo_pos)
 }
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(3, "09/27")
+df <- shiny_df(4, "10/04")
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_3_2020.xlsx")
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_4_2020.xlsx")
