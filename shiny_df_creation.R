@@ -306,7 +306,7 @@ te_df <- fo_pass_catchers("te")
 # Merging into 1 DF
 fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player",
                                                    "pass_team" = "rush_team",
-                                                   "rush_dyar", "rush_eyds")) %>%
+                                                   "rush_dyar", "rush_eyds", "rush_dvoa")) %>%
                     full_join(wr_df, by = c("pass_player" = "rec_player",
                                             "pass_team" = "rec_team",
                                             "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate")) %>%
@@ -318,6 +318,7 @@ fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player"
                                         str_remove(pass_player, "\\.")),
                     pass_player = str_replace(pass_player, "[:punct:]", " "),
                     pass_player = str_remove_all(pass_player, "-"))
+
 fo_all_positions[["pass_team"]] <- sapply(fo_all_positions[["pass_team"]], function(x) find_names(x, "fff_abbreviation"))
 
 print("FO All Advanced Position Stats Combined")
