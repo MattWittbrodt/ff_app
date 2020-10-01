@@ -9,7 +9,7 @@ library(ggrepel)
 
 df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
        mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_3_2020.xlsx")
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4_2020.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -1366,9 +1366,11 @@ server <- function(input, output) {
                               'net_adj_line_yd_diff'), backgroundColor = '#F2F3F4') %>%
                 formatStyle(
                   'DVOA_Advantage',
-                  fontWeight = 'bold',
-                  color = styleInterval(quantile(render_def_rb$DVOA_Advantage),
-                                        c('#a50026', '#fcab63', '#fedc8c', '#a4d86f', '#64bc61', '#23964f'))
+                  fontWeight = styleInterval(0, c('normal','bold')),
+                  color = styleInterval(c(-30, -10, 0, 30),
+                                        c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))
+                                        #quantile(render_def_rb$DVOA_Advantage),
+                                        #c('#a50026', '#fcab63', '#fedc8c', '#a4d86f', '#64bc61', '#23964f'))
                 )
     })
 
