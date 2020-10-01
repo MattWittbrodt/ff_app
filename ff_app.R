@@ -7,9 +7,9 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-#df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
-#       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4_2020.xlsx")
+df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
+       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4_2020.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -1394,7 +1394,7 @@ server <- function(input, output) {
             th(class = 'dt-center', colspan = 3, 'RZ Rec inside 10y'),
             th(class = 'dt-center', colspan = 3, 'RZ Rush inside 10y'),
             th(class = 'dt-center', colspan = 3, 'RZ Rush inside 5y'),
-            th(class = 'dt-center', colspan = 3, 'DFS')
+            th(class = 'dt-center', colspan = 4, 'DFS')
           ),
           tr(
             th(colspan = 1, 'Player'),
