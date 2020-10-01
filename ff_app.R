@@ -7,9 +7,9 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
-       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_3_2020.xlsx")
+#df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
+#       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_3_2020.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -201,12 +201,16 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
                  fd_sal) %>%
           mutate(ytd_rec_target = ifelse(is.na(ytd_rec_target) == T, 0, ytd_rec_target),
                  total_touches = ytd_rush_att + ytd_rec_target,
-                 tt_per_thousand = round(total_touches / (fd_sal/1000),2)) %>%
+                 high_value_touches = ytd_rec_target + rushing_ten_att,
+                 high_value_touches_per = round(high_value_touches / total_touches, 2),
+                 tt_per_thousand = round(total_touches / (fd_sal/1000),2),
+                 hv_per_thousand = round(high_value_touches / (fd_sal/1000),2)) %>%
           select(proj_player, proj_opp,
-                 total_touches, ytd_rush_att:ytd_rush_yds_per_gm,
+                 total_touches, high_value_touches, high_value_touches_per,
+                 ytd_rush_att:ytd_rush_yds_per_gm,
                  ytd_rec_target,ytd_rec_yds_per_gm,
                  receiving_ten_tgt:line,
-                 fd_sal, tt_per_thousand)
+                 fd_sal, tt_per_thousand, hv_per_thousand)
 
 # WR Data -----------------------------------------------------------------
 
@@ -1372,7 +1376,7 @@ server <- function(input, output) {
         class = 'display',
         thead(
           tr(
-            th(colspan = 3,''),
+            th(colspan = 5,''),
             th(class = 'dt-center', colspan = 4, 'YTD Rush / Game'),
             th(class = 'dt-center', colspan = 2, 'YTD Rec / Game'),
             th(class = 'dt-center', colspan = 3, 'RZ Rec inside 10y'),
@@ -1384,6 +1388,8 @@ server <- function(input, output) {
             th(colspan = 1, 'Player'),
             th(colspan = 1, 'Opp'),
             th(colspan = 1, 'Total Touches'),
+            th(colspan = 1, 'High Value Touches'),
+            th(colspan = 1, 'HV Touch %'),
             th(colspan = 1, 'Att'),
             th(colspan = 1, 'TD'),
             th(colspan = 1, 'Yd/Att'),
@@ -1401,7 +1407,8 @@ server <- function(input, output) {
             th(colspan = 1, 'Att %'),
             th(colspan = 1, 'Line'),
             th(colspan = 1, '$'),
-            th(colspan = 1, 'Touches / $1k'))
+            th(colspan = 1, 'Touches / $1k'),
+            th(colspan = 1, 'High Value / $1k'))
         )
       ))
 
