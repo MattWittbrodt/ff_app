@@ -184,6 +184,7 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
                  proj_opp,
                  ytd_rec_target,
                  ytd_rec_yds_per_gm,
+                 ytd_rush_g,
                  ytd_rush_att,
                  ytd_rush_td,
                  ytd_rush_yds_per_att,
@@ -201,7 +202,7 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
                  fd_sal) %>%
           mutate(ytd_rec_target = ifelse(is.na(ytd_rec_target) == T, 0, ytd_rec_target),
                  total_touches = ytd_rush_att + ytd_rec_target,
-                 high_value_touches = ytd_rec_target + rushing_ten_att,
+                 high_value_touches = ytd_rec_target + round(rushing_ten_att/ytd_rush_g,2),
                  high_value_touches_per = round(high_value_touches / total_touches, 2),
                  tt_per_thousand = round(total_touches / (fd_sal/1000),2),
                  hv_per_thousand = round(high_value_touches / (fd_sal/1000),2)) %>%
