@@ -7,9 +7,9 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
-       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4_2020.xlsx")
+#df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
+#       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4_2020.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -594,7 +594,8 @@ tabPanel("RB",
                               "Rushing DVOA",
                               min = min(rb_def$def_rush_dvoa, na.rm = T),
                               max = max(rb_def$def_rush_dvoa, na.rm = T),
-                              value = c(min,max)
+                              value = c(min,max),
+                              step = 0.1, round = -1
                   )),
            column(3,
                   sliderInput("net_yds_diff",
@@ -608,7 +609,8 @@ tabPanel("RB",
                               "Rushing Advantage",
                               min = min(rb_def$DVOA_Advantage,  na.rm = T),
                               max = max(rb_def$DVOA_Advantage,  na.rm = T),
-                              value = c(min,max)
+                              value = c(min,max),
+                              step = 0.1, round = -1
                   )),
            column(3,
                   sliderInput("total_touches",
@@ -888,7 +890,8 @@ tabPanel("TE",
                               "Pass Off DVOA",
                               min = min(te_off[["off_pass_dvoa"]],  na.rm = T),
                               max = max(te_off[["off_pass_dvoa"]],  na.rm = T),
-                              value = c(min,max)
+                              value = c(min,max),
+                              step = 0.1, round = -1
                   ))),
 
          fluidRow(column(12,
