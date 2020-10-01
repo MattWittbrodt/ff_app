@@ -7,9 +7,9 @@ library(tidyverse)
 library(DT)
 library(ggrepel)
 
-#df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
-#       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
-df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_3_2020.xlsx")
+df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
+       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_3_2020.xlsx")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -1363,7 +1363,13 @@ server <- function(input, output) {
                 formatStyle(c('pts_vs_total_touch','pts_vs_fantasy_per_game_fdpt','pts_vs_rush_att',
                               'pts_vs_rush_yds','pts_vs_rush_td','pts_vs_rec_tgt','pts_vs_rec_yds',
                               'def_dline_power_success','power_success_diff','def_dline_adj_line_yards',
-                              'net_adj_line_yd_diff'), backgroundColor = '#F2F3F4')
+                              'net_adj_line_yd_diff'), backgroundColor = '#F2F3F4') %>%
+                formatStyle(
+                  'DVOA_Advantage',
+                  fontWeight = 'bold',
+                  color = styleInterval(quantile(render_def_rb$DVOA_Advantage),
+                                        c('#a50026', '#fcab63', '#fedc8c', '#a4d86f', '#64bc61', '#23964f'))
+                )
     })
 
     #
