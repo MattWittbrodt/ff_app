@@ -213,7 +213,7 @@ wr <- position_stats("WR",wk_num,data,tm_names) %>%
 
 source("~/ff_shiny_app/ff_app/wr_vs_cb.R")
 wr_matchup <- wr_vs_cv(paste("~/ff_shiny_app/ff_app/data/wide-receiver-vs-cornerback-matchup-analysis-week-",
-                             1, #wk_num,
+                             wk_num,
                              "-table.html",
                              sep = ""))
 
