@@ -6,10 +6,10 @@ library(lubridate)
 library(writexl)
 
 # Reading in complete data for week ----
-df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
-      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+#df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
+#      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4_2020.xlsx") # for use on computer
+df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4_2020.xlsx") # for use on computer
 
 ###
 ### Data Frame Creation
@@ -286,6 +286,75 @@ wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 2) 
 
 # TE Panel Data ----
 
+# TE Defense
+
+te_def <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
+  select(proj_player,
+         proj_opp,
+         pts_vs_g,
+         pts_vs_fantasy_per_game_fdpt,
+         pts_vs_rec_tgt,
+         pts_vs_rec_yds,
+         pts_vs_rec_td,
+         def_red_zone_td,
+         def_red_zone_pct,
+         def_pass_adj_net_yds_per_att,
+         def_pass_yds_per_gm,
+         def_tot_yds_per_play,
+         def_dvoa,
+         def_pass_dvoa,
+         off_pass_dvoa,
+         off_oline_pass_adjusted_sack_rate,
+         def_dline_pass_rank,
+         def_dline_pass_sacks,
+         def_dline_pass_adjusted_sack_rate
+  ) %>%
+  mutate(pts_vs_g =  as.numeric(pts_vs_g),
+         pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt),
+         pts_vs_rec_tgt = as.numeric(pts_vs_rec_tgt),
+         pts_vs_rec_yds = as.numeric(pts_vs_rec_yds),
+         pts_vs_rec_td = round(as.numeric(pts_vs_rec_td),1),
+         oline_pass_adjusted_sack_rate = as.numeric(off_oline_pass_adjusted_sack_rate),
+         dline_pass_rank = as.numeric(def_dline_pass_rank),
+         dline_pass_sacks = as.numeric(def_dline_pass_sacks),
+         dline_pass_adjusted_sack_rate = as.numeric(def_dline_pass_adjusted_sack_rate),
+         pts_vs_rec_tgt = round(pts_vs_rec_tgt/pts_vs_g,1),
+         pts_vs_rec_yds = round(pts_vs_rec_yds/pts_vs_g,1),
+         pts_vs_rec_td = round(pts_vs_rec_td/pts_vs_g,1),
+         DVOA_Advantage = round(def_pass_dvoa + off_pass_dvoa,2),
+         DVOA_Difference = round(def_pass_dvoa - def_dvoa,2),
+         sack_rate_diff = round(off_oline_pass_adjusted_sack_rate - def_dline_pass_adjusted_sack_rate,1)) %>%
+  select(proj_player,
+         proj_opp,
+         pts_vs_fantasy_per_game_fdpt:pts_vs_rec_td,
+         def_red_zone_td:def_tot_yds_per_play,
+         def_dvoa,
+         def_pass_dvoa,
+         DVOA_Advantage,
+         DVOA_Difference,
+         dline_pass_rank:dline_pass_adjusted_sack_rate,
+         sack_rate_diff)
+
+# TE Offense Table
+
+te_off <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
+  select(proj_player,
+         proj_opp,
+         ytd_rec_target,
+         ytd_rec_yds_per_target,
+         ytd_rec_yds_per_gm,
+         ytd_rec_td,
+         receiving_twenty_tgt,
+         receiving_twenty_td,
+         receiving_twenty_per_tgt,
+         receiving_ten_tgt,
+         receiving_ten_td,
+         receiving_ten_per_tgt,
+         off_pass_dvoa,
+         fd_sal,
+         line,
+         proj_rec_yds,
+         proj_rec_td)
 
 
 
