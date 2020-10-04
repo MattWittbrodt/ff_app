@@ -99,21 +99,6 @@ ui <- navbarPage("DFS Data",
                                                 "Plot All Returned Players in Tables",
                                                 choices = list("yes"),
                                                 selected = c("yes")))),
-             # fluidRow(
-             #   column(2,
-             #          selectInput("off_qb_y_axis",
-             #                      h3("Y Axis"),
-             #                      choices = as.list(names(off_qb)),
-             #                      selected = "fd_sal")),
-             #   column(2,
-             #          selectInput("off_qb_x_axis",
-             #                      h3("X Axis"),
-             #                      choices = as.list(as.list(names(off_qb))),
-             #                      selected = "ytd_pass_net_yds_per_att")),
-             #   column(6,
-             #          plotOutput('qb_off_plot', height = 500))
-             # ),
-
              #
              # Sliders for Defense QB
              #
