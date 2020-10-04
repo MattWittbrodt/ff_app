@@ -242,7 +242,12 @@ tabPanel("RB",
 
 
          column(12,
-                div(DT::dataTableOutput("def_rb"), style = "font-size:95%")
+                div(DT::dataTableOutput("def_rb"), style = "font-size:95%"),
+                tags$div(HTML(rb_def_legend))
+
+                #class="header", checked=NA,
+                #         tags$p("Ready to take the Shiny tutorial? If so"),
+                #         tags$a(href="shiny.rstudio.com/tutorial", "Click Here!"))
          ),
 
          #
@@ -973,16 +978,7 @@ server <- function(input, output) {
                 container = def_rb_container,
                 options = list(pageLength = 10,
                                lengthMenu = c(5,10,15,20),
-                               columnDefs = list(list(className = 'dt-center', targets = 'all'))),
-                caption = htmltools::tags$caption(
-                               style = 'caption-side: bottom; text-align: left;',
-                               'Legend: Total Touches = Rush Att + Target by RB vs. Defense |||
-                                Rushing Advantage = Rush D DVOA + Rush Off DVOA, higher is better |||
-                                Difference = Rush DVOA - Defense DVOA, lower means rushing d is a strength (i.e., compartively better than overall) |||
-                                Power Success = % runs on 3rd/4th down OR 1st/2nd & goal from <= 2 yds which were successful |||
-                                Difference = O Line success (rank) - D Line Success (rank) |||
-                                Adj Net Yards = Adjusted Yds allowed by D line |||
-                                Difference vs Off = Adj Net Yds from Offense - Defense, higher is better')) %>%
+                               columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
                 formatStyle(c('pts_vs_total_touch','pts_vs_fantasy_per_game_fdpt','pts_vs_rush_att',
                               'pts_vs_rush_yds','pts_vs_rush_td','pts_vs_rec_tgt','pts_vs_rec_yds',
                               'def_dline_power_success','power_success_diff','def_dline_adj_line_yards',
@@ -995,6 +991,7 @@ server <- function(input, output) {
                                         #quantile(render_def_rb$DVOA_Advantage),
                                         #c('#a50026', '#fcab63', '#fedc8c', '#a4d86f', '#64bc61', '#23964f'))
                 )
+
     })
 
     #

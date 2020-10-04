@@ -356,9 +356,14 @@ te_off <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
          proj_rec_yds,
          proj_rec_td)
 
+#######
+####### Misc Text in App
+#######
 
-
-
+rb_def_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</strong>
+<br><strong>Total Touches:</strong> Rush Att + Target by RB vs. Defense ||&nbsp;<strong>Rushing Advantage</strong> = Rush D DVOA + Rush Off DVOA, higher is better || <strong>DVOA Difference</strong> = Rush DVOA - Defense DVOA, lower means rushing d is a strength (i.e., compartively better than overall)
+<br><strong>Power Success</strong> = % runs on 3rd/4th down OR 1st/2nd &amp; goal from &lt;= 2 yds which were successful ||&nbsp;<strong>DVOA Difference</strong> = O Line success (%) - D Line Success (%) ||&nbsp;<strong>Adj Net Yards</strong> = Adjusted Yds allowed by D line
+<br><strong>Difference vs Off</strong> = Adj Net Yds from Offense - Defense, higher is better<br><br></span></font>'
 
 
 
