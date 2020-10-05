@@ -139,6 +139,10 @@ ui <- navbarPage("DFS Data",
                column(12,DT::dataTableOutput("def_qb"))
              ),
 
+             #
+             # Sliders for Offense QB
+             #
+
              fluidRow(
                column(3,
                       sliderInput("qb_salary",
@@ -148,26 +152,27 @@ ui <- navbarPage("DFS Data",
                                   value = c(min,max)
                       )),
                column(3,
-                      sliderInput("pass_dvoa",
-                                  "Passing Offense DVOA",
-                                  min = min(off_qb$off_pass_dvoa, na.rm = T),
-                                  max = max(off_qb$off_pass_dvoa, na.rm = T),
+                      sliderInput("qb_total",
+                                  "Implied Total",
+                                  min = min(off_qb[["implied_total"]], na.rm = T),
+                                  max = max(off_qb[["implied_total"]], na.rm = T),
                                   value = c(min,max)
                       )),
                column(3,
-                      sliderInput("qb_yds_gm",
-                                  "Pass Yds/Gm",
-                                  min = min(off_qb$ytd_pass_yds_per_gm,  na.rm = T),
-                                  max = max(off_qb$ytd_pass_yds_per_gm,  na.rm = T),
+                      sliderInput("qb_pass_yds_diff",
+                                  "Passing EYds - Yds",
+                                  min = min(off_qb$pass_yds_diff, na.rm = T),
+                                  max = max(off_qb$pass_yds_diff, na.rm = T),
                                   value = c(min,max)
                       )),
                column(3,
-                      sliderInput("qb_line",
-                                  "Line",
-                                  min = min(off_qb[["line"]], na.rm = T),
-                                  max = max(off_qb[["line"]], na.rm = T),
+                      sliderInput("qb_rush_yds",
+                                  "Rushing Yds/Gm",
+                                  min = min(off_qb$rush_yards,  na.rm = T),
+                                  max = max(off_qb$rush_yards,  na.rm = T),
                                   value = c(min,max)
-                      ))),
+                      ))
+               ),
 
 
              fluidRow(column(12,
@@ -188,12 +193,12 @@ ui <- navbarPage("DFS Data",
                       selectInput("qb_x_axis",
                                   h3("X Axis"),
                                   choices = as.list(c(names(def_qb), names(off_qb))),
-                                  selected = "pass_def_dvoa")),
+                                  selected = "adv_passing_iay")),
                column(2,
                       selectInput("qb_size",
                                   h3("Size"),
                                   choices = as.list(c(names(def_qb), names(off_qb))),
-                                  selected = "pts_vs_passing_att")),
+                                  selected = "implied_total")),
                column(6,
                       plotOutput('qbplot', height = 500))
              )
@@ -840,11 +845,11 @@ server <- function(input, output) {
             th(colspan = 1, 'Eyds - Yds'),
             th(colspan = 1, 'Bad Throw %'),
             th(colspan = 1, 'Pressure %'),
+            th(colspan = 1, 'DYAR'),
             th(colspan = 1, 'Yds/Gm'),
             th(colspan = 1, 'Eyds - Yds'),
-            th(colspan = 1, 'DYAR'),
-            th(colspan = 1, 'Attempts w/in 20yds'),
-            th(colspan = 1, 'TD w/in 20 yds'),
+            th(colspan = 1, 'Attempts'),
+            th(colspan = 1, 'TD'),
             th(colspan = 1, 'Salary ($)'),
             th(class = 'dt-center', colspan = 1, 'Implied Total'))
         )
@@ -852,9 +857,9 @@ server <- function(input, output) {
 
       render_qb <-  subset(off_qb,
                            fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
-                           #  line >= input$qb_line[1] & line <= input$qb_line[2] &
-                             #off_pass_dvoa >= input$pass_dvoa[1] & off_pass_dvoa <= input$pass_dvoa[2] &
-                             ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2] | is.na(fd_sal))
+                           implied_total >= input$qb_total[1] & implied_total <= input$qb_total[2] &
+                           pass_yds_diff >= input$qb_pass_yds_diff[1] & pass_yds_diff <= input$qb_pass_yds_diff[2] &
+                           rush_yards >= input$qb_rush_yds[1] & rush_yards <= input$qb_rush_yds[2] | is.na(fd_sal))
 
       #DT::datatable(render_qb, rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
 
@@ -878,9 +883,9 @@ server <- function(input, output) {
 
       qb_render_table <- subset(off_qb,
                                 fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
-                                  line >= input$qb_line[1] & line <= input$qb_line[2] &
-                                  off_pass_dvoa >= input$pass_dvoa[1] & off_pass_dvoa <= input$pass_dvoa[2] &
-                                  ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2]| is.na(fd_sal))
+                                implied_total >= input$qb_total[1] & implied_total <= input$qb_total[2] &
+                                pass_yds_diff >= input$qb_pass_yds_diff[1] & pass_yds_diff <= input$qb_pass_yds_diff[2] &
+                                rush_yards >= input$qb_rush_yds[1] & rush_yards <= input$qb_rush_yds[2] | is.na(fd_sal))
 
       if(length(input$qb_select) == 0) {qb_render_table <- qb_render_table[qb_s1,]}
 
