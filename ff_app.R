@@ -824,26 +824,29 @@ server <- function(input, output) {
         thead(
           tr(
             th(colspan = 2,''),
-            th(class = 'dt-center', colspan = 4, 'Year to Date Stats'),
-            th(class = 'dt-center', colspan = 4, 'RZ Offense'),
-            th(class = 'dt-center', colspan = 2, 'DVOA'),
+            th(class = 'dt-center', colspan = 2, 'Per Game Stats'),
+            th(class = 'dt-center', colspan = 5, 'Advance Passing'),
+            th(class = 'dt-center', colspan = 3, 'QB Rushing'),
+            th(class = 'dt-center', colspan = 2, 'RZ Stats'),
             th(class = 'dt-center', colspan = 2, 'DFS Info')
           ),
           tr(
             th(colspan = 1, 'Player'),
             th(colspan = 1, 'Opp'),
-            th(colspan = 1, 'Comp %'),
+            th(colspan = 1, 'Yards'),
             th(colspan = 1, 'TD'),
+            th(colspan = 1, 'IAY'),
+            th(colspan = 1, 'On Target %'),
+            th(colspan = 1, 'Eyds - Yds'),
+            th(colspan = 1, 'Bad Throw %'),
+            th(colspan = 1, 'Pressure %'),
             th(colspan = 1, 'Yds/Gm'),
-            th(colspan = 1, 'Net Yds/Att'),
-            th(colspan = 1, 'Att w/in 20yd'),
-            th(colspan = 1, 'TD w/in 20yd'),
-            th(colspan = 1, 'Att w/in 10yd'),
-            th(colspan = 1, 'TD w/in 20yd'),
-            th(colspan = 1, 'Offense'),
-            th(colspan = 1, 'Pass Offense'),
+            th(colspan = 1, 'Eyds - Yds'),
+            th(colspan = 1, 'DYAR'),
+            th(colspan = 1, 'Attempts w/in 20yds'),
+            th(colspan = 1, 'TD w/in 20 yds'),
             th(colspan = 1, 'Salary ($)'),
-            th(colspan = 1, 'Line'))
+            th(class = 'dt-center', colspan = 1, 'Implied Total'))
         )
       ))
 
@@ -860,8 +863,10 @@ server <- function(input, output) {
                 container = off_qb_container,
                 options = list(pageLength = 10,
                                lengthMenu = c(10,20,30),
-                               columnDefs = list(list(className = 'dt-center', targets = 'all'))))# %>%
-        #formatStyle(c('ytd_pass_comp_per', 'ytd_pass_td', 'ytd_pass_yds_per_gm',
+                               columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
+        formatStyle(c('ytd_pass_yds_per_gm','ytd_pass_td',
+                      'rush_dyar','rush_yards','rush_yds_diff',
+                      'fd_sal', 'implied_total'), backgroundColor = '#F2F3F4')
         #              'ytd_pass_net_yds_per_att','off_dvoa','off_pass_dvoa'), backgroundColor = '#F2F3F4')
 
     })
