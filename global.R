@@ -90,8 +90,10 @@ def_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
 #          line)
 
 off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
-  mutate(pass_yds_diff = pass_eyds - pass_yards,
-         rush_yds_diff = rush_eyds - rush_yards) %>%
+  mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
+         rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
+         pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(pts_vs_g),2),
+         rush_yds_diff = round((rush_eyds - rush_yards)/as.numeric(pts_vs_g),2)) %>%
   select(proj_player,
          proj_opp,
          # YTD Raw Data
