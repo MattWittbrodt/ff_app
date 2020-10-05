@@ -6,6 +6,7 @@ library(shiny)
 library(tidyverse)
 library(DT)
 library(ggrepel)
+library(reactable)
 
 source("./global.R")
 
@@ -848,8 +849,8 @@ server <- function(input, output) {
 
       render_qb <-  subset(off_qb,
                            fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
-                             line >= input$qb_line[1] & line <= input$qb_line[2] &
-                             off_pass_dvoa >= input$pass_dvoa[1] & off_pass_dvoa <= input$pass_dvoa[2] &
+                           #  line >= input$qb_line[1] & line <= input$qb_line[2] &
+                             #off_pass_dvoa >= input$pass_dvoa[1] & off_pass_dvoa <= input$pass_dvoa[2] &
                              ytd_pass_yds_per_gm >= input$qb_yds_gm[1] & ytd_pass_yds_per_gm <= input$qb_yds_gm[2] | is.na(fd_sal))
 
       #DT::datatable(render_qb, rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
@@ -859,9 +860,9 @@ server <- function(input, output) {
                 container = off_qb_container,
                 options = list(pageLength = 10,
                                lengthMenu = c(10,20,30),
-                               columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
-        formatStyle(c('ytd_pass_comp_per', 'ytd_pass_td', 'ytd_pass_yds_per_gm',
-                      'ytd_pass_net_yds_per_att','off_dvoa','off_pass_dvoa'), backgroundColor = '#F2F3F4')
+                               columnDefs = list(list(className = 'dt-center', targets = 'all'))))# %>%
+        #formatStyle(c('ytd_pass_comp_per', 'ytd_pass_td', 'ytd_pass_yds_per_gm',
+        #              'ytd_pass_net_yds_per_att','off_dvoa','off_pass_dvoa'), backgroundColor = '#F2F3F4')
 
     })
 
@@ -987,12 +988,25 @@ server <- function(input, output) {
                   'DVOA_Advantage',
                   fontWeight = styleInterval(0, c('normal','bold')),
                   color = styleInterval(c(-30, -10, 0, 30),
-                                        c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))
-                                        #quantile(render_def_rb$DVOA_Advantage),
-                                        #c('#a50026', '#fcab63', '#fedc8c', '#a4d86f', '#64bc61', '#23964f'))
-                )
+                                        c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
+                formatStyle(
+                  'DVOA_Difference',
+                  fontWeight = styleInterval(0, c('normal','bold')),
+                  color = styleInterval(c(-30, -10, 0, 30),
+                                        c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
+                formatStyle(
+                  'def_dline_adj_line_yards',
+                  fontWeight = styleInterval(.5, c('normal','bold')),
+                  color = styleInterval(c(-1, -.5, 0, 1),
+                                        c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
+                formatStyle(
+                  'net_adj_line_yd_diff',
+                  fontWeight = styleInterval(.5, c('normal','bold')),
+                  color = styleInterval(c(-1, -.5, 0, 1),
+                                        c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f')))
 
     })
+
 
     #
     # Offense RB
@@ -1061,7 +1075,6 @@ server <- function(input, output) {
 
     })
 
-
     ###### Graphing
 
     # RB Offense  Graph Output
@@ -1095,7 +1108,7 @@ server <- function(input, output) {
       all_rb_plot <- full_join(reactive_def_rb, reactive_off_rb, by = c("proj_player", "proj_opp")) %>%
                      select(proj_player, proj_opp) %>%
                      left_join(all_rb, by = c("proj_player", "proj_opp"))
-
+      print(head(all_rb_plot))
       return(all_rb_plot)
     })
 

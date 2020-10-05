@@ -73,22 +73,46 @@ def_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
                  def_pass_adj_net_yds_per_att, off_oline_pass_adjusted_sack_rate)
 
 # QB Offense Stats
+# off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
+#   select(proj_player,
+#          proj_opp,
+#          ytd_pass_comp_per,
+#          ytd_pass_td,
+#          ytd_pass_yds_per_gm,
+#          ytd_pass_net_yds_per_att,
+#          passing_twenty_att,
+#          passing_twenty_td,
+#          passing_ten_att,
+#          passing_ten_td,
+#          off_dvoa,
+#          off_pass_dvoa,
+#          fd_sal,
+#          line)
+
 off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
+  mutate(pass_yds_diff = pass_eyds - pass_yards,
+         rush_yds_diff = rush_eyds - rush_yards) %>%
   select(proj_player,
          proj_opp,
-         ytd_pass_comp_per,
-         ytd_pass_td,
+         # YTD Raw Data
          ytd_pass_yds_per_gm,
-         ytd_pass_net_yds_per_att,
+         ytd_pass_td,
+         # Advanced passing stats
+         adv_passing_iay,
+         adv_passing_ontgt_per,
+         pass_yds_diff,
+         adv_passing_bad_per,
+         adv_passing_prss_per,
+         # Rushing stats
+         rush_dyar,
+         rush_yards,
+         rush_yds_diff,
+         # Red Zone stats
          passing_twenty_att,
          passing_twenty_td,
-         passing_ten_att,
-         passing_ten_td,
-         off_dvoa,
-         off_pass_dvoa,
+         # DFS
          fd_sal,
-         line)
-
+         implied_total)
 
 
 
