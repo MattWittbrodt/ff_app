@@ -28,7 +28,7 @@ fo_qb <- function() {
   df_all <- left_join(df, df_rush, by = c("pass_player" = "rush_player", "pass_team" = "rush_team"))
 
   # Removing % from DVOA
-  df_all[,c(3:ncol(df_all))] <- apply(df_all[,c(3:ncol(df_all))], 2, function(x) {as.numeric(str_remove_all(as.character(x), "[:punct:]|%"))})
+  df_all[,c(3:ncol(df_all))] <- apply(df_all[,c(3:ncol(df_all))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
 
   return(df_all)
 }
@@ -62,7 +62,7 @@ fo_rb <- function() {
   df_all <- left_join(df, df_rec, by = c("rush_player" = "rec_player", "rush_team" = "rec_team"))
 
   # Removing % from DVOA
-  df_all[,c(3:ncol(df_all))] <- apply(df_all[,c(3:ncol(df_all))], 2, function(x) {as.numeric(str_remove_all(as.character(x), "[:punct:]|%"))})
+  df_all[,c(3:ncol(df_all))] <- apply(df_all[,c(3:ncol(df_all))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
 
   return(df_all)
 }
@@ -89,7 +89,7 @@ fo_pass_catchers <- function(position) {
     str_remove_all("\t") %>% str_replace("\n", "_")
 
   # Removing % from DVOA
-  df[,c(3:ncol(df))] <- apply(df[,c(3:ncol(df))], 2, function(x) {as.numeric(str_remove_all(as.character(x), "[:punct:]|%"))})
+  df[,c(3:ncol(df))] <- apply(df[,c(3:ncol(df))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
 
   return(df)
 
