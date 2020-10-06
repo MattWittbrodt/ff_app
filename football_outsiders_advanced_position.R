@@ -83,7 +83,7 @@ fo_pass_catchers <- function(position) {
     html_table() %>%
     .[[1]] %>%
     .[,-c(4,6)] %>%
-    select(-Passes, -Yards, -TD, -FUM, -DPI)
+    select(-Passes, -TD, -FUM, -DPI)
 
   colnames(df) <- str_to_lower(paste('rec',colnames(df), sep = "_")) %>%
     str_remove_all("\t") %>% str_replace("\n", "_")
