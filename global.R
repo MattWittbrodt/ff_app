@@ -201,38 +201,41 @@ rb_def <- filter(df, proj_pos == "RB" & is.na(line) == F) %>%
 # RB Offense
 
 rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
-          select(proj_player,
-                 proj_opp,
-                 ytd_rec_target,
-                 ytd_rec_yds_per_gm,
-                 ytd_rush_g,
-                 ytd_rush_att,
-                 ytd_rush_td,
-                 ytd_rush_yds_per_att,
-                 ytd_rush_yds_per_gm,
-                 receiving_ten_tgt,
-                 receiving_ten_td,
-                 receiving_ten_per_tgt,
-                 rushing_ten_att,
-                 rushing_ten_td,
-                 rushing_ten_per_rush,
-                 rushing_five_att,
-                 rushing_five_td,
-                 rushing_five_per_rush,
-                 line,
-                 fd_sal) %>%
           mutate(ytd_rec_target = ifelse(is.na(ytd_rec_target) == T, 0, ytd_rec_target),
                  total_touches = ytd_rush_att + ytd_rec_target,
                  high_value_touches = ytd_rec_target + round(rushing_ten_att/ytd_rush_g,2),
                  high_value_touches_per = round(high_value_touches / total_touches, 2),
                  tt_per_thousand = round(total_touches / (fd_sal/1000),2),
-                 hv_per_thousand = round(high_value_touches / (fd_sal/1000),2)) %>%
+                 hv_per_thousand = round(high_value_touches / (fd_sal/1000),2),
+                 rush_eyard_diff = rush_eyds - rush_yards,
+                 rec_eyard_diff = rec_eyds) %>%
           select(proj_player, proj_opp,
                  total_touches, high_value_touches, high_value_touches_per,
-                 ytd_rush_att:ytd_rush_yds_per_gm,
+                 ytd_rush_att, ytd_rush_td, ytd_rush_yds_per_gm,
+                 rush_dyar,rush_dvoa,rush_eyard_diff,rush_suc_rate,
                  ytd_rec_target,ytd_rec_yds_per_gm,
-                 receiving_ten_tgt:line,
-                 fd_sal, tt_per_thousand, hv_per_thousand)
+                 rec_dyar,rec_dvoa,rec_eyard_diff,
+                 receiving_ten_tgt,
+                 rushing_ten_att,rushing_ten_td,rushing_ten_per_rush,
+                 #rushing_five_att,rushing_five_td,rushing_five_per_rush,
+                 line, fd_sal, tt_per_thousand, hv_per_thousand,
+                 )
+
+#
+# rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
+#   mutate(ytd_rec_target = ifelse(is.na(ytd_rec_target) == T, 0, ytd_rec_target),
+#          total_touches = ytd_rush_att + ytd_rec_target,
+#          high_value_touches = ytd_rec_target + round(rushing_ten_att/ytd_rush_g,2),
+#          high_value_touches_per = round(high_value_touches / total_touches, 2),
+#          tt_per_thousand = round(total_touches / (fd_sal/1000),2),
+#          hv_per_thousand = round(high_value_touches / (fd_sal/1000),2)) %>%
+#   select(proj_player, proj_opp,
+#          total_touches, high_value_touches, high_value_touches_per,
+#          ytd_rush_att:ytd_rush_yds_per_gm,
+#          ytd_rec_target,ytd_rec_yds_per_gm,
+#          receiving_ten_tgt:line,
+#          fd_sal, tt_per_thousand, hv_per_thousand,
+#          rush_dyar,rush_dvoa)
 
 
 # WR Panel ----

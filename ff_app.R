@@ -300,7 +300,7 @@ tabPanel("RB",
 
          ## RB Offense Table
          column(12,
-                div(DT::dataTableOutput("off_rb"), style = "font-size:95%")
+                div(DT::dataTableOutput("off_rb"), style = "font-size:93%")
          ),
 
          #
@@ -1030,57 +1030,59 @@ server <- function(input, output) {
         thead(
           tr(
             th(colspan = 5,''),
-            th(class = 'dt-center', colspan = 4, 'YTD Rush / Game'),
-            th(class = 'dt-center', colspan = 2, 'YTD Rec / Game'),
-            th(class = 'dt-center', colspan = 3, 'RZ Rec inside 10y'),
-            th(class = 'dt-center', colspan = 3, 'RZ Rush inside 10y'),
-            th(class = 'dt-center', colspan = 3, 'RZ Rush inside 5y'),
+            th(class = 'dt-center', colspan = 3, 'Rushing / Game'),
+            th(class = 'dt-center', colspan = 4, 'Advanced Rushing'),
+            th(class = 'dt-center', colspan = 2, 'Receiving / Game'),
+            th(class = 'dt-center', colspan = 3, 'Advanced Receiving'),
+            th(class = 'dt-center', colspan = 4, 'RZ Usage inside 10y'),
             th(class = 'dt-center', colspan = 4, 'DFS')
           ),
           tr(
             th(colspan = 1, 'Player'),
             th(colspan = 1, 'Opp'),
             th(colspan = 1, 'Total Touches'),
-            th(colspan = 1, 'High Value Touches'),
-            th(colspan = 1, 'HV Touch %'),
+            th(colspan = 1, 'High Val Touches'),
+            th(colspan = 1, 'HV %'),
             th(colspan = 1, 'Att'),
             th(colspan = 1, 'TD'),
-            th(colspan = 1, 'Yd/Att'),
             th(colspan = 1, 'Yds'),
-            th(colspan = 1, 'Targets'),
-            th(colspan = 1, 'Yds'),
+            th(colspan = 1, 'DYAR'),
+            th(colspan = 1, 'DVOA'),
+            th(colspan = 1, 'Diff'),
+            th(colspan = 1, 'Suc. %'),
             th(colspan = 1, 'Tgt'),
+            th(colspan = 1, 'Yds'),
+            th(colspan = 1, 'DYAR'),
+            th(colspan = 1, 'DVOA'),
+            th(colspan = 1, 'Diff'),
+            th(colspan = 1, 'Tgt'),
+            th(colspan = 1, 'Rush'),
             th(colspan = 1, 'TD'),
-            th(colspan = 1, 'Tgt %'),
-            th(colspan = 1, 'Att'),
-            th(colspan = 1, 'TD'),
-            th(colspan = 1, 'Att %'),
-            th(colspan = 1, 'Att'),
-            th(colspan = 1, 'TD'),
-            th(colspan = 1, 'Att %'),
+            th(colspan = 1, 'Rush %'),
             th(colspan = 1, 'Line'),
             th(colspan = 1, '$'),
             th(colspan = 1, 'Touches / $1k'),
-            th(colspan = 1, 'High Value / $1k'))
+            th(colspan = 1, 'HV / $1k'))
         )
       ))
 
+
       render_off_rb <-  subset(rb_off,
-                               total_touches >= input$tot_touches[1] & total_touches <= input$tot_touches[2] &
-                               ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
-                               rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
-                               line >= input$rb_off_line[1] & line <= input$rb_off_line[2] &
-                               fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2 ]| is.na(total_touches) | is.na(rushing_ten_per_rush))
+                                 total_touches >= input$tot_touches[1] & total_touches <= input$tot_touches[2] &
+                                 ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
+                                 rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
+                                 line >= input$rb_off_line[1] & line <= input$rb_off_line[2] &
+                                 fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2 ]| is.na(total_touches) | is.na(rushing_ten_per_rush))
 
       datatable(render_off_rb,
                 rownames = F,
                 container = off_rb_container,
                 options = list(pageLength = 10,
-                               lengthMenu = c(10,20,30),
-                               columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
-                formatStyle(c('ytd_rush_att','ytd_rush_td','ytd_rush_yds_per_att','ytd_rush_yds_per_gm',
-                              'receiving_ten_tgt','receiving_ten_td','receiving_ten_per_tgt',
-                              'rushing_five_att','rushing_five_td','rushing_five_per_rush'),
+                              lengthMenu = c(10,20,30),
+                              columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
+                formatStyle(c('ytd_rush_att','ytd_rush_td','ytd_rush_yds_per_gm',
+                              'ytd_rec_target','ytd_rec_yds_per_gm',
+                              'receiving_ten_tgt', 'rushing_ten_att','rushing_ten_td','rushing_ten_per_rush'),
                             backgroundColor = '#F2F3F4')
 
     })
@@ -1118,7 +1120,7 @@ server <- function(input, output) {
       all_rb_plot <- full_join(reactive_def_rb, reactive_off_rb, by = c("proj_player", "proj_opp")) %>%
                      select(proj_player, proj_opp) %>%
                      left_join(all_rb, by = c("proj_player", "proj_opp"))
-      print(head(all_rb_plot))
+      #print(head(all_rb_plot))
       return(all_rb_plot)
     })
 
