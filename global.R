@@ -385,15 +385,23 @@ te_off <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
          proj_rec_yds,
          proj_rec_td)
 
+
 #######
-####### Misc Text in App
+####### Misc Text in App ----
 #######
+
+qb_off_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</strong>
+<br><strong>IAY</strong> = intended air yards (yards on all passes, complete or not) || <strong>DYAR</strong> = Defense-adjusted Yards Above Replacement. This gives the value of the quarterbacks performance compared to replacement level, adjusted for situation and opponent and then translated into yardage.
+<br><strong>Eyds - yds</strong> = Effective yards vs actual yards - translates DVOA into a yards/att number. Greater difference = played better than standard yards indicates and vice versa. More dependent on usage than DYAR.
+<br><strong>On Target </strong>= percentage of throws on target || <strong>Bad Thrrow %</strong> = poor throws per attempt || <strong>Pressure %</strong> = percentage of pressures per drop back<br><br></span></font>'
 
 rb_def_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</strong>
 <br><strong>Total Touches:</strong> Rush Att + Target by RB vs. Defense ||&nbsp;<strong>Rushing Advantage</strong> = Rush D DVOA + Rush Off DVOA, higher is better || <strong>DVOA Difference</strong> = Rush DVOA - Defense DVOA, lower means rushing d is a strength (i.e., compartively better than overall)
 <br><strong>Power Success</strong> = % runs on 3rd/4th down OR 1st/2nd &amp; goal from &lt;= 2 yds which were successful ||&nbsp;<strong>DVOA Difference</strong> = O Line success (%) - D Line Success (%) ||&nbsp;<strong>Adj Net Yards</strong> = Adjusted Yds allowed by D line
 <br><strong>Difference vs Off</strong> = Adj Net Yds from Offense - Defense, higher is better<br><br></span></font>'
 
-
+rb_off_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</strong>
+<br><strong>High Value</strong> = Rushes inside 10 yd line + target (also expressed as % total touches) || <strong>DYAR</strong> = Defense-adjusted Yards Above Replacement (performance on plays with RB carry/catch vs. replacement level, adjusted for situation and translated to yardage)
+<br><strong>DVOA</strong> = &nbsp;Defense-adjusted Value Over Average. Value, per play, over an average running back in the same game situations. More positive DVOA = better performance (negative = below-average). The simple version: <em>DYAR means a running back with more total value. DVOA means a running back with more value per play</em>. || <strong>Diff</strong> = Difference between Effective Yards (translation of DVOA into a yards per attempt) and regular yards. Players with more Effective Yards vs standard yards played better than standard stats would otherwise indicate (this measure is dependent on usage than DYAR). || <strong>Suc.</strong> % = &nbsp;successful running plays (the definition of success being different based on down and distance) divided by total running plays. A player with higher DVOA and a low success rate mixes long runs with downs getting stuffed at the line of scrimmage. A player with lower DVOA and a high success rate generally gets the yards needed, but doesn&#39;t often get more. It is not adjusted for opponent.<br><br></span></font>'
 
 
