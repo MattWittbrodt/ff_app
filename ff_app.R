@@ -175,13 +175,9 @@ ui <- navbarPage("DFS Data",
                ),
 
 
-             fluidRow(column(12,
-                             DT::dataTableOutput("off_qb"))),
-             fluidRow(column(12,
-                             p("Data Dictionary: Rz = Red Zone, ytd = Year to Date,
-                             DVOA = Defense-adjusted Value Over Average where negative is better for total, but not pass,
-                             Dline = Defensive Line Ratings,
-                             def_ = Raw Defense Stats"))),
+             column(12,
+                       div(DT::dataTableOutput("off_qb")),
+                       tags$div(HTML(qb_off_legend))),
 
              fluidRow(
                column(2,
@@ -300,7 +296,8 @@ tabPanel("RB",
 
          ## RB Offense Table
          column(12,
-                div(DT::dataTableOutput("off_rb"), style = "font-size:93%")
+                div(DT::dataTableOutput("off_rb"), style = "font-size:93%"),
+                tags$div(HTML(rb_off_legend))
          ),
 
          #
