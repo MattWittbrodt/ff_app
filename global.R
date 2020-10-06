@@ -101,6 +101,7 @@ off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
          ytd_pass_td,
          # Advanced passing stats
          adv_passing_iay,
+         pass_dyar,
          adv_passing_ontgt_per,
          pass_yds_diff,
          adv_passing_bad_per,
