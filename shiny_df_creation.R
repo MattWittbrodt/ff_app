@@ -15,7 +15,6 @@ vegas[["team"]] <- sapply(vegas[["team"]], function(x) find_names(x, "vegas"))
 print('Vegas Lines Successful')
 
 # DVOA Data ---------------------------------------------------------------
-source("~/ff_shiny_app/ff_app/dvoa.R", local = T)
 dvoa <- dvoa(playoffs = FALSE)
 dvoa_defense <- dvoa$defense
 dvoa_offense <- dvoa$offense
@@ -337,6 +336,6 @@ return(all_data_fo_pos)
 }
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(4, "10/04")
+df <- shiny_df(5, "10/11")
 
 #writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_4_2020.xlsx")
