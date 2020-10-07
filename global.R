@@ -291,28 +291,38 @@ wr_def <- filter(df, proj_pos == "WR" & is.na(line) == F & ytd_rec_target > 2) %
 
 # WR Offense Table
 
-wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 2) %>%
-          select(proj_player,
-                 proj_opp,
-                 ytd_rec_target,
-                 ytd_rec_yds_per_target,
-                 ytd_rec_yds_per_gm,
-                 ytd_rec_td,
-                 receiving_twenty_tgt,
-                 receiving_twenty_td,
-                 receiving_twenty_per_tgt,
-                 receiving_ten_tgt,
-                 receiving_ten_td,
-                 receiving_ten_per_tgt,
-                 off_pass_dvoa,
-                 vs_cb_tar,
-                 vs_cb_fpt,
-                 vs_cb_shad,
-                 vs_cb_matchup,
-                 fd_sal,
-                 implied_total) %>%
+wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 3) %>%
           mutate(vs_cb_fpt = as.numeric(vs_cb_fpt),
-                 tgt_per_thousand = round(ytd_rec_target / (fd_sal/1000),2))
+                 tgt_per_thousand = round(ytd_rec_target / (fd_sal/1000),2),
+                 rec_eyard_diff = rec_eyds,
+                 air_yards = as.numeric(adv_receiving_adot)*ytd_rec_target,
+                 air_yds_per_thousand = round(air_yards / (fd_sal/1000),2),
+                 racr = round(ytd_rec_yds_per_gm/air_yards,2)) %>%
+         select(proj_player,
+                proj_opp,
+                ytd_rec_target,
+                ytd_rec_yds_per_gm,
+                ytd_rec_td,
+                rec_dyar,
+                rec_dvoa,
+                rec_eyard_diff,
+                adv_receiving_adot,
+                air_yards,
+                racr,
+                adv_receiving_drop_per,
+                adv_receiving_rat,
+                receiving_twenty_tgt,
+                receiving_twenty_td,
+                receiving_twenty_per_tgt,
+                #off_pass_dvoa,
+                vs_cb_tar,
+                vs_cb_fpt,
+                vs_cb_shad,
+                vs_cb_matchup,
+                fd_sal,
+                tgt_per_thousand,
+                implied_total)
+
 
 # TE Panel Data ----
 
@@ -405,4 +415,5 @@ rb_off_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</s
 <br><strong>High Value</strong> = Rushes inside 10 yd line + target (also expressed as % total touches) || <strong>DYAR</strong> = Defense-adjusted Yards Above Replacement (performance on plays with RB carry/catch vs. replacement level, adjusted for situation and translated to yardage)
 <br><strong>DVOA</strong> = &nbsp;Defense-adjusted Value Over Average. Value, per play, over an average running back in the same game situations. More positive DVOA = better performance (negative = below-average). The simple version: <em>DYAR means a running back with more total value. DVOA means a running back with more value per play</em>. || <strong>Diff</strong> = Difference between Effective Yards (translation of DVOA into a yards per attempt) and regular yards. Players with more Effective Yards vs standard yards played better than standard stats would otherwise indicate (this measure is dependent on usage than DYAR). || <strong>Suc.</strong> % = &nbsp;successful running plays (the definition of success being different based on down and distance) divided by total running plays. A player with higher DVOA and a low success rate mixes long runs with downs getting stuffed at the line of scrimmage. A player with lower DVOA and a high success rate generally gets the yards needed, but doesn&#39;t often get more. It is not adjusted for opponent.<br><br></span></font>'
 
-
+wr_off_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</strong>
+<p><strong>DYAR&nbsp;</strong>= Defense-adjusted Yards Above Replacement (performance on plays with WR catch vs. replacement level, adjusted for situation and translated to yardage) || <strong>DVOA&nbsp;</strong>= &nbsp;Defense-adjusted Value Over Average. Value, per play, over an average wide receiver in the same game situations. More positive DVOA = better performance (negative = below-average). The simple version: DYAR means a wide receiver with more total value. DVOA means a wide receiver with more value per play. || <strong>EYds - Yds</strong> = Difference between Effective Yards (translation of DVOA into a yards per attempt) and regular yards. Players with more Effective Yards vs standard yards played better than standard stats would otherwise indicate (this measure is dependent on usage than DYAR). || &nbsp;<strong>ADOT&nbsp;</strong>= average depth of target (in yds) || <strong>Air Yards</strong> (yds/gm) = targets / gm * ADOT (yds/tgt); how many yards a player is targeted with, on average, per game. || <strong>RACR&nbsp;</strong>= Receiver Air Conversion Ratio (Receiving Yards / Air Yards). RACR is an efficiency metric that rolls up catch rate and yards after the catch into one number. It can also be thought of as the number of receiving yards a player creates for every air yard thrown at him. || <strong>Drop %</strong> = Number of balls dropped || <strong>QB Rat</strong> = QB rating when targeted.<br><br></span></font>'

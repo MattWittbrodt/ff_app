@@ -408,7 +408,8 @@ tabPanel("WR",
                               selected = "all"))),
 
          fluidRow(column(12,
-                  div(DT::dataTableOutput("off_wr"), style = "font-size: 90%"))),
+                  div(DT::dataTableOutput("off_wr"), style = "font-size: 90%"),
+                  tags$div(HTML(wr_off_legend)))),
 
          #
          # WR Plot
@@ -1212,33 +1213,35 @@ server <- function(input, output) {
         thead(
           tr(
             th(colspan = 2,''),
-            th(class = 'dt-center', colspan = 4, 'YTD Stats'),
-            th(class = 'dt-center', colspan = 3, 'RZ Within 20y'),
-            th(class = 'dt-center', colspan = 3, 'RZ Within 10y'),
-            th(class = 'dt-center', colspan = 1, 'DVOA'),
+            th(class = 'dt-center', colspan = 3, 'Per Game Stats'),
+            th(class = 'dt-center', colspan = 8, 'Advanced Stats'),
+            th(class = 'dt-center', colspan = 3, 'Red Zone Stats'),
             th(class = 'dt-center', colspan = 4, 'CB Matchup'),
             th(class = 'dt-center', colspan = 3, 'DFS Info')),
           tr(
-            th(colspan = 1, 'Player'),
-            th(colspan = 1, 'Opp'),
-            th(colspan = 1, 'Target'),
-            th(colspan = 1, 'Yds/Tgt'),
-            th(colspan = 1, 'Yds/Gm'), ### ADD TD!
-            th(colspan = 1, 'TD'),
-            th(colspan = 1, 'Tgt'),
-            th(colspan = 1, 'TD'),
-            th(colspan = 1, '%Tgt'),
-            th(colspan = 1, 'Tgt'),
-            th(colspan = 1, 'TD'),
-            th(colspan = 1, '%Tgt'),
-            th(colspan = 1, 'Offense'),
-            th(colspan = 1, 'Target (%)'),
-            th(colspan = 1, 'Pt / Tgt'),
-            th(colspan = 1, 'Shadow'),
-            th(colspan = 1, 'Matchup'),
-            th(colspan = 1, 'Salary ($)'),
-            th(colspan = 1, 'Implied Total'),
-            th(colspan = 1, 'Target / $1k'))
+             th(colspan = 1, 'Player'),
+             th(colspan = 1, 'Opp'),
+             th(colspan = 1, 'Target'),
+             th(colspan = 1, 'Yds/Gm'),
+             th(colspan = 1, 'TD'),
+             th(colspan = 1, 'DYAR'),
+             th(colspan = 1, 'DVOA'),
+             th(colspan = 1, 'EYds - Yds'),
+             th(colspan = 1, 'ADOT'),
+             th(colspan = 1, 'Air Yards'),
+             th(colspan = 1, 'RACR'),
+             th(colspan = 1, 'Drop %'),
+             th(colspan = 1, 'QB Rat'),
+             th(colspan = 1, 'Tgt'),
+             th(colspan = 1, 'TD'),
+             th(colspan = 1, 'Target (%)'),
+             th(colspan = 1, 'Target (%)'),
+             th(colspan = 1, 'Pt / Tgt'),
+             th(colspan = 1, 'Shadow'),
+             th(colspan = 1, 'Matchup'),
+             th(colspan = 1, 'Salary ($)'),
+             th(colspan = 1, 'Target / $1k'),
+             th(colspan = 1, 'Implied Total'))
         )))
 
       wr_off_render <- subset(wr_off,
@@ -1260,10 +1263,14 @@ server <- function(input, output) {
                 rownames = F,
                 container = off_wr_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
-                formatStyle(c("ytd_rec_target","ytd_rec_yds_per_target","ytd_rec_yds_per_gm","ytd_rec_td",
-                              "receiving_ten_tgt","receiving_ten_td","receiving_ten_per_tgt",
-                              "vs_cb_tar","vs_cb_fpt","vs_cb_shad","vs_cb_matchup"),
-                            backgroundColor = '#F2F3F4')
+                formatStyle(c("rec_dyar","rec_dvoa","rec_eyard_diff","adv_receiving_adot","air_yards","racr","adv_receiving_rat",
+                             "adv_receiving_drop_per","vs_cb_tar","vs_cb_fpt","vs_cb_shad","vs_cb_matchup"), backgroundColor = '#F2F3F4')
+
+                            #   "adv_receiving_drop_per","adv_receiving_rat",
+                            #   "receiving_twenty_tgt","receiving_twenty_td","receiving_twenty_per_tgt",
+                            #   "receiving_ten_tgt","receiving_ten_td","receiving_ten_per_tgt",
+                            #   "fd_sal","tgt_per_thousand","implied_total"),
+
     })
 
 
@@ -1271,10 +1278,10 @@ server <- function(input, output) {
     output$wrtable <- renderDataTable({
 
       render_wr <-  subset(wr,
-                           fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2]) #&
-                           # defense_dvoa >= input$wr_dvoa[1] & defense_dvoa <= input$wr_dvoa[2] &
-                           # pass_def_dvoa >= input$wr_pass_dvoa[1] & pass_def_dvoa <= input$wr_pass_dvoa[2] &
-                           # line >= input$wr_line[1] & line <= input$wr_line[2])
+                           fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2] &
+                           defense_dvoa >= input$wr_dvoa[1] & defense_dvoa <= input$wr_dvoa[2] &
+                           pass_def_dvoa >= input$wr_pass_dvoa[1] & pass_def_dvoa <= input$wr_pass_dvoa[2] &
+                           line >= input$wr_line[1] & line <= input$wr_line[2])
 
       DT::datatable(render_wr[, input$wr_vars], rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
 
