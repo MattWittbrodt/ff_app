@@ -1266,11 +1266,6 @@ server <- function(input, output) {
                 formatStyle(c("rec_dyar","rec_dvoa","rec_eyard_diff","adv_receiving_adot","air_yards","racr","adv_receiving_rat",
                              "adv_receiving_drop_per","vs_cb_tar","vs_cb_fpt","vs_cb_shad","vs_cb_matchup"), backgroundColor = '#F2F3F4')
 
-                            #   "adv_receiving_drop_per","adv_receiving_rat",
-                            #   "receiving_twenty_tgt","receiving_twenty_td","receiving_twenty_per_tgt",
-                            #   "receiving_ten_tgt","receiving_ten_td","receiving_ten_per_tgt",
-                            #   "fd_sal","tgt_per_thousand","implied_total"),
-
     })
 
 
@@ -1419,37 +1414,36 @@ server <- function(input, output) {
     output$off_te <- renderDataTable({
 
       # Offense TE Container
+      # Offense WR Container
       off_te_container <- htmltools::withTags(table(
         class = 'display',
         thead(
           tr(
             th(colspan = 2,''),
-            th(class = 'dt-center', colspan = 4, 'YTD Stats'),
-            th(class = 'dt-center', colspan = 3, 'RZ Within 20y'),
-            th(class = 'dt-center', colspan = 3, 'RZ Within 10y'),
-            th(class = 'dt-center', colspan = 1, 'DVOA'),
-            th(class = 'dt-center', colspan = 1, 'FD Info'),
-            th(class = 'dt-center', colspan = 1, 'Vegas'),
-            th(class = 'dt-center', colspan = 2, 'Projections')
-          ),
+            th(class = 'dt-center', colspan = 3, 'Per Game Stats'),
+            th(class = 'dt-center', colspan = 8, 'Advanced Stats'),
+            th(class = 'dt-center', colspan = 3, 'Red Zone Stats'),
+            th(class = 'dt-center', colspan = 3, 'DFS Info')),
           tr(
             th(colspan = 1, 'Player'),
             th(colspan = 1, 'Opp'),
             th(colspan = 1, 'Target'),
-            th(colspan = 1, 'Yds/Tgt'),
-            th(colspan = 1, 'Yds/Gm'), ### ADD TD!
+            th(colspan = 1, 'Yds/Gm'),
             th(colspan = 1, 'TD'),
+            th(colspan = 1, 'DYAR'),
+            th(colspan = 1, 'DVOA'),
+            th(colspan = 1, 'EYds - Yds'),
+            th(colspan = 1, 'ADOT'),
+            th(colspan = 1, 'Air Yards'),
+            th(colspan = 1, 'RACR'),
+            th(colspan = 1, 'Drop %'),
+            th(colspan = 1, 'QB Rat'),
             th(colspan = 1, 'Tgt'),
             th(colspan = 1, 'TD'),
-            th(colspan = 1, '%Tgt'),
-            th(colspan = 1, 'Tgt'),
-            th(colspan = 1, 'TD'),
-            th(colspan = 1, '%Tgt'),
-            th(colspan = 1, 'Offense'),
+            th(colspan = 1, 'Target (%)'),
             th(colspan = 1, 'Salary ($)'),
-            th(colspan = 1, 'Line'),
-            th(colspan = 1, 'Rec Yds'),
-            th(colspan = 1, 'Rec TD'))
+            th(colspan = 1, 'Target / $1k'),
+            th(colspan = 1, 'Implied Total'))
         )))
 
       # Editing Table to render
@@ -1457,17 +1451,17 @@ server <- function(input, output) {
                               ytd_rec_target >= input$te_tgt[1] & ytd_rec_target <= input$te_tgt[2] &
                               ytd_rec_td >= input$te_rec_td[1] & ytd_rec_td <= input$te_rec_td[2] &
                               receiving_twenty_per_tgt >= input$te_rz_20[1] & receiving_twenty_per_tgt <= input$te_rz_20[2] &
-                              off_pass_dvoa >= input$off_pass_dvoa_te[1] & off_pass_dvoa <= input$off_pass_dvoa_te[2] &
+                              #off_pass_dvoa >= input$off_pass_dvoa_te[1] & off_pass_dvoa <= input$off_pass_dvoa_te[2] &
                               fd_sal >= input$te_salary[1] & fd_sal <= input$te_salary[2])
 
       datatable(te_off_render,
                 rownames = F,
                 container = off_te_container,
-                options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
-                formatStyle(c('ytd_rec_target','ytd_rec_yds_per_target','ytd_rec_yds_per_gm','ytd_rec_td',
-                              'receiving_ten_tgt','receiving_ten_td','receiving_ten_per_tgt',
-                              'fd_sal','line'),
-                            backgroundColor = '#F2F3F4')
+                options = list(pageLength = 15, lengthMenu = c(10,15,20))) # %>%
+                # formatStyle(c('ytd_rec_target','ytd_rec_yds_per_target','ytd_rec_yds_per_gm','ytd_rec_td',
+                #               'receiving_ten_tgt','receiving_ten_td','receiving_ten_per_tgt',
+                #               'fd_sal','line'),
+                #             backgroundColor = '#F2F3F4')
 
       })
 

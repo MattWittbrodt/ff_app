@@ -377,24 +377,51 @@ te_def <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
 
 # TE Offense Table
 
-te_off <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
-  select(proj_player,
-         proj_opp,
-         ytd_rec_target,
-         ytd_rec_yds_per_target,
-         ytd_rec_yds_per_gm,
-         ytd_rec_td,
-         receiving_twenty_tgt,
-         receiving_twenty_td,
-         receiving_twenty_per_tgt,
-         receiving_ten_tgt,
-         receiving_ten_td,
-         receiving_ten_per_tgt,
-         off_pass_dvoa,
-         fd_sal,
-         line,
-         proj_rec_yds,
-         proj_rec_td)
+# te_off <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
+#   select(proj_player,
+#          proj_opp,
+#          ytd_rec_target,
+#          ytd_rec_yds_per_target,
+#          ytd_rec_yds_per_gm,
+#          ytd_rec_td,
+#          receiving_twenty_tgt,
+#          receiving_twenty_td,
+#          receiving_twenty_per_tgt,
+#          receiving_ten_tgt,
+#          receiving_ten_td,
+#          receiving_ten_per_tgt,
+#          off_pass_dvoa,
+#          fd_sal,
+#          line,
+#          proj_rec_yds,
+#          proj_rec_td)
+
+te_off <- filter(df, proj_pos == "TE"  & is.na(line) == F & ytd_rec_target > 3) %>%
+          mutate(tgt_per_thousand = round(ytd_rec_target / (fd_sal/1000),2),
+                 rec_eyard_diff = rec_eyds,
+                 air_yards = as.numeric(adv_receiving_adot)*ytd_rec_target,
+                 air_yds_per_thousand = round(air_yards / (fd_sal/1000),2),
+                 racr = round(ytd_rec_yds_per_gm/air_yards,2)) %>%
+          select(proj_player,
+                 proj_opp,
+                 ytd_rec_target,
+                 ytd_rec_yds_per_gm,
+                 ytd_rec_td,
+                 rec_dyar,
+                 rec_dvoa,
+                 rec_eyard_diff,
+                 adv_receiving_adot,
+                 air_yards,
+                 racr,
+                 adv_receiving_drop_per,
+                 adv_receiving_rat,
+                 receiving_twenty_tgt,
+                 receiving_twenty_td,
+                 receiving_twenty_per_tgt,
+                 fd_sal,
+                 tgt_per_thousand,
+                 implied_total)
+
 
 
 #######
