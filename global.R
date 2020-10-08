@@ -9,7 +9,7 @@ library(writexl)
 #df <- readxl::read_xlsx("data/all_data_wk_4_2020.xlsx") %>%
 #      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 
-df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_4_2020.xlsx") # for use on computer
+df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5_2020.xlsx") # for use on computer
 
 ###
 ### Data Frame Creation
@@ -209,7 +209,7 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
                  tt_per_thousand = round(total_touches / (fd_sal/1000),2),
                  hv_per_thousand = round(high_value_touches / (fd_sal/1000),2),
                  rush_eyard_diff = rush_eyds - rush_yards,
-                 rec_eyard_diff = rec_eyds) %>%
+                 rec_eyard_diff = rec_eyds - rec_yards) %>%
           select(proj_player, proj_opp,
                  total_touches, high_value_touches, high_value_touches_per,
                  ytd_rush_att, ytd_rush_td, ytd_rush_yds_per_gm,
@@ -294,7 +294,7 @@ wr_def <- filter(df, proj_pos == "WR" & is.na(line) == F & ytd_rec_target > 2) %
 wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 3) %>%
           mutate(vs_cb_fpt = as.numeric(vs_cb_fpt),
                  tgt_per_thousand = round(ytd_rec_target / (fd_sal/1000),2),
-                 rec_eyard_diff = rec_eyds,
+                 rec_eyard_diff = rec_eyds - rec_yards,
                  air_yards = as.numeric(adv_receiving_adot)*ytd_rec_target,
                  air_yds_per_thousand = round(air_yards / (fd_sal/1000),2),
                  racr = round(ytd_rec_yds_per_gm/air_yards,2)) %>%
@@ -379,7 +379,7 @@ te_def <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
 
 te_off <- filter(df, proj_pos == "TE"  & is.na(line) == F & ytd_rec_target > 3) %>%
           mutate(tgt_per_thousand = round(ytd_rec_target / (fd_sal/1000),2),
-                 rec_eyard_diff = rec_eyds,
+                 rec_eyard_diff = rec_eyds - rec_yards,
                  air_yards = as.numeric(adv_receiving_adot)*ytd_rec_target,
                  air_yds_per_thousand = round(air_yards / (fd_sal/1000),2),
                  racr = round(ytd_rec_yds_per_gm/air_yards,2)) %>%
