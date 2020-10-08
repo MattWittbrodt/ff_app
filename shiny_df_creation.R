@@ -305,13 +305,16 @@ te_df <- fo_pass_catchers("te")
 # Merging into 1 DF
 fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player",
                                                    "pass_team" = "rush_team",
-                                                   "rush_dyar", "rush_eyds", "rush_dvoa")) %>%
+                                                   "rush_dyar", "rush_eyds", "rush_dvoa",
+                                                   "rush_yar","rush_yar","rush_voa")) %>%
                     full_join(wr_df, by = c("pass_player" = "rec_player",
                                             "pass_team" = "rec_team",
-                                            "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate")) %>%
+                                            "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate",
+                                            "rec_yar","rec_voa","rec_yards")) %>%
                     full_join(te_df, by = c("pass_player" = "rec_player",
                                             "pass_team" = "rec_team",
-                                            "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate")) %>%
+                                            "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate",
+                                            "rec_yar","rec_voa","rec_yards")) %>%
                     mutate(pass_player = ifelse(is.na(str_extract(pass_player, "^[:upper:]\\.[:upper:]\\.")) == T,
                                         pass_player,
                                         str_remove(pass_player, "\\.")),
