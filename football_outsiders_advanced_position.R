@@ -42,19 +42,20 @@ fo_rb <- function() {
     html_nodes(xpath = '//*[@id="node-76123"]/div/div/table[1]') %>%
     html_table() %>%
     .[[1]] %>%
-    .[,-c(4,6,13)] %>%
-    select(-Runs, -Yards, -TD, -FUM)
+    .[,-c(4,6,8,16)] %>%
+    select(-Runs, -TD, -FUM)
 
   colnames(df) <- str_to_lower(paste('rush',colnames(df), sep = "_")) %>%
                   str_remove_all("\t") %>% str_replace("\n", "_")
 
+  # Receiving Yards
   df_rec <- "https://www.footballoutsiders.com/stats/nfl/rb/2020" %>%
     read_html() %>%
     html_nodes(xpath = '//*[@id="node-76123"]/div/div/table[3]') %>%
     html_table() %>%
     .[[1]] %>%
-    .[,-c(4,6)] %>%
-    select(-Passes, -Yards, -TD, -FUM)
+    .[,-c(4,6,8)] %>%
+    select(-Passes, -TD, -FUM)
   colnames(df_rec) <- str_to_lower(paste('rec', colnames(df_rec), sep = "_")) %>%
                       str_remove_all("\t") %>% str_replace("\n", "_")
 
@@ -82,7 +83,7 @@ fo_pass_catchers <- function(position) {
     html_nodes(xpath = paste('//*[@id="node-', as.character(num), '"]/div/div/table[1]',sep = "")) %>%
     html_table() %>%
     .[[1]] %>%
-    .[,-c(4,6)] %>%
+    .[,-c(4,6,8)] %>%
     select(-Passes, -TD, -FUM, -DPI)
 
   colnames(df) <- str_to_lower(paste('rec',colnames(df), sep = "_")) %>%
