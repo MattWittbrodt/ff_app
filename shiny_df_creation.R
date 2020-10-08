@@ -306,7 +306,7 @@ te_df <- fo_pass_catchers("te")
 fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player",
                                                    "pass_team" = "rush_team",
                                                    "rush_dyar", "rush_eyds", "rush_dvoa",
-                                                   "rush_yar","rush_yar","rush_voa")) %>%
+                                                   "rush_yar","rush_yar","rush_voa","rush_yards")) %>%
                     full_join(wr_df, by = c("pass_player" = "rec_player",
                                             "pass_team" = "rec_team",
                                             "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate",
