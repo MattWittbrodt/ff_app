@@ -6,10 +6,10 @@ library(lubridate)
 library(writexl)
 
 # Reading in complete data for week ----
-#df <- readxl::read_xlsx("data/all_data_wk_5_2020.xlsx") %>%
-#      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+df <- readxl::read_xlsx("data/all_data_wk_5_2020.xlsx") %>%
+      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 
-df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5_2020.xlsx") # for use on computer
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5_2020.xlsx") # for use on computer
 
 ###
 ### Data Frame Creation
