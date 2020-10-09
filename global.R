@@ -73,49 +73,35 @@ def_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
                  def_pass_adj_net_yds_per_att, off_oline_pass_adjusted_sack_rate)
 
 # QB Offense Stats
-# off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
-#   select(proj_player,
-#          proj_opp,
-#          ytd_pass_comp_per,
-#          ytd_pass_td,
-#          ytd_pass_yds_per_gm,
-#          ytd_pass_net_yds_per_att,
-#          passing_twenty_att,
-#          passing_twenty_td,
-#          passing_ten_att,
-#          passing_ten_td,
-#          off_dvoa,
-#          off_pass_dvoa,
-#          fd_sal,
-#          line)
 
 off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
-  mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
-         rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
-         pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(pts_vs_g),2),
-         rush_yds_diff = round((rush_eyds - rush_yards)/as.numeric(pts_vs_g),2)) %>%
-  select(proj_player,
-         proj_opp,
-         # YTD Raw Data
-         ytd_pass_yds_per_gm,
-         ytd_pass_td,
-         # Advanced passing stats
-         adv_passing_iay,
-         pass_dyar,
-         adv_passing_ontgt_per,
-         pass_yds_diff,
-         adv_passing_bad_per,
-         adv_passing_prss_per,
-         # Rushing stats
-         rush_dyar,
-         rush_yards,
-         rush_yds_diff,
-         # Red Zone stats
-         passing_twenty_att,
-         passing_twenty_td,
-         # DFS
-         fd_sal,
-         implied_total)
+          mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
+                 pass_dyar = round(pass_dyar/as.numeric(pts_vs_g),2),
+                 rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
+                 pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(pts_vs_g),2),
+                 rush_yds_diff = round((rush_eyds - rush_yards)/as.numeric(pts_vs_g),2)) %>%
+          select(proj_player,
+                 proj_opp,
+                 # YTD Raw Data
+                 ytd_pass_yds_per_gm,
+                 ytd_pass_td,
+                 # Advanced passing stats
+                 adv_passing_iay,
+                 pass_dyar,
+                 adv_passing_ontgt_per,
+                 pass_yds_diff,
+                 adv_passing_bad_per,
+                 adv_passing_prss_per,
+                 # Rushing stats
+                 rush_dyar,
+                 rush_yards,
+                 rush_yds_diff,
+                 # Red Zone stats
+                 passing_twenty_att,
+                 passing_twenty_td,
+                 # DFS
+                 fd_sal,
+                 implied_total)
 
 
 
@@ -202,14 +188,18 @@ rb_def <- filter(df, proj_pos == "RB" & is.na(line) == F) %>%
 # RB Offense
 
 rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
+          # First, mutating a few columns
           mutate(ytd_rec_target = ifelse(is.na(ytd_rec_target) == T, 0, ytd_rec_target),
                  total_touches = ytd_rush_att + ytd_rec_target,
                  high_value_touches = ytd_rec_target + round(rushing_ten_att/ytd_rush_g,2),
                  high_value_touches_per = round(high_value_touches / total_touches, 2),
                  tt_per_thousand = round(total_touches / (fd_sal/1000),2),
                  hv_per_thousand = round(high_value_touches / (fd_sal/1000),2),
-                 rush_eyard_diff = rush_eyds - rush_yards,
-                 rec_eyard_diff = rec_eyds - rec_yards) %>%
+                 rush_eyard_diff = round((rush_eyds - rush_yards)/ytd_rush_g,2),
+                 rec_eyard_diff = round((rec_eyds - rec_yards)/ytd_rush_g,2),
+                 rec_dyar = round(rec_dyar/ytd_rush_g,2),
+                 rush_dyar = round(rush_dyar/ytd_rush_g,2)) %>%
+          # Selected in order of presentation
           select(proj_player, proj_opp,
                  total_touches, high_value_touches, high_value_touches_per,
                  ytd_rush_att, ytd_rush_td, ytd_rush_yds_per_gm,
@@ -218,7 +208,6 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
                  rec_dyar,rec_dvoa,rec_eyard_diff,
                  receiving_ten_tgt,
                  rushing_ten_att,rushing_ten_td,rushing_ten_per_rush,
-                 #rushing_five_att,rushing_five_td,rushing_five_per_rush,
                  line, fd_sal, tt_per_thousand, hv_per_thousand,
                  )
 
@@ -277,7 +266,8 @@ wr_def <- filter(df, proj_pos == "WR" & is.na(line) == F & ytd_rec_target > 2) %
 wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 3) %>%
           mutate(vs_cb_fpt = as.numeric(vs_cb_fpt),
                  tgt_per_thousand = round(ytd_rec_target / (fd_sal/1000),2),
-                 rec_eyard_diff = rec_eyds - rec_yards,
+                 rec_eyard_diff = round((rec_eyds - rec_yards)/ytd_rec_g,2),
+                 rec_dyar = round(rec_dyar/ytd_rec_g,2),
                  air_yards = as.numeric(adv_receiving_adot)*ytd_rec_target,
                  air_yds_per_thousand = round(air_yards / (fd_sal/1000),2),
                  racr = round(ytd_rec_yds_per_gm/air_yards,2)) %>%
@@ -362,7 +352,8 @@ te_def <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
 
 te_off <- filter(df, proj_pos == "TE"  & is.na(line) == F & ytd_rec_target > 3) %>%
           mutate(tgt_per_thousand = round(ytd_rec_target / (fd_sal/1000),2),
-                 rec_eyard_diff = rec_eyds - rec_yards,
+                 rec_eyard_diff = round((rec_eyds - rec_yards)/ytd_rec_g,2),
+                 rec_dyar = round(rec_dyar/ytd_rec_g,2),
                  air_yards = as.numeric(adv_receiving_adot)*ytd_rec_target,
                  air_yds_per_thousand = round(air_yards / (fd_sal/1000),2),
                  racr = round(ytd_rec_yds_per_gm/air_yards,2)) %>%
