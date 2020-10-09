@@ -247,9 +247,6 @@ tabPanel("RB",
                 div(DT::dataTableOutput("def_rb"), style = "font-size:95%"),
                 tags$div(HTML(rb_def_legend))
 
-                #class="header", checked=NA,
-                #         tags$p("Ready to take the Shiny tutorial? If so"),
-                #         tags$a(href="shiny.rstudio.com/tutorial", "Click Here!"))
          ),
 
          #
@@ -716,7 +713,17 @@ server <- function(input, output) {
                              columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
               formatStyle(c('pts_vs_passing_att','pts_vs_passing_yds','pts_vs_passing_td',
                           'pts_vs_fantasy_per_game_fdpt','def_dvoa','def_pass_dvoa','DVOA_Diff'),
-                          backgroundColor = '#F2F3F4')
+                          backgroundColor = '#F2F3F4') #%>%
+              # formatStyle(
+              #   'DVOA_Advantage',
+              #   fontWeight = styleInterval(0, c('normal','bold')),
+              #   color = styleInterval(c(-30, -10, 0, 30),
+              #                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
+              # formatStyle(
+              #   'DVOA_Diff',
+              #   fontWeight = styleInterval(0, c('normal','bold')),
+              #   color = styleInterval(c(-30, -10, 0, 30),
+              #                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f')))
     })
 
 
@@ -931,6 +938,11 @@ server <- function(input, output) {
                               'def_dline_power_success','power_success_diff','def_dline_adj_line_yards',
                               'net_adj_line_yd_diff'), backgroundColor = '#F2F3F4') %>%
                 formatStyle(
+                  'power_success_diff',
+                  fontWeight = styleInterval(0, c('normal','bold')),
+                  color = styleInterval(c(-30, -10, 0, 30),
+                                        c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
+                formatStyle(
                   'DVOA_Advantage',
                   fontWeight = styleInterval(0, c('normal','bold')),
                   color = styleInterval(c(-30, -10, 0, 30),
@@ -1137,7 +1149,17 @@ server <- function(input, output) {
                 formatStyle(c('pts_vs_fantasy_per_game_fdpt','pts_vs_rec_tgt','pts_vs_rec_yds','pts_vs_rec_td',
                               'def_pass_adj_net_yds_per_att','def_pass_yds_per_gm','def_tot_yds_per_play',
                               'dline_pass_rank','dline_pass_sacks','dline_pass_adjusted_sack_rate','sack_rate_diff'),
-                            backgroundColor = '#F2F3F4')
+                            backgroundColor = '#F2F3F4') %>%
+        formatStyle(
+          'DVOA_Advantage',
+          fontWeight = styleInterval(0, c('normal','bold')),
+          color = styleInterval(c(-30, -10, 0, 30),
+                                c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
+        formatStyle(
+          'DVOA_Difference',
+          fontWeight = styleInterval(0, c('normal','bold')),
+          color = styleInterval(c(-30, -10, 0, 30),
+                                c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f')))
 
       })
 
