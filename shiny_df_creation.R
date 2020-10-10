@@ -254,7 +254,8 @@ leverage <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4-gpp-leverage-scores
                    Implied.Own. = as.numeric(gsub("\\%", "", Implied.Own.)),
                    Projected.Own. = as.numeric(gsub("\\%", "", Projected.Own.)),
                    Tm = as.character(Tm),
-                   Player = str_remove_all(Player, "[:punct:]"))
+                   Player = str_remove_all(Player, "[:punct:]"),
+                   FD.Sal.. = as.numeric(str_remove_all(FD.Sal.., "[,|$]")))
 
 leverage_names <- colnames(leverage) %>%
                   str_to_lower() %>%
