@@ -6,10 +6,10 @@ library(lubridate)
 library(writexl)
 
 # Reading in complete data for week ----
-df <- readxl::read_xlsx("data/all_data_wk_5_2020.xlsx") %>%
-      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+#df <- readxl::read_xlsx("data/all_data_wk_5_2020.xlsx") %>%
+#      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5_2020.xlsx") # for use on computer
+df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5_2020.xlsx") # for use on computer
 
 ###
 ### Data Frame Creation
@@ -397,6 +397,10 @@ rb_def_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</s
 rb_off_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</strong>
 <br><strong>High Value</strong> = Rushes inside 10 yd line + target (also expressed as % total touches) || <strong>DYAR</strong> = Defense-adjusted Yards Above Replacement (performance on plays with RB carry/catch vs. replacement level, adjusted for situation and translated to yardage)
 <br><strong>DVOA</strong> = &nbsp;Defense-adjusted Value Over Average. Value, per play, over an average running back in the same game situations. More positive DVOA = better performance (negative = below-average). The simple version: <em>DYAR means a running back with more total value. DVOA means a running back with more value per play</em>. || <strong>Diff</strong> = Difference between Effective Yards (translation of DVOA into a yards per attempt) and regular yards. Players with more Effective Yards vs standard yards played better than standard stats would otherwise indicate (this measure is dependent on usage than DYAR). || <strong>Suc.</strong> % = &nbsp;successful running plays (the definition of success being different based on down and distance) divided by total running plays. A player with higher DVOA and a low success rate mixes long runs with downs getting stuffed at the line of scrimmage. A player with lower DVOA and a high success rate generally gets the yards needed, but doesn&#39;t often get more. It is not adjusted for opponent.<br><br></span></font>'
+
+receiver_def_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</strong>
+<br><strong>Def (DVOA):</strong> Total defense DVOA (<strong>passing only = Pass</strong>) || <strong>Pass Adv</strong> = Pass D DVOA (opponent) + Pass Off (own team) DVOA, higher is better || <strong>(DVOA) Difference</strong> = Pass DVOA - Defense DVOA, lower means passing d is a strength (i.e., compartively better than overall)
+<br><strong>Adj Sack Rate</strong> % of sacks on each dropback by defensive live || <strong>Sake Rate Diff</strong> = Offensive O Line Sack Rate - Defense D Line Sack rate, greater = better and indicative of more time to throw<br><br></span></font>'
 
 wr_off_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</strong>
 <p><strong>DYAR&nbsp;</strong>= Defense-adjusted Yards Above Replacement (performance on plays with WR catch vs. replacement level, adjusted for situation and translated to yardage) ||

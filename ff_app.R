@@ -359,7 +359,8 @@ tabPanel("WR",
                   ))),
 
          fluidRow(column(12,
-                  div(DT::dataTableOutput("def_wr"), style = "font-size: 90%"))),
+                  div(DT::dataTableOutput("def_wr"), style = "font-size: 90%"),
+                  tags$div(HTML(receiver_def_legend)))),
 
          #
          #  Offense WR Sliders and Table Presentation
@@ -477,7 +478,8 @@ tabPanel("TE",
                   ))),
 
          fluidRow(column(12,
-                        div(DT::dataTableOutput("def_te")))),
+                        div(DT::dataTableOutput("def_te"),
+                            tags$div(HTML(receiver_def_legend))))),
 
          #
          #  Offense TE Sliders and Table Presentation
@@ -1139,13 +1141,7 @@ server <- function(input, output) {
       datatable(wr_def_render,
                 rownames = F,
                 container = def_wr_container,
-                options = list(pageLength = 15, lengthMenu = c(10,15,20)),
-                caption = htmltools::tags$caption(
-                          style = 'caption-side: bottom; text-align: left;',
-                          'Legend: Pass Adv = Pass D DVOA + Pass Off DVOA, higher is better |||
-                                Difference = Pass DVOA - Defense DVOA, lower means passing d is a strength (i.e., compartively better than overall) |||
-                                Adj Sack Rate = sacks (plus intentional grounding penalties) per pass attempt adjusted for down, distance, and opponent |||
-                                Sack Rate Difference = round(oline_pass_adjusted_sack_rate - dline_pass_adjusted_sack_rate,1))')) %>%
+                options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
                 formatStyle(c('pts_vs_fantasy_per_game_fdpt','pts_vs_rec_tgt','pts_vs_rec_yds','pts_vs_rec_td',
                               'def_pass_adj_net_yds_per_att','def_pass_yds_per_gm','def_tot_yds_per_play',
                               'dline_pass_rank','dline_pass_sacks','dline_pass_adjusted_sack_rate','sack_rate_diff'),
@@ -1159,6 +1155,11 @@ server <- function(input, output) {
           'DVOA_Difference',
           fontWeight = styleInterval(0, c('normal','bold')),
           color = styleInterval(c(-30, -10, 0, 30),
+                                c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
+        formatStyle(
+          'sack_rate_diff',
+          fontWeight = styleInterval(1, c('normal','bold')),
+          color = styleInterval(c(-4, 0, 2, 5),
                                 c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f')))
 
       })
@@ -1357,16 +1358,26 @@ server <- function(input, output) {
       datatable(te_def_render,
                 rownames = F,
                 container = def_te_container,
-                options = list(pageLength = 15, lengthMenu = c(10,15,20)),
-                caption = htmltools::tags$caption(
-                  style = 'caption-side: bottom; text-align: left;',
-                  'Legend: Pass Adv = Pass D DVOA + Pass Off DVOA, higher is better |||
-                                Difference = Pass DVOA - Defense DVOA, lower means passing d is a strength (i.e., compartively better than overall) |||
-                                Adj Sack Rate = sacks (plus intentional grounding penalties) per pass attempt adjusted for down, distance, and opponent')) %>%
+                options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
         formatStyle(c('pts_vs_fantasy_per_game_fdpt','pts_vs_rec_tgt','pts_vs_rec_yds','pts_vs_rec_td',
                       'def_pass_adj_net_yds_per_att','def_pass_yds_per_gm','def_tot_yds_per_play',
                       'dline_pass_rank','dline_pass_sacks','dline_pass_adjusted_sack_rate','sack_rate_diff'),
-                    backgroundColor = '#F2F3F4')
+                    backgroundColor = '#F2F3F4') %>%
+        formatStyle(
+          'DVOA_Advantage',
+          fontWeight = styleInterval(0, c('normal','bold')),
+          color = styleInterval(c(-30, -10, 0, 30),
+                                c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
+        formatStyle(
+          'DVOA_Difference',
+          fontWeight = styleInterval(0, c('normal','bold')),
+          color = styleInterval(c(-30, -10, 0, 30),
+                                c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
+        formatStyle(
+          'sack_rate_diff',
+          fontWeight = styleInterval(1, c('normal','bold')),
+          color = styleInterval(c(-4, 0, 2, 5),
+                                c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f')))
     })
 
     # Offense TE
