@@ -328,7 +328,7 @@ print("FO All Advanced Position Stats Combined")
 
 # Merging with rest of data
 all_data2 <- all_data %>%
-             mutate(proj_player_new = str_remove_all(proj_player, "(?<=[:upper:])[:alpha:]{1,}(?=[:space:])"))
+             mutate(proj_player_new = str_remove_all(proj_player, "((?<=[:upper:])[:lower:]{1,}(?=[:space:])"))
 
 
 # Combining
