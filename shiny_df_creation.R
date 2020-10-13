@@ -270,8 +270,6 @@ leverage[["player"]] <- str_replace(leverage[["player"]], "Mitch", "Mitchell")
 
 leverage <- leverage %>% mutate(tm = ifelse(tm == "character(0)", "LVR", tm))
 
-
-
 # Adding into full DF
 all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "player",
                                                            "proj_pos" = "pos",
@@ -279,6 +277,13 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
 
 
 print("Leverage Score Successful")
+
+# Adding pricing information ----
+pricing <- get_pricing(wk_num)
+all_positions <- left_join(all_positions, pricing, by = c("proj_player" = "pricing_player",
+                                                           "proj_pos" = "pricing_position",
+                                                           "proj_tm" = "pricing_team"))
+print("Pricing Data Import Successful")
 
 # Adding in the advanced stats information ----
 source("~/ff_shiny_app/ff_app/advanced_stats.R")
@@ -334,6 +339,11 @@ all_data2 <- all_data %>%
 # Combining
 all_data_fo_pos <- left_join(all_data2, fo_all_positions, by = c("proj_player_new" = "pass_player", "proj_tm" = "pass_team")) %>%
                    select(-proj_player_new)
+
+# Adding in pace of place stats ----
+pace <- get_pace()
+pace[["off_team"]] <- sapply(pace[["off_team"]], function(x) find_names(x, "fff_abbreviation"))
+all_data_fo_pos_pace <- left_join(all_data_fo_pos, pace, by = c("proj_tm" = "off_team"))
 
 # Returning full DF ----
 return(all_data_fo_pos)
