@@ -9,7 +9,7 @@ library(writexl)
 #df <- readxl::read_xlsx("data/all_data_wk_5_2020.xlsx") %>%
 #      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 
-df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_5_2020.xlsx") # for use on computer
+df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_6_2020.xlsx") # for use on computer
 
 ###
 ### Data Frame Creation
@@ -21,7 +21,8 @@ dfs_df <- select(df,
                  proj_pos,
                  proj_tm,
                  proj_opp,
-                 fd_sal,
+                 pricing_current,
+                 pricing_season_change,
                  projected_own,
                  cash_odds,
                  gpp_odds,
@@ -33,8 +34,8 @@ dfs_df <- select(df,
                  line,
                  total,
                  implied_total) %>%
-  filter(fd_sal > 0) %>%
-  mutate(points_per_1k = round(proj_ffpts / (fd_sal/1000),2))
+  filter(pricing_current > 0) %>%
+  mutate(points_per_1k = round(proj_ffpts / (pricing_current/1000),2))
 
 names(dfs_df) <- str_remove(names(dfs_df), "proj_")
 
@@ -100,7 +101,7 @@ off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
                  passing_twenty_att,
                  passing_twenty_td,
                  # DFS
-                 fd_sal,
+                 pricing_current,
                  implied_total)
 
 
@@ -193,8 +194,8 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
                  total_touches = ytd_rush_att + ytd_rec_target,
                  high_value_touches = ytd_rec_target + round(rushing_ten_att/ytd_rush_g,2),
                  high_value_touches_per = round(high_value_touches / total_touches, 2),
-                 tt_per_thousand = round(total_touches / (fd_sal/1000),2),
-                 hv_per_thousand = round(high_value_touches / (fd_sal/1000),2),
+                 tt_per_thousand = round(total_touches / (pricing_current/1000),2),
+                 hv_per_thousand = round(high_value_touches / (pricing_current/1000),2),
                  rush_eyard_diff = round((rush_eyds - rush_yards)/ytd_rush_g,2),
                  rec_eyard_diff = round((rec_eyds - rec_yards)/ytd_rush_g,2),
                  rec_dyar = round(rec_dyar/ytd_rush_g,2),
@@ -208,7 +209,7 @@ rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
                  rec_dyar,rec_dvoa,rec_eyard_diff,
                  receiving_ten_tgt,
                  rushing_ten_att,rushing_ten_td,rushing_ten_per_rush,
-                 line, fd_sal, tt_per_thousand, hv_per_thousand,
+                 line, pricing_current, tt_per_thousand, hv_per_thousand,
                  )
 
 # WR Panel ----
@@ -265,11 +266,11 @@ wr_def <- filter(df, proj_pos == "WR" & is.na(line) == F & ytd_rec_target > 2) %
 
 wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 3) %>%
           mutate(vs_cb_fpt = as.numeric(vs_cb_fpt),
-                 tgt_per_thousand = round(ytd_rec_target / (fd_sal/1000),2),
+                 tgt_per_thousand = round(ytd_rec_target / (pricing_current/1000),2),
                  rec_eyard_diff = round((rec_eyds - rec_yards)/ytd_rec_g,2),
                  rec_dyar = round(rec_dyar/ytd_rec_g,2),
                  air_yards = as.numeric(adv_receiving_adot)*ytd_rec_target,
-                 air_yds_per_thousand = round(air_yards / (fd_sal/1000),2),
+                 air_yds_per_thousand = round(air_yards / (pricing_current/1000),2),
                  racr = round(ytd_rec_yds_per_gm/air_yards,2)) %>%
          select(proj_player,
                 proj_opp,
@@ -292,7 +293,7 @@ wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 3) 
                 vs_cb_fpt,
                 vs_cb_shad,
                 vs_cb_matchup,
-                fd_sal,
+                pricing_current,
                 tgt_per_thousand,
                 implied_total)
 
@@ -351,11 +352,11 @@ te_def <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
 # TE Offense Table ----
 
 te_off <- filter(df, proj_pos == "TE"  & is.na(line) == F & ytd_rec_target > 3) %>%
-          mutate(tgt_per_thousand = round(ytd_rec_target / (fd_sal/1000),2),
+          mutate(tgt_per_thousand = round(ytd_rec_target / (pricing_current/1000),2),
                  rec_eyard_diff = round((rec_eyds - rec_yards)/ytd_rec_g,2),
                  rec_dyar = round(rec_dyar/ytd_rec_g,2),
                  air_yards = as.numeric(adv_receiving_adot)*ytd_rec_target,
-                 air_yds_per_thousand = round(air_yards / (fd_sal/1000),2),
+                 air_yds_per_thousand = round(air_yards / (pricing_current/1000),2),
                  racr = round(ytd_rec_yds_per_gm/air_yards,2)) %>%
           select(proj_player,
                  proj_opp,
@@ -374,7 +375,7 @@ te_off <- filter(df, proj_pos == "TE"  & is.na(line) == F & ytd_rec_target > 3) 
                  receiving_twenty_tgt,
                  receiving_twenty_td,
                  receiving_twenty_per_tgt,
-                 fd_sal,
+                 pricing_current,
                  tgt_per_thousand,
                  implied_total)
 

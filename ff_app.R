@@ -38,8 +38,8 @@ ui <- navbarPage("DFS Data",
             column(3,
                   sliderInput("salary",
                             "Minimum FanDuel Salary:",
-                            min = min(dfs_df$fd_sal),
-                            max = max(dfs_df$fd_sal),
+                            min = min(dfs_df$pricing_current),
+                            max = max(dfs_df$pricing_current),
                             value = c(min,max)
             )),
             column(3,
@@ -52,8 +52,8 @@ ui <- navbarPage("DFS Data",
             column(3,
                    sliderInput("lev",
                                "Leverage",
-                               min = min(dfs_df$fd_lev),
-                               max = max(dfs_df$fd_lev),
+                               min = min(dfs_df$fd_lev, na.rm = T),
+                               max = max(dfs_df$fd_lev, na.rm = T),
                                value = c(min,max)
                    )),
             column(3,
@@ -76,7 +76,7 @@ ui <- navbarPage("DFS Data",
                    selectInput("y_axis",
                                h3("Y Axis"),
                                choices = as.list(names(dfs_df)),
-                               selected = "fd_sal")),
+                               selected = "pricing_current")),
             column(2,
                    selectInput("x_axis",
                                h3("X Axis"),
@@ -147,8 +147,8 @@ ui <- navbarPage("DFS Data",
                column(3,
                       sliderInput("qb_salary",
                                   "Minimum FanDuel Salary:",
-                                  min = min(off_qb$fd_sal, na.rm = T),
-                                  max = max(off_qb$fd_sal, na.rm = T),
+                                  min = min(off_qb$pricing_current, na.rm = T),
+                                  max = max(off_qb$pricing_current, na.rm = T),
                                   value = c(min,max)
                       )),
                column(3,
@@ -286,8 +286,8 @@ tabPanel("RB",
            column(2,
                   sliderInput("rb_salary",
                               "Salary",
-                              min = min(rb_off[["fd_sal"]],  na.rm = T),
-                              max = max(rb_off[["fd_sal"]],  na.rm = T),
+                              min = min(rb_off[["pricing_current"]],  na.rm = T),
+                              max = max(rb_off[["pricing_current"]],  na.rm = T),
                               value = c(min,max)))
            ),
 
@@ -315,7 +315,7 @@ tabPanel("RB",
                   selectInput("rb_size",
                               h3("Size"),
                               choices = as.list(c(names(rb_def), names(rb_off))),
-                              selected = "fd_sal")),
+                              selected = "pricing_current")),
            column(6,
                   plotOutput('rbplot', height = 500)))
 ),
@@ -391,8 +391,8 @@ tabPanel("WR",
            column(2,
                   sliderInput("wr_salary",
                               "Salary",
-                              min = min(wr_off[["fd_sal"]],  na.rm = T),
-                              max = max(wr_off[["fd_sal"]],  na.rm = T),
+                              min = min(wr_off[["pricing_current"]],  na.rm = T),
+                              max = max(wr_off[["pricing_current"]],  na.rm = T),
                               value = c(min,max))),
            column(2,
                   checkboxGroupInput("cb_matchup",
@@ -427,7 +427,7 @@ tabPanel("WR",
                   selectInput("wr_size",
                               h3("Size"),
                               choices = as.list(c(names(wr_def), names(wr_off))),
-                              selected = "fd_sal")),
+                              selected = "pricing_current")),
            column(6,
                   plotOutput('wrplot', height = 500)))
 
@@ -510,8 +510,8 @@ tabPanel("TE",
            column(2,
                   sliderInput("te_salary",
                               "Salary",
-                              min = min(te_off[["fd_sal"]],  na.rm = T),
-                              max = max(te_off[["fd_sal"]],  na.rm = T),
+                              min = min(te_off[["pricing_current"]],  na.rm = T),
+                              max = max(te_off[["pricing_current"]],  na.rm = T),
                               value = c(min,max))),
            column(2,
                   sliderInput("off_pass_dvoa_te",
@@ -544,7 +544,7 @@ tabPanel("TE",
                   selectInput("te_size",
                               h3("Size"),
                               choices = as.list(c(names(te_def), names(te_off))),
-                              selected = "fd_sal")),
+                              selected = "pricing_current")),
            column(6,
                   plotOutput('teplot', height = 500)))
 
@@ -563,18 +563,18 @@ server <- function(input, output) {
 
         # Editing table for rendering
         render_table <- subset(dfs_df,
-                               fd_sal >= input$salary[1] & fd_sal <= input$salary[2] &
+                               pricing_current >= input$salary[1] & pricing_current <= input$salary[2] &
                                points_per_1k >= input$value[1] & points_per_1k <= input$value[2] &
                                fd_lev >= input$lev[1] & fd_lev <= input$lev[2] &
                                line >= input$line[1] & line <= input$line[2] &
-                               pos == input$pos | is.na(fd_sal)) %>%
+                               pos == input$pos | is.na(pricing_current)) %>%
                         select(-implied_own)
 
         # Selecting program
         render_table <- render_table[,c("player", "pos", "tm", "opp",
                                         "ffpts","points_per_1k","fd_lev",
                                         "afpa","afpa_rk",
-                                        "fd_sal", "projected_own", "cash_odds", "gpp_odds",
+                                        "pricing_current","pricing_season_change","projected_own", "cash_odds", "gpp_odds",
                                         "line","total","implied_total")]
 
         # Better Output - customizing column names
@@ -585,7 +585,7 @@ server <- function(input, output) {
                                                 th(colspan = 4,''),
                                                 th(class = 'dt-center', colspan = 3, 'Point Projections'),
                                                 th(class = 'dt-center', colspan = 2, 'aFPA'),
-                                                th(class = 'dt-center', colspan = 4, 'DFS Leverage'),
+                                                th(class = 'dt-center', colspan = 5, 'DFS Leverage'),
                                                 th(class = 'dt-center', colspan = 3, 'Vegas')
                                               ),
                                               tr(
@@ -599,6 +599,7 @@ server <- function(input, output) {
                                                 th(colspan = 1, 'aFPA'),
                                                 th(colspan = 1, 'aFPA Rank'),
                                                 th(colspan = 1, 'Salary ($)'),
+                                                th(colspan = 1, 'Change ($)'),
                                                 th(colspan = 1, 'Own (%)'),
                                                 th(colspan = 1, 'Cash (%)'),
                                                 th(colspan = 1, 'GPP (%)'),
@@ -615,7 +616,7 @@ server <- function(input, output) {
                                  lengthMenu = c(10,20,30),
                                  columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
                   formatStyle(c('ffpts','points_per_1k','fd_lev',
-                                'fd_sal','projected_own','cash_odds','gpp_odds'),
+                                'pricing_current','projected_own','cash_odds','gpp_odds'),
                               backgroundColor = '#F2F3F4')
 
        })
@@ -627,7 +628,7 @@ server <- function(input, output) {
         s1 <- input$fanduel_rows_selected
 
         render_table <- subset(dfs_df,
-                               fd_sal >= input$salary[1] & fd_sal <= input$salary[2] &
+                               pricing_current >= input$salary[1] & pricing_current <= input$salary[2] &
                                    points_per_1k >= input$value[1] & points_per_1k <= input$value[2] &
                                    fd_lev >= input$lev[1] & fd_lev <= input$lev[2] &
                                    line >= input$line[1] & line <= input$line[2] &
@@ -801,10 +802,10 @@ server <- function(input, output) {
       ))
 
       render_qb <-  subset(off_qb,
-                           fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
+                           pricing_current >= input$qb_salary[1] & pricing_current <= input$qb_salary[2] &
                            implied_total >= input$qb_total[1] & implied_total <= input$qb_total[2] &
                            pass_yds_diff >= input$qb_pass_yds_diff[1] & pass_yds_diff <= input$qb_pass_yds_diff[2] &
-                           rush_yards >= input$qb_rush_yds[1] & rush_yards <= input$qb_rush_yds[2] | is.na(fd_sal))
+                           rush_yards >= input$qb_rush_yds[1] & rush_yards <= input$qb_rush_yds[2] | is.na(pricing_current))
 
       #DT::datatable(render_qb, rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
 
@@ -816,7 +817,7 @@ server <- function(input, output) {
                                columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
         formatStyle(c('ytd_pass_yds_per_gm','ytd_pass_td',
                       'rush_dyar','rush_yards','rush_yds_diff',
-                      'fd_sal', 'implied_total'), backgroundColor = '#F2F3F4')
+                      'pricing_current', 'implied_total'), backgroundColor = '#F2F3F4')
         #              'ytd_pass_net_yds_per_att','off_dvoa','off_pass_dvoa'), backgroundColor = '#F2F3F4')
 
     })
@@ -827,10 +828,10 @@ server <- function(input, output) {
       qb_s1 <- input$off_qb_rows_selected
 
       qb_render_table <- subset(off_qb,
-                                fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
+                                pricing_current >= input$qb_salary[1] & pricing_current <= input$qb_salary[2] &
                                 implied_total >= input$qb_total[1] & implied_total <= input$qb_total[2] &
                                 pass_yds_diff >= input$qb_pass_yds_diff[1] & pass_yds_diff <= input$qb_pass_yds_diff[2] &
-                                rush_yards >= input$qb_rush_yds[1] & rush_yards <= input$qb_rush_yds[2] | is.na(fd_sal))
+                                rush_yards >= input$qb_rush_yds[1] & rush_yards <= input$qb_rush_yds[2] | is.na(pricing_current))
 
       if(length(input$qb_select) == 0) {qb_render_table <- qb_render_table[qb_s1,]}
 
@@ -1022,7 +1023,7 @@ server <- function(input, output) {
                                  ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
                                  rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
                                  line >= input$rb_off_line[1] & line <= input$rb_off_line[2] &
-                                 fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2 ]| is.na(total_touches) | is.na(rushing_ten_per_rush))
+                                 pricing_current >= input$rb_salary[1] & pricing_current <= input$rb_salary[2 ]| is.na(total_touches) | is.na(rushing_ten_per_rush))
 
       datatable(render_off_rb,
                 rownames = F,
@@ -1208,7 +1209,7 @@ server <- function(input, output) {
                               (ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] | is.na(ytd_rec_target)) &
                               (receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] | is.na(receiving_twenty_per_tgt)) &
                               (vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2] | is.na(vs_cb_fpt)) &
-                              fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2])
+                              pricing_current >= input$wr_salary[1] & pricing_current <= input$wr_salary[2])
       # Team Selection
       if(input$wr_opponent != 'all') {wr_off_render <- subset(wr_off_render, proj_opp == input$wr_opponent)}
 
@@ -1233,7 +1234,7 @@ server <- function(input, output) {
     output$wrtable <- renderDataTable({
 
       render_wr <-  subset(wr,
-                           fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2] &
+                           pricing_current >= input$wr_salary[1] & pricing_current <= input$wr_salary[2] &
                            defense_dvoa >= input$wr_dvoa[1] & defense_dvoa <= input$wr_dvoa[2] &
                            pass_def_dvoa >= input$wr_pass_dvoa[1] & pass_def_dvoa <= input$wr_pass_dvoa[2] &
                            line >= input$wr_line[1] & line <= input$wr_line[2])
@@ -1248,7 +1249,7 @@ server <- function(input, output) {
       wr_s1 <- input$wrtable_rows_selected
 
       wr_render_table <- subset(wr,
-                                fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2] &
+                                pricing_current >= input$wr_salary[1] & pricing_current <= input$wr_salary[2] &
                                 defense_dvoa >= input$wr_dvoa[1] & defense_dvoa <= input$wr_dvoa[2] &
                                 pass_def_dvoa >= input$wr_pass_dvoa[1] & pass_def_dvoa <= input$wr_pass_dvoa[2] &
                                 line >= input$wr_line[1] & line <= input$wr_line[2]) %>%
@@ -1423,14 +1424,14 @@ server <- function(input, output) {
                               ytd_rec_td >= input$te_rec_td[1] & ytd_rec_td <= input$te_rec_td[2] &
                               receiving_twenty_per_tgt >= input$te_rz_20[1] & receiving_twenty_per_tgt <= input$te_rz_20[2] &
                               off_pass_dvoa >= input$off_pass_dvoa_te[1] & off_pass_dvoa <= input$off_pass_dvoa_te[2] &
-                              fd_sal >= input$te_salary[1] & fd_sal <= input$te_salary[2])
+                              pricing_current >= input$te_salary[1] & pricing_current <= input$te_salary[2])
 
       datatable(te_off_render,
                 rownames = F,
                 container = off_te_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
                 formatStyle(c("rec_dyar","rec_dvoa","rec_eyard_diff","adv_receiving_adot","air_yards","racr","adv_receiving_rat",
-                              "adv_receiving_drop_per","off_pass_dvoa","fd_sal","tgt_per_thousand","implied_total"),
+                              "adv_receiving_drop_per","off_pass_dvoa","pricing_current","tgt_per_thousand","implied_total"),
                             backgroundColor = '#F2F3F4')
 
       })
