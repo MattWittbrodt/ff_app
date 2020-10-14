@@ -311,8 +311,8 @@ te_df <- fo_pass_catchers("te")
 # Merging into 1 DF
 fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player",
                                                    "pass_team" = "rush_team",
-                                                   "rush_dyar", "rush_eyds", "rush_dvoa",
-                                                   "rush_yar","rush_yar","rush_voa","rush_yards")) %>%
+                                                   "rush_dyar","rush_eyds", "rush_dvoa",
+                                                   "rush_yar","rush_voa","rush_yards")) %>%
                     full_join(wr_df, by = c("pass_player" = "rec_player",
                                             "pass_team" = "rec_team",
                                             "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate",
@@ -329,27 +329,29 @@ fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player"
 
 fo_all_positions[["pass_team"]] <- sapply(fo_all_positions[["pass_team"]], function(x) find_names(x, "fff_abbreviation"))
 
-print("FO All Advanced Position Stats Combined")
-
 # Merging with rest of data
 all_data2 <- all_data %>%
-             mutate(proj_player_new = str_remove_all(proj_player, "((?<=[:upper:])[:lower:]{1,}(?=[:space:])"))
+             mutate(proj_player_new = str_remove_all(proj_player, "(?<=[:upper:])[:lower:]{1,}(?=[:space:])"))
 
 
 # Combining
 all_data_fo_pos <- left_join(all_data2, fo_all_positions, by = c("proj_player_new" = "pass_player", "proj_tm" = "pass_team")) %>%
                    select(-proj_player_new)
+print("FO All Advanced Position Stats Combined")
 
 # Adding in pace of place stats ----
 pace <- get_pace()
 pace[["off_team"]] <- sapply(pace[["off_team"]], function(x) find_names(x, "fff_abbreviation"))
 all_data_fo_pos_pace <- left_join(all_data_fo_pos, pace, by = c("proj_tm" = "off_team"))
 
+print("Pace of Play Successful")
+
 # Returning full DF ----
-return(all_data_fo_pos)
+return(all_data_fo_pos_pace)
+
 }
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(5, "10/11")
+df <- shiny_df(6, "10/18")
 
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_5_2020.xlsx")
+#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_6_2020.xlsx")
