@@ -5,6 +5,9 @@ shiny_df <- function(wk_num,date) {
 library(tidyverse)
 library(mattDFS)
 
+# Logging into stathead ----
+stathead <- stathead_login()
+
 # Reading in team name chart ----------------------------------------------
 source("~/ff_shiny_app/ff_app/find_names.R", local = T)
 source("~/ff_shiny_app/ff_app/name_fixes.R", local = T)
@@ -28,15 +31,18 @@ print('DVOA Successful')
 wk_data <- lapply(list("QB", "RB", "WR", "TE"), function(position) {
 
           # If week is 1, use last year's data
-          wk_data <-  paste("https://www.pro-football-reference.com/play-index/pgl_finder.cgi?request=1&match=game&year_min=2020&year_max=2020&season_start=1&season_end=-1&pos%5B%5D=",
-                              position,
-                              "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=",
-                              as.character(wk_num - 1),
-                              "&week_num_max=",
-                              as.character(wk_num -1),
-                              "&is_starter=E&game_type=R&career_game_num_min=0&career_game_num_max=499&qb_start_num_min=1&qb_start_num_max=400&game_num_min=0&game_num_max=99&week_num_min=1&week_num_max=1&c1stat=rush_att&c1comp=gt&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c5val=1.0&order_by=fanduel_points",
-                              #"&c1stat=rush_att&c1comp=gt&c1val=0&c2stat=fanduel_points&c2comp=gt&c3stat=rush_att&c3comp=gt&c4stat=targets&c4comp=gt&c4val=0&c5val=1.0&order_by=pass_rating",
-                              sep = "") %>%
+          wk_data <-  paste("https://stathead.com/football/pgl_finder.cgi?request=1&match=game&order_by_asc=0&order_by=fanduel_points&year_min=2020",
+                            "&year_max=2020&game_type=R&ccomp%5B1%5D=gt&cval%5B1%5D=0&cstat%5B1%5D=rush_att&ccomp%5B2%5D=gt&cval%5B2%5D=0",
+                            "&cstat%5B2%5D=pass_cmp&ccomp%5B3%5D=gt&cval%5B3%5D=0&cstat%5B3%5D=fanduel_points&ccomp%5B4%5D=gt&cval%5B4%5D=0&cstat%5B4%5D=targets&positions%5B%5D=",
+                            str_to_lower(position),
+                            "&age_min=0&age_max=99&game_num_min=0&game_num_max=99&week_num_min=",
+                            as.character(wk_num - 1),
+                            "&week_num_max=",
+                            as.character(wk_num - 1),
+                            "&season_start=1&season_end=-1",
+                            sep = "")
+
+          wk_data <- stathead %>% jump_to(url = wk_data) %>%
                       read_html() %>%
                       html_table(fill = T) %>%
                       .[[1]]
