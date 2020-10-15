@@ -286,6 +286,9 @@ print("Leverage Score Successful")
 
 # Adding pricing information ----
 pricing <- get_pricing(wk_num)
+pricing[["pricing_team"]] <- as.character(sapply(pricing[["pricing_team"]], function(x) find_names(x, "fff_abbreviation")))
+pricing[["pricing_player"]] <- str_replace(pricing[["pricing_player"]], "Mitch", "Mitchell")
+
 all_positions <- left_join(all_positions, pricing, by = c("proj_player" = "pricing_player",
                                                            "proj_pos" = "pricing_position",
                                                            "proj_tm" = "pricing_team"))
