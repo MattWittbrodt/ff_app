@@ -1,8 +1,8 @@
 "team","home_or_away","line","total","favorite","implied_total"
-"Carolina","home",-1.5,45,1,23.25
+"Carolina","home",-1.5,44.5,1,23
 "Jacksonville","home",3,54.5,0,25.75
 "Minnesota","home",-4,54,1,29
-"Tennessee","home",-3,52.5,1,27.75
+"Tennessee","home",-3,53,1,28
 "NY_Giants","home",0,43,1,21.5
 "Pittsburgh","home",-3,51,1,27
 "Philadelphia","home",7.5,47.5,0,20
@@ -10,10 +10,10 @@
 "Tampa_Bay","home",1,55,0,27
 "Miami","home",-9.5,47,1,28.25
 "New_England","home",-10,45,1,27.5
-"Chicago","away",1.5,45,0,21.75
+"Chicago","away",1.5,44.5,0,21.5
 "Detroit","away",-3,54.5,1,28.75
 "Atlanta","away",4,54,0,25
-"Houston","away",3,52.5,0,24.75
+"Houston","away",3,53,0,25
 "Washington","away",0,43,0,21.5
 "Cleveland","away",3,51,0,24
 "Baltimore","away",-7.5,47.5,1,27.5
