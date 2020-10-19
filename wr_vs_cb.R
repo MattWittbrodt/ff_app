@@ -24,7 +24,7 @@ wr_vs_cv <- function(file) {
 
   names(d) <- paste("vs_cb", names(d), sep = "_")
 
-  write.csv(d, str_replace(file, ".html", ".csv"))
+  #write.csv(d, str_replace(file, ".html", ".csv"))
 
   return(d)
 }
