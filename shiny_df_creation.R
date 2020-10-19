@@ -7,6 +7,7 @@ library(mattDFS)
 
 # Logging into stathead ----
 stathead <- stathead_login()
+fff <- fff_login()
 
 # Reading in team name chart ----------------------------------------------
 source("~/ff_shiny_app/ff_app/find_names.R", local = T)
@@ -216,11 +217,8 @@ wr <- position_stats("WR",wk_num,data,tm_names) %>%
   mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
          proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
 
-source("~/ff_shiny_app/ff_app/wr_vs_cb.R")
-wr_matchup <- wr_vs_cv(paste("~/ff_shiny_app/ff_app/data/wide-receiver-vs-cornerback-matchup-analysis-week-",
-                             wk_num,
-                             "-table.csv",
-                             sep = ""))
+# Getting WR matchup
+wr_matchup <- wr_matchups(wk_num,fff)
 
 # Adding in matchup stats
 wr <- left_join(wr, wr_matchup, by = c("proj_player" = "vs_cb_wr"))
