@@ -269,10 +269,7 @@ leverage_names <- colnames(leverage) %>%
 colnames(leverage) <- leverage_names
 
 # fixing team names and some select player names
-leverage[["tm"]] <- as.character(sapply(leverage[["tm"]], function(x) find_names(x, "fff_abbreviation")))
 leverage[["player"]] <- str_replace(leverage[["player"]], "Mitch", "Mitchell")
-
-leverage <- leverage %>% mutate(tm = ifelse(tm == "character(0)", "LVR", tm))
 
 # Adding into full DF
 all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "player",
