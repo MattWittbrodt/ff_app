@@ -9,8 +9,11 @@ library(mattDFS)
 stathead <- stathead_login()
 fff <- fff_login()
 
+# Download projections ----
+get_projections(wk_num)
+
 # Reading in team name chart ----------------------------------------------
-source("~/ff_shiny_app/ff_app/find_names.R", local = T)
+#source("~/ff_shiny_app/ff_app/find_names.R", local = T)
 source("~/ff_shiny_app/ff_app/name_fixes.R", local = T)
 
 # Vegas Lines -------------------------------------------------------------
