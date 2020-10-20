@@ -249,40 +249,17 @@ all_positions <- left_join(all_positions, dvoa_previous, by = c("prev_wk_opp" = 
 print("Previous Week DVOA Successful")
 
 # Adding Leverage Scores --------------------------------------------------
-leverage <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4-gpp-leverage-scores-table_wk",
-                     wk_num,
-                     ".csv", sep = "")) %>%
-            select(-Opp) %>%
-            mutate(Cash.Odds = as.numeric(gsub("\\%", "", Cash.Odds)),
-                   GPP.Odds = as.numeric(gsub("\\%", "", GPP.Odds)),
-                   Implied.Own. = as.numeric(gsub("\\%", "", Implied.Own.)),
-                   Projected.Own. = as.numeric(gsub("\\%", "", Projected.Own.)),
-                   Tm = as.character(Tm),
-                   Player = str_remove_all(Player, "[:punct:]"),
-                   FD.Sal.. = as.numeric(str_remove_all(FD.Sal.., "[,|$]")))
-
-leverage_names <- colnames(leverage) %>%
-                  str_to_lower() %>%
-                  str_remove("[.]+$") %>%
-                  str_replace("[.]","_")
-
-colnames(leverage) <- leverage_names
-
-# fixing team names and some select player names
-leverage[["player"]] <- str_replace(leverage[["player"]], "Mitch", "Mitchell")
+leverage <- get_leverage(wk_num, fff)
 
 # Adding into full DF
 all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "player",
                                                            "proj_pos" = "pos",
                                                            "proj_tm" = "tm"))
 
-
 print("Leverage Score Successful")
 
 # Adding pricing information ----
-pricing <- get_pricing(wk_num)
-pricing[["pricing_team"]] <- as.character(sapply(pricing[["pricing_team"]], function(x) find_names(x, "fff_abbreviation")))
-pricing[["pricing_player"]] <- str_replace(pricing[["pricing_player"]], "Mitch", "Mitchell")
+pricing <- get_pricing(wk_num, fff)
 
 all_positions <- left_join(all_positions, pricing, by = c("proj_player" = "pricing_player",
                                                            "proj_pos" = "pricing_position",
