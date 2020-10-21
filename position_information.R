@@ -16,49 +16,53 @@ position_stats <- function(position, wk_num, data, tm_names) {
 # Previous Week Data ------------------------------------------------------
 
 wk_data2 <- switch(position, QB = wk_data$QB, RB = wk_data$RB, WR = wk_data$WR, TE = wk_data$TE)
+print("In position stats: Previous week data Successful")
 
 # Red Zone Stats ----------------------------------------------------------
 
-  rz_df <- data$rz_df
+  # rz_df <- data$rz_df
+  #
+  # # Creating the appropriate output for each position
+  # rz_data <- switch(position,
+  #                   QB = as.data.frame(rz_df[[1]]),
+  #                   WR = as.data.frame(rz_df[[3]]),
+  #                   TE = as.data.frame(rz_df[[3]]),
+  #                   RB = left_join(as.data.frame(rz_df[[2]]),
+  #                                  as.data.frame(rz_df[[3]]),
+  #                                  by = c("rushing_player" = "receiving_player"))) %>%
+  #            select(-contains("tm"))
+  #
+  # # Subsetting for relevant information
+  # if(position == "RB") {
+  #   rz_data <- select(rz_data, -contains("_ctch_per")) %>%
+  #              mutate(rushing_twenty_per_rush = as.numeric(sapply(rushing_twenty_per_rush,
+  #                                                    function(x) str_remove(x, '%'))),
+  #                     rushing_ten_per_rush = as.numeric(sapply(rushing_ten_per_rush,
+  #                                             function(x) str_remove(x, '%'))),
+  #                     rushing_five_per_rush = as.numeric(sapply(rushing_five_per_rush,
+  #                                               function(x) str_remove(x, '%'))),
+  #                     receiving_twenty_per_tgt = as.numeric(sapply(receiving_twenty_per_tgt,
+  #                                               function(x) str_remove(x, '%'))),
+  #                     receiving_ten_per_tgt = as.numeric(sapply(receiving_ten_per_tgt,
+  #                                                 function(x) str_remove(x, '%'))))
+  # } else {
+  #     if(position == "WR" | position == "TE") {
+  #       rz_data <- select(rz_data, -contains("_ctch_per")) %>%
+  #         mutate(receiving_twenty_per_tgt = as.numeric(sapply(receiving_twenty_per_tgt,
+  #                                                             function(x) str_remove(x, '%'))),
+  #                receiving_ten_per_tgt = as.numeric(sapply(receiving_ten_per_tgt,
+  #                                                          function(x) str_remove(x, '%'))),
+  #                receiving_player = str_remove_all(receiving_player, "[:punct:]"))
+  #     }
+  # }
+  #
+  # # Making columns numeric
+  # rz_data[,c(2:length(rz_data))] <- apply(rz_data[,c(2:length(rz_data))],
+  #                                         2,
+  #                                         function(x) as.numeric(as.character(x)))
 
-  # Creating the appropriate output for each position
-  rz_data <- switch(position,
-                    QB = as.data.frame(rz_df[[1]]),
-                    WR = as.data.frame(rz_df[[3]]),
-                    TE = as.data.frame(rz_df[[3]]),
-                    RB = left_join(as.data.frame(rz_df[[2]]),
-                                   as.data.frame(rz_df[[3]]),
-                                   by = c("rushing_player" = "receiving_player"))) %>%
-             select(-contains("tm"))
-
-  # Subsetting for relevant information
-  if(position == "RB") {
-    rz_data <- select(rz_data, -contains("_ctch_per")) %>%
-               mutate(rushing_twenty_per_rush = as.numeric(sapply(rushing_twenty_per_rush,
-                                                     function(x) str_remove(x, '%'))),
-                      rushing_ten_per_rush = as.numeric(sapply(rushing_ten_per_rush,
-                                              function(x) str_remove(x, '%'))),
-                      rushing_five_per_rush = as.numeric(sapply(rushing_five_per_rush,
-                                                function(x) str_remove(x, '%'))),
-                      receiving_twenty_per_tgt = as.numeric(sapply(receiving_twenty_per_tgt,
-                                                function(x) str_remove(x, '%'))),
-                      receiving_ten_per_tgt = as.numeric(sapply(receiving_ten_per_tgt,
-                                                  function(x) str_remove(x, '%'))))
-  } else {
-      if(position == "WR" | position == "TE") {
-        rz_data <- select(rz_data, -contains("_ctch_per")) %>%
-          mutate(receiving_twenty_per_tgt = as.numeric(sapply(receiving_twenty_per_tgt,
-                                                              function(x) str_remove(x, '%'))),
-                 receiving_ten_per_tgt = as.numeric(sapply(receiving_ten_per_tgt,
-                                                           function(x) str_remove(x, '%'))),
-                 receiving_player = str_remove_all(receiving_player, "[:punct:]"))
-      }
-  }
-
-  # Making columns numeric
-  rz_data[,c(2:length(rz_data))] <- apply(rz_data[,c(2:length(rz_data))],
-                                          2,
-                                          function(x) as.numeric(as.character(x)))
+  rz_data <- switch(position, QB = rz_data$QB, RB = rz_data$RB, WR = rz_data$WR, TE = rz_data$TE)
+  print("In position stats: RZ Data Successful")
 
 # Team Defense Integration ------------------------------------------------
 
@@ -273,36 +277,40 @@ wk_data2 <- switch(position, QB = wk_data$QB, RB = wk_data$RB, WR = wk_data$WR, 
                                    as.data.frame(ytd_df[[3]]),
                                    by = c("ytd_rush_player" = "ytd_rec_player")) %>%
                          mutate(ytd_rush_pos = ifelse(ytd_rush_pos != "WR" & ytd_rush_pos != "QB" & ytd_rush_pos != "TE", "RB", ytd_rush_pos)))
+  cat("In position stats: YTD Data Successful \n")
 
 # Current Week Projections ------------------------------------------------
 
-  proj_data <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4_W",wk_num,"_projections.csv", sep = "")) %>%
-    subset(Pos == position) %>%
-    select(-PID,-Season,-XP,-Fum,-FG,-Grade,-Pa1D,-Ru1D,-Rec1D) %>%
-    mutate(Player = str_remove_all(as.character(Player), "[:punct:]"),
-           Player = str_replace(as.character(Player), "Mitch", "Mitchell"),
-           Pos = as.character(Pos),
-           Team = as.character(Team),
-           field = ifelse(str_detect(Opp, "@") == T, 2, 1),
-           Opp = str_remove(Opp, "@")) %>%
-  filter(Opp != "BYE")
-
-  # Column Processing
-  proj_names <- colnames(proj_data) %>%
-    str_to_lower() %>%
-    str_replace("[.]","_") %>%
-    str_replace("team", "tm")
-
-  colnames(proj_data) <- paste("proj", proj_names, sep = "_")
-
-  # Making abbreviations
-  proj_data[["proj_tm"]] <- as.character(sapply(proj_data[["proj_tm"]], function(x) find_names(x, "fff_abbreviation")))
-  proj_data[["proj_opp"]] <- as.character(sapply(proj_data[["proj_opp"]], function(x) find_names(x, "fff_abbreviation")))
+  proj_data <- filter(proj_data, proj_pos == position)
+  cat(paste0("In position data: ", position, " projections successfull \n"))
+  # proj_data <- read.csv(paste("~/ff_shiny_app/ff_app/data/4for4_W",wk_num,"_projections.csv", sep = "")) %>%
+  #   subset(Pos == position) %>%
+  #   select(-PID,-Season,-XP,-Fum,-FG,-Grade,-Pa1D,-Ru1D,-Rec1D) %>%
+  #   mutate(Player = str_remove_all(as.character(Player), "[:punct:]"),
+  #          Player = str_replace(as.character(Player), "Mitch", "Mitchell"),
+  #          Pos = as.character(Pos),
+  #          Team = as.character(Team),
+  #          field = ifelse(str_detect(Opp, "@") == T, 2, 1),
+  #          Opp = str_remove(Opp, "@")) %>%
+  # filter(Opp != "BYE")
+  #
+  # # Column Processing
+  # proj_names <- colnames(proj_data) %>%
+  #   str_to_lower() %>%
+  #   str_replace("[.]","_") %>%
+  #   str_replace("team", "tm")
+  #
+  # colnames(proj_data) <- paste("proj", proj_names, sep = "_")
+  #
+  # # Making abbreviations
+  # proj_data[["proj_tm"]] <- as.character(sapply(proj_data[["proj_tm"]], function(x) find_names(x, "fff_abbreviation")))
+  # proj_data[["proj_opp"]] <- as.character(sapply(proj_data[["proj_opp"]], function(x) find_names(x, "fff_abbreviation")))
 
 
 # Fantasy Points Against Data ---------------------------------------------
   source("~/ff_shiny_app/ff_app/pts_against_function.R")
   pts_vs <- pts_against(position)
+  cat("In position stats: Pts VS Data Successful \n")
 
 # Merging all data --------------------------------------------------------
 
@@ -331,6 +339,7 @@ wk_data2 <- switch(position, QB = wk_data$QB, RB = wk_data$RB, WR = wk_data$WR, 
                        -ytd_pass_4qc,
                        -ytd_pass_gwd) %>%
                 filter(proj_ffpts > 0)
+    cat("In position stats: QB Data merged \n")
 
   } else {
     if(position == "RB") {
@@ -345,7 +354,7 @@ wk_data2 <- switch(position, QB = wk_data$QB, RB = wk_data$RB, WR = wk_data$WR, 
                   left_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
                   left_join(pts_vs, by = c("proj_opp" = "pts_vs_tm")) %>%
                   filter(proj_ffpts > 0)
-
+      cat("In position stats: RB Data merged \n")
     } else {
 
       all_data <- full_join(proj_data, wk_data2, by = c("proj_player" = "prev_wk_player",
