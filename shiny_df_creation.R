@@ -30,26 +30,7 @@ print('DVOA Successful')
 
 # Last Week Data ----------------------------------------------------------
 
-wk_data <- lapply(list("QB", "RB", "WR", "TE"), function(position) {
-
-          # If week is 1, use last year's data
-          wk_data <-  paste("https://stathead.com/football/pgl_finder.cgi?request=1&match=game&order_by_asc=0&order_by=fanduel_points&year_min=2020",
-                            "&year_max=2020&game_type=R&ccomp%5B1%5D=gt&cval%5B1%5D=0&cstat%5B1%5D=rush_att&ccomp%5B2%5D=gt&cval%5B2%5D=0",
-                            "&cstat%5B2%5D=pass_cmp&ccomp%5B3%5D=gt&cval%5B3%5D=0&cstat%5B3%5D=fanduel_points&ccomp%5B4%5D=gt&cval%5B4%5D=0&cstat%5B4%5D=targets&positions%5B%5D=",
-                            str_to_lower(position),
-                            "&age_min=0&age_max=99&game_num_min=0&game_num_max=99&week_num_min=",
-                            as.character(wk_num - 1),
-                            "&week_num_max=",
-                            as.character(wk_num - 1),
-                            "&season_start=1&season_end=-1",
-                            sep = "")
-
-          wk_data <- stathead %>% jump_to(url = wk_data) %>%
-                      read_html() %>%
-                      html_table(fill = T) %>%
-                      .[[1]]
-})
-
+wk_data <- get_last_wk_data(wk_num, stathead)
 print("Last Week Data Successful")
 
 # Red Zone Data -----------------------------------------------------------
@@ -340,4 +321,4 @@ return(all_data_fo_pos_pace)
 # Getting full dataframe --------------------------------------------------
 ptm <- proc.time()
 df <- shiny_df(7)
-proc.time() - ptm
+end <- proc.time() - ptm

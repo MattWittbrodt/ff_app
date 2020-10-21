@@ -15,60 +15,7 @@ position_stats <- function(position, wk_num, data, tm_names) {
 
 # Previous Week Data ------------------------------------------------------
 
-  wk_data <- lapply(wk_data, function(x) {
-
-              # Getting actual column names
-              wkdf <- x
-              wk_names <- paste(colnames(wkdf), wkdf[1,]) %>%
-                          str_to_lower() %>%
-                          str_remove_all("^\\s+") %>%
-                          str_remove_all("[.]\\d+") %>%
-                          str_remove_all("^\\s+") %>%
-                          str_replace("receiving", "rec") %>%
-                          str_remove("ing") %>%
-                          str_replace("y/r","yds_per_rec") %>%
-                          str_replace("y/a","yds_per_att") %>%
-                          str_replace("y/tgt","yds_per_tgt") %>%
-                          str_replace_all("cmp","comp") %>%
-                          str_replace_all("%","_per") %>%
-                          str_replace_all("\\s+","_")
-              wk_names[8] <- 'field'
-
-              colnames(wkdf) <- paste("prev_wk", wk_names, sep = "_")
-
-              return(wkdf)
-              })
-
-  # Columns to include based on position, remove first column, then remove the 'Player' column
-  wk_data2 <- switch(position,
-                    QB = wk_data[[1]][,c(2,3,7:9,11,14:28,36:39)],
-                    RB = wk_data[[2]][,c(2,3,7:9,11,25:39)],
-                    WR = wk_data[[3]][,c(2,3,7:9,11,29:39)],
-                    TE = wk_data[[4]][,c(2,3,7:9,11,29:39)]) %>%
-              .[-1,] %>%
-              subset(prev_wk_player != 'Player') %>%
-              mutate(prev_wk_field = ifelse(prev_wk_field == "@",2,1),
-                     prev_wk_player = str_remove_all(prev_wk_player, "[:punct:]"))
-
-  # Removing the '%' from columns
-  if(position != "QB") {
-     wk_data2[["prev_wk_rec_ctch_per"]] <- as.numeric(sapply(wk_data2[["prev_wk_rec_ctch_per"]],
-                                                    function(x) str_remove(x, '%')))}
-  # converting into numeric
-  wk_data2[,c(6:length(wk_data2))] <- apply(wk_data2[,c(6:length(wk_data2))],
-                              2,
-                              function(x) as.numeric(as.character(x)))
-
-  # Doing some subsetting to remove players without any data
-  if(position == "QB") {
-    wk_data2 <- filter(wk_data2, prev_wk_pass_att > 5)
-  } else {
-    if(position == "RB") {
-    wk_data2 <- filter(wk_data2, prev_wk_rush_att > 4)
-    } else {
-      wk_data2 <- filter(wk_data2, prev_wk_rec_tgt > 1)
-    }
-  }
+wk_data2 <- switch(position, QB = wk_data$QB, RB = wk_data$RB, WR = wk_data$WR, TE = wk_data$TE)
 
 # Red Zone Stats ----------------------------------------------------------
 
