@@ -1,6 +1,6 @@
 # DFS 2019 PreProcessing for Shiny App
 
-shiny_df <- function(wk_num,date) {
+shiny_df <- function(wk_num) {
 
 library(tidyverse)
 library(mattDFS)
@@ -13,12 +13,10 @@ fff <- fff_login()
 get_projections(wk_num)
 
 # Reading in team name chart ----------------------------------------------
-#source("~/ff_shiny_app/ff_app/find_names.R", local = T)
 source("~/ff_shiny_app/ff_app/name_fixes.R", local = T)
 
 # Vegas Lines -------------------------------------------------------------
-vegas <- vegas_lines(date)
-vegas[["team"]] <- sapply(vegas[["team"]], function(x) find_names(x, "vegas"))
+vegas <- vegas_lines()
 print('Vegas Lines Successful')
 
 # DVOA Data ---------------------------------------------------------------
@@ -330,12 +328,16 @@ all_data_fo_pos_pace <- left_join(all_data_fo_pos, pace, by = c("proj_tm" = "off
 
 print("Pace of Play Successful")
 
+# Writing outexcel file
+copy_and_write(all_data_fo_pos_pace,7)
+print("Data Written Succesfully")
+
 # Returning full DF ----
 return(all_data_fo_pos_pace)
 
 }
 
 # Getting full dataframe --------------------------------------------------
-df <- shiny_df(6, "10/18")
-
-#writexl::write_xlsx(df, "~/ff_shiny_app/ff_app/data/all_data_wk_6_2020.xlsx")
+ptm <- proc.time()
+df <- shiny_df(7)
+proc.time() - ptm
