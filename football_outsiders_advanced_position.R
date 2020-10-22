@@ -13,6 +13,20 @@ fo_qb <- function() {
          .[[1]] %>%
          .[,-c(4,6,8)] %>%
          select(-DPI)
+  # This is going to get some of the lower used QBs but they may still be relevant
+  df_low_use <- "https://www.footballoutsiders.com/stats/nfl/qb/2020" %>%
+    read_html() %>%
+    html_nodes(xpath = '//*[@id="node-76122"]/div/div/table[2]') %>%
+    html_table() %>%
+    .[[1]] %>%
+    .[,-c(4,6,8)] %>%
+    select(-DPI) %>%
+    mutate(Yards = as.character(Yards), # the main df reads in 1,344 as char, so fixing for now before join
+           EYds = as.character(EYds))
+
+  # Joining
+  df <- full_join(df, df_low_use, by = colnames(df_low_use))
+
   colnames(df) <- str_to_lower(paste('pass',colnames(df), sep = "_")) %>%
                   str_replace("%","_per")
 
