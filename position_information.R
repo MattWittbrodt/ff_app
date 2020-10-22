@@ -225,17 +225,21 @@ print("In position stats: Previous week data Successful")
 
 # Year to Date Stats ------------------------------------------------------
 
-  ytd_df <- data$ytd_df
+  ytd_data <- switch(position,
+                   QB = data$ytd_df$QB,
+                   RB = data$ytd_df$RB,
+                   WR = data$ytd_df$WR,
+                   TE = data$ytd_df$TE)
 
   # Picking data which is relevant for the player - similar to red zone
-  ytd_data <- switch(position,
-                    QB = as.data.frame(ytd_df[[1]]),
-                    WR = as.data.frame(ytd_df[[3]]),
-                    TE = as.data.frame(ytd_df[[3]]),
-                    RB = left_join(as.data.frame(ytd_df[[2]]),
-                                   as.data.frame(ytd_df[[3]]),
-                                   by = c("ytd_rush_player" = "ytd_rec_player")) %>%
-                         mutate(ytd_rush_pos = ifelse(ytd_rush_pos != "WR" & ytd_rush_pos != "QB" & ytd_rush_pos != "TE", "RB", ytd_rush_pos)))
+  # ytd_data <- switch(position,
+  #                   QB = as.data.frame(ytd_df[[1]]),
+  #                   WR = as.data.frame(ytd_df[[3]]),
+  #                   TE = as.data.frame(ytd_df[[3]]),
+  #                   RB = left_join(as.data.frame(ytd_df[[2]]),
+  #                                  as.data.frame(ytd_df[[3]]),
+  #                                  by = c("ytd_rush_player" = "ytd_rec_player")) %>%
+  #                        mutate(ytd_rush_pos = ifelse(ytd_rush_pos != "WR" & ytd_rush_pos != "QB" & ytd_rush_pos != "TE", "RB", ytd_rush_pos)))
   cat(paste0("In position data: ", position, " YTD Data Successful \n"))
 
 # Current Week Projections ------------------------------------------------
@@ -264,9 +268,7 @@ print("In position stats: Previous week data Successful")
                 left_join(rz_data, by = c("proj_player" = "passing_player")) %>% # look at inner join later - issues with RZ information currently
                 inner_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
                 left_join(pts_vs, by = c("proj_opp" = "pts_vs_tm")) %>%
-                select(-ytd_pass_qbrec,
-                       -ytd_pass_g,
-                       -ytd_pass_comp,
+                select(-ytd_pass_comp,
                        -ytd_pass_att,
                        -ytd_pass_yds,
                        -ytd_pass_sk,
