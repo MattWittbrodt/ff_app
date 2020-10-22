@@ -34,45 +34,6 @@ wk_data <- get_last_wk_data(wk_num, stathead)
 print("Last Week Data Successful")
 
 # Red Zone Data -----------------------------------------------------------
-# rz_types <- list("passing","rushing","receiving")
-#
-# rz_df <- lapply(rz_types,
-#                 function(x) {
-#
-#                   # Reading in Data
-#                   d <- paste("http://www.pro-football-reference.com/years/2020/redzone-",
-#                              x,
-#                              ".htm",
-#                              sep = "") %>%
-#                     read_html() %>%
-#                     html_table(fill = T) %>%
-#                     .[[1]]
-#
-#                   # Ammending names
-#                   rz_names <- paste(colnames(d), d[1,]) %>%
-#                     str_to_lower() %>%
-#                     str_remove_all("inside") %>%
-#                     str_remove_all("^\\s+") %>%
-#                     str_replace_all("20","twenty") %>%
-#                     str_replace_all("10","ten") %>%
-#                     str_replace_all("5","five") %>%
-#                     str_replace_all("(?<=\\w)%","_per") %>%
-#                     str_replace_all("%(?=\\w)","per_") %>%
-#                     str_replace_all("\\s+","_") %>%
-#                     str_replace_all("cmp","comp")
-#
-#
-#                   # Adding into new columns
-#                   colnames(d) <- paste(x,rz_names,sep = "_")
-#
-#                   # Final few cleaning steps
-#                   d <- d %>%
-#                     subset(.[[paste(x,"player",sep = "_")]] != "Player") %>%
-#                     select(-contains("link"))
-#
-#                 })
-# # Fixing Names
-# rz_df <- lapply(rz_df, function(x) {name_fixes(x, 1, 2, 0)})
 rz_data <- get_red_zone()
 print("Red Zone Offensive Data Successful")
 
