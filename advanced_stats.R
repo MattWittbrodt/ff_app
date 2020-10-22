@@ -144,7 +144,7 @@ advanced_receiving_stats <- function() {
                        -adv_receiving_yds,
                        -adv_receiving_td) %>%
                 filter(adv_receiving_player != "Player") %>%
-                mutate(adv_receiving_player = str_remove(adv_receiving_player, "[:punct:]"))
+                mutate(adv_receiving_player = str_remove_all(adv_receiving_player, "[:punct:]"))
   link_data2[,2:ncol(link_data2)] <- apply(link_data2[,2:ncol(link_data2)], 2, function(x) {as.numeric(x)})
   return(link_data2)
 
