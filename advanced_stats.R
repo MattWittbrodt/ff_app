@@ -54,6 +54,8 @@ advanced_passing_stats <- function() {
   # Fixing a few issues with columns
   all_df[,-1] <- apply(all_df[,-1], c(1,2), function(x) {str_remove(x, "%") %>% as.numeric()})
 
+  all_df <- name_fixes(all_df, 1, 2, 3)
+
   return(all_df)
 
 }
