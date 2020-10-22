@@ -6,10 +6,10 @@ library(lubridate)
 library(writexl)
 
 # Reading in complete data for week ----
-df <- readxl::read_xlsx("data/all_data_wk_6_2020.xlsx") %>%
+df <- readxl::read_xlsx("data/all_data_wk_7_2020.xlsx") %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_6_2020.xlsx") # for use on computer
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_7_2020.xlsx") # for use on computer
 
 ###
 ### Data Frame Creation
@@ -76,11 +76,11 @@ def_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
 # QB Offense Stats ----
 
 off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
-          mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
-                 pass_dyar = round(pass_dyar/as.numeric(pts_vs_g),2),
-                 rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
-                 pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(pts_vs_g),2),
-                 rush_yds_diff = round((rush_eyds - rush_yards)/as.numeric(pts_vs_g),2)) %>%
+          mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(ytd_pass_g ), 2),
+                 pass_dyar = round(pass_dyar/as.numeric(ytd_pass_g),2),
+                 rush_yards = round(rush_yards / as.numeric(ytd_pass_g),2),
+                 pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(ytd_pass_g),2),
+                 rush_yds_diff = round((rush_eyds - rush_yards)/as.numeric(ytd_pass_g),2)) %>%
           select(proj_player,
                  proj_opp,
                  # YTD Raw Data
