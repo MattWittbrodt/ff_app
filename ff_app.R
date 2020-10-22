@@ -168,7 +168,7 @@ ui <- navbarPage("DFS Data",
                column(3,
                       sliderInput("qb_rush_yds",
                                   "Rushing Yds/Gm",
-                                  min = min(off_qb$rush_yards,  na.rm = T),
+                                  min = 0,
                                   max = max(off_qb$rush_yards,  na.rm = T),
                                   value = c(min,max)
                       ))
@@ -805,7 +805,7 @@ server <- function(input, output) {
                            pricing_current >= input$qb_salary[1] & pricing_current <= input$qb_salary[2] &
                            implied_total >= input$qb_total[1] & implied_total <= input$qb_total[2] &
                            pass_yds_diff >= input$qb_pass_yds_diff[1] & pass_yds_diff <= input$qb_pass_yds_diff[2] &
-                           rush_yards >= input$qb_rush_yds[1] & rush_yards <= input$qb_rush_yds[2] | is.na(pricing_current))
+                           is.na(rush_yards) | rush_yards >= input$qb_rush_yds[1] & rush_yards <= input$qb_rush_yds[2])
 
       #DT::datatable(render_qb, rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
 
