@@ -1,11 +1,11 @@
 # Getting players with trades and no positions
 
 name_fixes <- function(df, player_col, team_col, pos_col) {
-  
+
   # Removing punctuation
-  for(n in 1:nrow(df)) {df[n,player_col] <- str_remove_all(df[n,player_col], "[:punct:]")}
+  for(n in 1:nrow(df)) {df[n,player_col] <- str_remove_all(df[n,player_col], "[:punct:]|[:space:]II")}
   for(n in 1:nrow(df)) {df[n,player_col] <- str_remove_all(df[n,player_col], "\\W{1,2}$")} # Removing any weird '+' for pro bowl
-  
+
   # Adjusting Team Names
   if(team_col > 0) {
     for(p in 1:nrow(df)) {
@@ -18,7 +18,7 @@ name_fixes <- function(df, player_col, team_col, pos_col) {
                                  df[p, team_col])
     }
   }
-  
+
   # Adjusting Position Names
   if(pos_col > 0) {
     for(p in 1:nrow(df)) {
@@ -60,6 +60,6 @@ name_fixes <- function(df, player_col, team_col, pos_col) {
                                 str_to_upper(df[p, pos_col]))
     }
   }
-  
+
   return(df)
 }
