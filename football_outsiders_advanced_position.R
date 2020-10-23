@@ -93,20 +93,30 @@ fo_pass_catchers <- function(position) {
   df <- paste('https://www.footballoutsiders.com/stats/nfl/',
               position,
               '/2020', sep = "") %>%
-    read_html() %>%
-    html_nodes(xpath = paste('//*[@id="node-', as.character(num), '"]/div/div/table[1]',sep = "")) %>%
-    html_table() %>%
-    .[[1]] %>%
-    .[,-c(4,6,8)] %>%
-    select(-Passes, -TD, -FUM, -DPI)
+        read_html() %>%
+        html_nodes(xpath = paste('//*[@id="node-', as.character(num), '"]/div/div/table[1]',sep = "")) %>%
+        html_table() %>%
+        .[[1]] %>%
+        .[,-c(4,6,8)]
 
-  colnames(df) <- str_to_lower(paste('rec',colnames(df), sep = "_")) %>%
-    str_remove_all("\t") %>% str_replace("\n", "_")
+  df2 <- paste('https://www.footballoutsiders.com/stats/nfl/',
+               position,
+               '/2020', sep = "") %>%
+        read_html() %>%
+        html_nodes(xpath = paste('//*[@id="node-', as.character(num), '"]/div/div/table[2]',sep = "")) %>%
+        html_table() %>%
+        .[[1]]
+
+  # Adding in second table
+  df3 <- full_join(df, df2, by = colnames(df2)) %>% select(-Passes, -TD, -FUM, -DPI) %>% mutate(Player = str_replace(Player, "Jo\\.", "J."))
+
+  colnames(df3) <- str_to_lower(paste('rec',colnames(df3), sep = "_")) %>%
+                   str_remove_all("\t") %>% str_replace("\n", "_")
 
   # Removing % from DVOA
-  df[,c(3:ncol(df))] <- apply(df[,c(3:ncol(df))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
+  df3[,c(3:ncol(df3))] <- apply(df3[,c(3:ncol(df3))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
 
-  return(df)
+  return(df3)
 
 }
 
