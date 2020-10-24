@@ -13,7 +13,7 @@ fff <- fff_login()
 proj_data <- get_projections(wk_num)
 
 # Reading in team name chart ----------------------------------------------
-source("~/ff_shiny_app/ff_app/name_fixes.R", local = T)
+#source("~/ff_shiny_app/ff_app/name_fixes.R", local = T)
 
 # Vegas Lines -------------------------------------------------------------
 vegas <- vegas_lines()
@@ -41,46 +41,140 @@ print("Red Zone Offensive Data Successful")
 ytd_df <- get_ytd_data()
 print("Year to Data Data Successful")
 
-# Combinging into one list ------------------------------------------------
+# Combining into one list ------------------------------------------------
 data <- list(wk_data = wk_data,
              #rz_df = rz_df,
              ytd_df = ytd_df)
+
+# Team Defense ------------------------------------------------------------
+all_d_data <- get_team_defense()
+cat("Team Defense Successful \n")
+
 # Positions ---------------------------------------------------------------
 source("~/ff_shiny_app/ff_app/position_information.R", local = T)
 
-# QB
-qb <- position_stats("QB",wk_num, data, tm_names) %>%
-      mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
-             proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
+# QB -----------------------------------------------------------------------
+# Getting relevant information for each position and the specific functions
+qb_wk <- wk_data$QB # previous week data
+qb_rz <- rz_data$QB
+# Getting YTD and ensuring we are getting people with reasonable passing yards & QBs
+qb_ytd <- data$ytd_df$QB %>% filter(ytd_pass_yds > 10) %>% mutate(ytd_pass_pos = "QB")
 
-# RB
-rb <- position_stats("RB",wk_num,data, tm_names) %>%
-  mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
-         proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
+qb_proj <- filter(proj_data, proj_pos == "QB")
+qb_pts_vs <- pts_against("QB")
 
-# WR
-wr <- position_stats("WR",wk_num,data,tm_names) %>%
-  mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
-         proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
+# Combining into on DF for QB
+all_qb <- full_join(qb_proj, qb_wk, by = c("proj_player" = "prev_wk_player", "proj_tm" = "prev_wk_tm", "proj_pos" = "prev_wk_pos")) %>%
+          full_join(qb_ytd, by = c("proj_player"= "ytd_pass_player",  "proj_tm" = "ytd_pass_tm", "proj_pos" = "ytd_pass_pos")) %>%
+          left_join(qb_rz, by = c("proj_player" = "passing_player")) %>% # look at inner join later - issues with RZ information currently
+          inner_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
+          left_join(qb_pts_vs, by = c("proj_opp" = "pts_vs_tm")) %>%
+          select(-ytd_pass_comp,
+                 -ytd_pass_att,
+                 -ytd_pass_yds,
+                 -ytd_pass_sk,
+                 -ytd_pass_yds.1,
+                 -ytd_pass_sk_per,
+                 -ytd_pass_4qc,
+                 -ytd_pass_gwd,
+                 -ytd_pass_qbrec) %>%
+          filter(proj_ffpts > 0)
 
-# Getting WR matchup
-wr_matchup <- wr_matchups(wk_num,fff)
+# RB ----------------------------------------------------------------------
+# Getting relevant information for each position and the specific functions
+rb_wk <- wk_data$RB # previous week data
+rb_rz <- rz_data$RB
 
-# Adding in matchup stats
-wr <- left_join(wr, wr_matchup, by = c("proj_player" = "vs_cb_wr"))
+# Getting YTD and ensuring we are getting people with reasonable passing yards & QBs
+rb_ytd <- data$ytd_df$RB
 
-# TE
-te <- position_stats("TE",wk_num,data, tm_names) %>%
-  mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
-         proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
+rb_proj <- filter(proj_data, proj_pos == "RB")
+rb_pts_vs <- pts_against("RB")
+
+# Combining into on DF for QB
+all_rb <- full_join(rb_proj, rb_wk, by = c("proj_player" = "prev_wk_player","proj_tm" = "prev_wk_tm","proj_pos" = "prev_wk_pos")) %>%
+          full_join(rb_ytd, by = c("proj_player" = "ytd_rush_player",
+                                     "proj_tm" = "ytd_rush_tm",
+                                     "proj_pos" = "ytd_rush_pos")) %>%
+          left_join(rb_rz, by = c("proj_player" = "rushing_player")) %>%
+          left_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
+          left_join(rb_pts_vs, by = c("proj_opp" = "pts_vs_tm")) %>%
+          filter(proj_ffpts > 0)
+
+# WR ----------------------------------------------------------------------
+# Getting relevant information for each position and the specific functions
+wr_wk <- wk_data$WR # previous week data
+wr_rz <- rz_data$WR
+
+# Getting YTD and ensuring we are getting people with reasonable passing yards & QBs
+wr_ytd <- data$ytd_df$WR
+
+wr_proj <- filter(proj_data, proj_pos == "WR")
+wr_pts_vs <- pts_against("WR")
+
+all_wr <- full_join(wr_proj, wr_wk, by = c("proj_player" = "prev_wk_player","proj_tm" = "prev_wk_tm","proj_pos" = "prev_wk_pos")) %>%
+          left_join(wr_ytd, by = c("proj_player"= "ytd_rec_player","proj_tm" = "ytd_rec_tm")) %>%
+          left_join(wr_rz, by = c("proj_player" = "receiving_player")) %>%
+          left_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
+          left_join(wr_pts_vs, by = c("proj_opp" = "pts_vs_tm")) %>%
+          filter(proj_ffpts > 0) %>% #, proj_pos != "RB", proj_pos != "TE", proj_pos != "HB")
+          select(-ytd_rec_pos) # removing the position from before
+
+
+# TE ----------------------------------------------------------------------
+
+# Getting relevant information for each position and the specific functions
+te_wk <- wk_data$TE # previous week data
+te_rz <- rz_data$TE
+
+# Getting YTD and ensuring we are getting people with reasonable passing yards & QBs
+te_ytd <- data$ytd_df$TE
+
+te_proj <- filter(proj_data, proj_pos == "TE")
+te_pts_vs <- pts_against("TE")
+
+all_te <- full_join(te_proj, te_wk, by = c("proj_player" = "prev_wk_player","proj_tm" = "prev_wk_tm","proj_pos" = "prev_wk_pos")) %>%
+          left_join(te_ytd, by = c("proj_player"= "ytd_rec_player","proj_tm" = "ytd_rec_tm")) %>%
+          left_join(te_rz, by = c("proj_player" = "receiving_player")) %>%
+          left_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
+          left_join(te_pts_vs, by = c("proj_opp" = "pts_vs_tm")) %>%
+          filter(proj_ffpts > 0) %>% #, proj_pos != "RB", proj_pos != "TE", proj_pos != "HB")
+          select(-ytd_rec_pos) # removing the position from before
+
+# Current Week Projections ------------------------------------------------
+
+# qb <- position_stats("QB",wk_num, data, tm_names) %>%
+#       mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
+#              proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
+#
+# # RB
+# rb <- position_stats("RB",wk_num,data, tm_names) %>%
+#   mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
+#          proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
+#
+# # WR
+# wr <- position_stats("WR",wk_num,data,tm_names) %>%
+#   mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
+#          proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
+#
+# # Getting WR matchup
+# wr_matchup <- wr_matchups(wk_num,fff)
+#
+# # Adding in matchup stats
+# wr <- left_join(wr, wr_matchup, by = c("proj_player" = "vs_cb_wr"))
+#
+# # TE
+# te <- position_stats("TE",wk_num,data, tm_names) %>%
+#   mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
+#          proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
 
 print("Positional Data Successful")
 
-# Combinng into one DF ----------------------------------------------------
+# Combing into one DF ----------------------------------------------------
 
-all_positions <- merge(qb,rb, all = TRUE) %>%
-                 merge(wr, all = TRUE) %>%
-                 merge(te, all = TRUE) %>%
+all_positions <- merge(all_qb,all_rb, all = TRUE) %>%
+                 merge(all_wr, all = TRUE) %>%
+                 merge(all_te, all = TRUE) %>%
                  left_join(vegas, by = c("proj_tm" = "team")) %>%
                  left_join(dvoa_defense, by = c("proj_opp" = "def_team")) %>%
                  left_join(dvoa_offense, by = c("proj_tm" = "off_team"))
@@ -155,10 +249,11 @@ fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player"
                     pass_player = str_remove_all(pass_player, "-"))
 
 fo_all_positions[["pass_team"]] <- sapply(fo_all_positions[["pass_team"]], function(x) find_names(x, "fff_abbreviation"))
+fo_all_positions[168,1] <- "C Wilson"
 
 # Merging with rest of data
 all_data2 <- all_data %>%
-             mutate(proj_player_new = str_remove_all(proj_player, "(?<=[:upper:])[:lower:]{1,}(?=[:space:])"))
+             mutate(proj_player_new = str_remove(proj_player, "(?<=[:upper:])([:lower:]{1,}[:upper:][:lower:]{1,}|[:lower:]{1,}|[:upper:]{1}[:lower:]{1,})(?=[:space:]|[:upper:])"))
 
 
 # Combining
