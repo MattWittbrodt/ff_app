@@ -20,12 +20,12 @@ cat(paste0("-----Doing analysis for Week ",wk_num,"-----"))
 
 print("Starting Shiny DF Creation")
 
-# Getting data
+# Getting data ----
 source("C:/Users/mattw/Documents/ff_shiny_app/ff_app/shiny_df_creation.R")
 
-upname <- shiny_df(7)
+upname <- shiny_df(wk_num)
 
-cat(paste0("Shiny DF has been created with filename: ", upname, "! \n"))
+cat(paste0("Shiny DF for week ", wk_num, " has been created with filename: ", upname, "! \n"))
 
 # Deploying app ----
 # Specifying the specific files - this also helps to alleviate errors
