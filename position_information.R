@@ -11,12 +11,12 @@ position_stats <- function(position, wk_num, data, tm_names) {
 
   # Reading in team name chart
   #tm_names <- readxl::read_xlsx("data/team_names.xlsx")
-  source("~/ff_shiny_app/ff_app/find_names.R", local = T)
+  #source("~/ff_shiny_app/ff_app/find_names.R", local = T)
 
 # Previous Week Data ------------------------------------------------------
 
-wk_data2 <- switch(position, QB = wk_data$QB, RB = wk_data$RB, WR = wk_data$WR, TE = wk_data$TE)
-print("In position stats: Previous week data Successful")
+  wk_data2 <- switch(position, QB = wk_data$QB, RB = wk_data$RB, WR = wk_data$WR, TE = wk_data$TE)
+  print("In position stats: Previous week data Successful")
 
 # Red Zone Stats ----------------------------------------------------------
 
@@ -29,12 +29,7 @@ print("In position stats: Previous week data Successful")
 
 # Year to Date Stats ------------------------------------------------------
 
-  ytd_data <- switch(position,
-                   QB = data$ytd_df$QB,
-                   RB = data$ytd_df$RB,
-                   WR = data$ytd_df$WR,
-                   TE = data$ytd_df$TE)
-
+  ytd_data <- switch(position, QB = data$ytd_df$QB, RB = data$ytd_df$RB, WR = data$ytd_df$WR, TE = data$ytd_df$TE)
   cat(paste0("In position data: ", position, " YTD Data Successful \n"))
 
 # Current Week Projections ------------------------------------------------
@@ -43,6 +38,7 @@ print("In position stats: Previous week data Successful")
   cat(paste0("In position data: ", position, " projections successfull \n"))
 
 # Fantasy Points Against Data ---------------------------------------------
+
   source("~/ff_shiny_app/ff_app/pts_against_function.R")
   pts_vs <- pts_against(position)
   cat("In position stats: Pts VS Data Successful \n")
@@ -103,9 +99,6 @@ print("In position stats: Previous week data Successful")
                   select(-ytd_rec_pos) # removing the position from before
       }
   }
-
-
-
 
 # Return ------------------------------------------------------------------
 
