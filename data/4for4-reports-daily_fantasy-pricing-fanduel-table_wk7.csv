@@ -24,7 +24,6 @@
 "RB","Saquon Barkley","NYG",9000,4500,-4500,0
 "RB","Kenjon Barner","TAM",4500,4500,0,0
 "WR","Cameron Batson","TEN",4500,4500,0,0
-"TE","Marcus Baugh","WAS",4000,4000,0,0
 "RB","Nick Bawden","DET",4500,4500,0,0
 "WR","Omar Bayless","CAR",4500,4500,0,0
 "TE","Evan Baylis","ARI",4000,4000,0,0
@@ -60,7 +59,6 @@
 "TE","Pharaoh Brown","HOU",4100,4100,0,100
 "TE","Hunter Bryant","DET",4000,4000,0,0
 "TE","Harrison Bryant","CLE",4000,4400,400,200
-"WR","Ventell Bryant","DAL",4500,4500,0,0
 "RB","Rex Burkhead","NWE",5100,5200,100,-400
 "WR","Deontay Burnett","PHI",4500,4600,100,0
 "QB","Joe Burrow","CIN",6600,7100,500,0
@@ -143,6 +141,7 @@
 "WR","Larry Fitzgerald","ARI",5300,4900,-400,0
 "QB","Joe Flacco","NYJ",6000,6500,500,0
 "QB","Nick Foles","CHI",6300,6800,500,-100
+"WR","Robert Foster","WAS",4500,4500,0,0
 "RB","Leonard Fournette","TAM",6900,5500,-1400,0
 "WR","Bennie Fowler","NOR",4700,4500,-200,NA
 "TE","Jordan Franks","CIN",4000,4000,0,0
@@ -256,6 +255,7 @@
 "WR","Diontae Johnson","PIT",5900,5800,-100,100
 "RB","DErnest Johnson","CLE",4500,4900,400,-200
 "RB","Jakob Johnson","NWE",4500,4500,0,0
+"WR","Juwan Johnson","NOR",4500,4500,0,NA
 "RB","Kerryon Johnson","DET",5600,4800,-800,-200
 "WR","KeeSean Johnson","ARI",4800,4500,-300,0
 "RB","Ty Johnson","NYJ",4500,4500,0,0
@@ -275,6 +275,7 @@
 "QB","Case Keenum","CLE",6000,6000,0,0
 "TE","Travis Kelce","KAN",7800,7900,100,0
 "RB","Joshua Kelley","LAC",4500,6200,1700,NA
+"WR","Marcus Kemp","KAN",4500,4500,0,0
 "WR","Tom Kennedy","DET",4500,4500,0,0
 "WR","Christian Kirk","ARI",5800,5400,-400,-200
 "WR","Keith Kirkwood","CAR",4500,4500,0,0
@@ -327,7 +328,6 @@
 "WR","Darnell Mooney","CHI",4500,5300,800,300
 "WR","David Moore","SEA",4900,4900,0,NA
 "WR","DJ Moore","CAR",7100,6600,-500,-200
-"WR","Jason Moore","LAC",4500,4500,0,NA
 "TE","Foster Moreau","LVR",4100,4200,100,NA
 "QB","James Morgan","NYJ",6000,6000,0,0
 "TE","Thaddeus Moss","WAS",4000,4000,0,0
@@ -402,6 +402,7 @@
 "RB","Jaylen Samuels","PIT",4700,4500,-200,0
 "WR","Emmanuel Sanders","NOR",5400,6100,700,NA
 "RB","Miles Sanders","PHI",6800,7900,1100,300
+"TE","Eric Saubert","JAX",4000,4000,0,0
 "RB","Bo Scarbrough","DET",4700,4500,-200,0
 "QB","Matt Schaub","ATL",6000,6000,0,0
 "TE","Mason Schreck","CIN",4000,4000,0,0
@@ -492,7 +493,9 @@
 "WR","Dede Westbrook","JAX",5500,4500,-1000,0
 "RB","James White","NWE",5300,5200,-100,0
 "WR","Isaac Whitney","HOU",4500,4500,0,0
+"WR","Duke Williams","BUF",4500,4500,0,0
 "RB","Darrel Williams","KAN",4600,4900,300,100
+"RB","Dexter Williams","GNB",4500,4500,0,0
 "RB","Damien Williams","KAN",4500,4500,0,0
 "RB","Jamaal Williams","GNB",4900,5000,100,-200
 "TE","Maxx Williams","ARI",4400,4000,-400,0
