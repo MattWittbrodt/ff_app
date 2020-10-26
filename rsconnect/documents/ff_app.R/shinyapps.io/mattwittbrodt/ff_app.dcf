@@ -5,9 +5,9 @@ account: mattwittbrodt
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1183242
-bundleId: 3771049
+bundleId: 3776744
 url: https://mattwittbrodt.shinyapps.io/ff_app/
-when: 1603379291.08593
+when: 1603514346.75755
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: advanced_stats.R|cleaning_data_for_sql.R|connect_to_sql_Db.R|data_merging.R|dvoa.R|find_names.R|fo_advanced_to_main.R|football_outsiders_advanced_position.R|name_fixes.R|position_information.R|pts_against_function.R|shiny_df_creation.R|vegas_lines.R|wr_vs_cb.R|2020_data/analysis_data/all_data_wk_3_2020_advanced_FO.xlsx|2020_data/analysis_data/all_data_wk_4_2020.xlsx|2019_data
+ignoredFiles: advanced_stats.R|batch_processing.R|cleaning_data_for_sql.R|connect_to_sql_Db.R|data_merging.R|dvoa.R|find_names.R|fo_advanced_to_main.R|football_outsiders_advanced_position.R|name_fixes.R|position_information.R|shiny_df_creation.R|top_ten.R|vegas_lines.R|wr_vs_cb.R|2020_data/analysis_data/all_data_wk_3_2020_advanced_FO.xlsx|2020_data/analysis_data/all_data_wk_4_2020.xlsx|2019_data
