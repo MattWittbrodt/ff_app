@@ -120,6 +120,9 @@ all_wr <- full_join(wr_proj, wr_wk, by = c("proj_player" = "prev_wk_player","pro
           filter(proj_ffpts > 0) %>% #, proj_pos != "RB", proj_pos != "TE", proj_pos != "HB")
           select(-ytd_rec_pos) # removing the position from before
 
+# Getting the matchups script and adding to main function
+wr_matchup <- wr_matchups(wk_num,fff)
+all_wr <- left_join(all_wr, wr_matchup, by = c("proj_player" = "vs_cb_wr"))
 
 # TE ----------------------------------------------------------------------
 
@@ -269,15 +272,16 @@ all_data_fo_pos_pace <- left_join(all_data_fo_pos, pace, by = c("proj_tm" = "off
 print("Pace of Play Successful")
 
 # Writing outexcel file
-copy_and_write(all_data_fo_pos_pace,7)
+fname <- copy_and_write(all_data_fo_pos_pace,7)
 print("Data Written Succesfully")
 
 # Returning full DF ----
-return(all_data_fo_pos_pace)
+#return(all_data_fo_pos_pace)
+return(fname)
 
 }
 
 # Getting full dataframe --------------------------------------------------
-ptm <- proc.time()
-df <- shiny_df(7)
-end <- proc.time() - ptm
+# ptm <- proc.time()
+#df <- shiny_df(7)
+# end <- proc.time() - ptm
