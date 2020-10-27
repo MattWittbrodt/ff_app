@@ -2,6 +2,7 @@
 
 shiny_df <- function(wk_num) {
 
+library(rvest)
 library(tidyverse)
 library(mattDFS)
 
@@ -39,12 +40,7 @@ print("Red Zone Offensive Data Successful")
 
 # Year to Date Data -------------------------------------------------------
 ytd_df <- get_ytd_data()
-print("Year to Data Data Successful")
-
-# Combining into one list ------------------------------------------------
-data <- list(wk_data = wk_data,
-             #rz_df = rz_df,
-             ytd_df = ytd_df)
+cat("Year to Data Data Successful \n")
 
 # Team Defense ------------------------------------------------------------
 all_d_data <- get_team_defense()
@@ -57,8 +53,9 @@ source("~/ff_shiny_app/ff_app/position_information.R", local = T)
 # Getting relevant information for each position and the specific functions
 qb_wk <- wk_data$QB # previous week data
 qb_rz <- rz_data$QB
+
 # Getting YTD and ensuring we are getting people with reasonable passing yards & QBs
-qb_ytd <- data$ytd_df$QB %>% filter(ytd_pass_yds > 10) %>% mutate(ytd_pass_pos = "QB")
+qb_ytd <- ytd_df$QB %>% filter(ytd_pass_yds > 10) %>% mutate(ytd_pass_pos = "QB")
 
 qb_proj <- filter(proj_data, proj_pos == "QB")
 qb_pts_vs <- pts_against("QB")
@@ -86,7 +83,7 @@ rb_wk <- wk_data$RB # previous week data
 rb_rz <- rz_data$RB
 
 # Getting YTD and ensuring we are getting people with reasonable passing yards & QBs
-rb_ytd <- data$ytd_df$RB
+rb_ytd <- ytd_df$RB
 
 rb_proj <- filter(proj_data, proj_pos == "RB")
 rb_pts_vs <- pts_against("RB")
@@ -99,7 +96,10 @@ all_rb <- full_join(rb_proj, rb_wk, by = c("proj_player" = "prev_wk_player","pro
           left_join(rb_rz, by = c("proj_player" = "rushing_player")) %>%
           left_join(all_d_data, by = c("proj_opp" = "def_tm")) %>%
           left_join(rb_pts_vs, by = c("proj_opp" = "pts_vs_tm")) %>%
-          filter(proj_ffpts > 0)
+          filter(proj_ffpts > 0) %>%
+          mutate(total_touches = ytd_rec_target + ytd_rush_att,
+                 high_value_touches = ytd_rec_target + round(rushing_ten_att/ytd_rush_g,2),
+                 high_value_touches_per = round(high_value_touches / total_touches, 2))
 
 # WR ----------------------------------------------------------------------
 # Getting relevant information for each position and the specific functions
@@ -107,7 +107,7 @@ wr_wk <- wk_data$WR # previous week data
 wr_rz <- rz_data$WR
 
 # Getting YTD and ensuring we are getting people with reasonable passing yards & QBs
-wr_ytd <- data$ytd_df$WR
+wr_ytd <- ytd_df$WR
 
 wr_proj <- filter(proj_data, proj_pos == "WR")
 wr_pts_vs <- pts_against("WR")
@@ -131,7 +131,7 @@ te_wk <- wk_data$TE # previous week data
 te_rz <- rz_data$TE
 
 # Getting YTD and ensuring we are getting people with reasonable passing yards & QBs
-te_ytd <- data$ytd_df$TE
+te_ytd <- ytd_df$TE
 
 te_proj <- filter(proj_data, proj_pos == "TE")
 te_pts_vs <- pts_against("TE")
