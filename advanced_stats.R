@@ -141,12 +141,14 @@ advanced_receiving_stats <- function() {
                        -adv_receiving_td) %>%
                 filter(adv_receiving_player != "Player") %>%
                 mutate(adv_receiving_player = str_remove_all(adv_receiving_player, "[:punct:]"))
+
   link_data2[,3:ncol(link_data2)] <- apply(link_data2[,3:ncol(link_data2)], 2, function(x) {as.numeric(x)})
 
   # Calculating a few advanced receiving metrics - air yards, RACR,
   link_data3 <- link_data2 %>% mutate(
-                               adv_receiving_air_yards = as.numeric(adv_receiving_adot)*(adv_receiving_tgt/adv_receiving_g),
-                               adv_receiving_racr = round((adv_receiving_yds/adv_receiving_g)/adv_receiving_air_yards,2)) %>%
+                               adv_receiving_tgt = round(adv_receiving_tgt / adv_receiving_g,2),
+                               adv_receiving_air_yards = round(adv_receiving_adot*adv_receiving_tgt,2),
+                               adv_receiving_racr = format(round((adv_receiving_yds/adv_receiving_g)/adv_receiving_air_yards,2), nsmall = 2)) %>%
                 filter(adv_receiving_tm != "2TM")
 
   # Getting team totals (target and air yards)
@@ -156,65 +158,28 @@ advanced_receiving_stats <- function() {
                  filter(adv_receiving_tm != "2TM")
 
   # Looping through to get team share
-  link_data3$adv_receiving_target_share <- 0
-  link_data3$adv_receiving_air_yard_share <- 0
+  # Function takes in a row from apply
+  get_target_share <- function(row, stat_col, team_stat_col) {
+                      val <- as.numeric(row[stat_col])
+                      tm <- as.character(row[2])
+                      team_sum <- as.numeric(team_totals[team_totals[,1] == tm,team_stat_col])
 
-  get_market_share <- function(stat_col, df, team_sum_col, new_col) {
-
-    for(player in 1:nrow(df)) {
-
-      # Getting a smaller DF
-      player_val <- df[player,stat_col]
-      print(player_val)
-      team <- as.character(df[player,2])
-      print(team)
-      team_sum <- as.numeric(team_totals[team_totals[,1] == team,team_sum_col])
-      print(team_sum)
-
-      # Calculating target share
-      market_share = round((player_val / team_sum)*100,2)
-      print(market_share)
-
-      # Putting back in DF
-      df[player,new_col] <- market_share
-
-    }
-
+                      # Calculating Market Share
+                      ms <- round((val/team_sum)*100, 2)
+                      return(ms)
   }
 
+  # Calculating Target Share
+  link_data3$adv_receiving_target_share <- 0
+  link_data3$adv_receiving_target_share <- apply(link_data3, 1, function(x) {get_target_share(x,4,3)})
 
+  # Calculating Air Yards Share
+  link_data3$adv_receiving_air_yard_share <- 0
+  link_data3$adv_receiving_air_yard_share <- apply(link_data3, 1, function(x) {get_target_share(x,19,2)})
 
+  # Calculating WOPR
+  link_data3 <- mutate(link_data3, adv_receiving_wopr = round((1.5 * adv_receiving_target_share) + (0.7 * adv_receiving_air_yard_share),2))
 
-  (player in 1:nrow(link_data3)) {
-
-      # Getting a smaller DF
-      targets <- link_data3[player,4]
-      ay <- link_data3[player,19]
-      team <- as.character(link_data3[player,2])
-      team_target <- team_totals[team_totals[,1] == team, 2]
-
-      taget_share = round((tgt / team_target)*100,2)
-
-      # Putting back in DF
-      d2[player,4] <- taget_share
-
-    }
-  #
-  #
-  # }
-
-
-
-
-
-
-
-  return(link_data2)
+  return(link_data3)
 
 }
-
-
-
-
-
-
