@@ -2,7 +2,7 @@
 
 # Finding what week it is ------
 # 8 is the next Sunday, so subtracting date # (1-7) from 8, then adding to date
-date <- as.character(Sys.Date() + (8 - wday(Sys.Date())))
+date <- as.character(Sys.Date() + (8 - lubridate::wday(Sys.Date())))
 
 wk_num <- switch(date,
                  "2020-11-01" = 8,
@@ -16,7 +16,7 @@ wk_num <- switch(date,
                  "2020-12-27" = 16,
                  "2021-01-03" = 17)
 
-cat(paste0("-----Doing analysis for Week ",wk_num,"-----"))
+cat(paste0("-----Doing analysis for Week ",wk_num,"----- \n"))
 
 print("Starting Shiny DF Creation")
 
