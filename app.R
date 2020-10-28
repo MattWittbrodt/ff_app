@@ -1175,8 +1175,9 @@ server <- function(input, output) {
           tr(
             th(colspan = 2,''),
             th(class = 'dt-center', colspan = 3, 'Per Game Stats'),
-            th(class = 'dt-center', colspan = 8, 'Advanced Stats'),
-            th(class = 'dt-center', colspan = 3, 'Red Zone Stats'),
+            th(class = 'dt-center', colspan = 6, 'Advanced Stats'),
+            th(class = 'dt-center', colspan = 3, 'Market Share'),
+            th(class = 'dt-center', colspan = 2, 'Red Zone Stats'),
             th(class = 'dt-center', colspan = 4, 'CB Matchup'),
             th(class = 'dt-center', colspan = 3, 'DFS Info')),
           tr(
@@ -1191,10 +1192,11 @@ server <- function(input, output) {
              th(colspan = 1, 'ADOT'),
              th(colspan = 1, 'Air Yards'),
              th(colspan = 1, 'RACR'),
-             th(colspan = 1, 'Drop %'),
-             th(colspan = 1, 'QB Rat'),
+             th(colspan = 1, 'Target %'),
+             th(colspan = 1, 'Air Yard %'),
+             th(colspan = 1, 'WOPR'),
              th(colspan = 1, 'Tgt'),
-             th(colspan = 1, 'TD'),
+             #th(colspan = 1, 'TD'),
              th(colspan = 1, 'Target (%)'),
              th(colspan = 1, 'Target (%)'),
              th(colspan = 1, 'Pt / Tgt'),
@@ -1224,9 +1226,9 @@ server <- function(input, output) {
                 rownames = F,
                 container = off_wr_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
-                formatStyle(c("rec_dyar","rec_dvoa","rec_eyard_diff","adv_receiving_adot","air_yards","racr","adv_receiving_rat",
-                             "adv_receiving_drop_per","vs_cb_tar","vs_cb_fpt","vs_cb_shad","vs_cb_matchup"), backgroundColor = '#F2F3F4')
-
+                formatStyle(c("rec_dyar","rec_dvoa","rec_eyard_diff","adv_receiving_adot","adv_receiving_air_yards","adv_receiving_racr",
+                              "receiving_twenty_tgt", "receiving_twenty_per_tgt",
+                              "pricing_current","tgt_per_thousand","implied_total"), backgroundColor = '#f2f3f4')
     })
 
 
@@ -1392,7 +1394,7 @@ server <- function(input, output) {
           tr(
             th(colspan = 2,''),
             th(class = 'dt-center', colspan = 3, 'Per Game Stats'),
-            th(class = 'dt-center', colspan = 9, 'Advanced Stats'),
+            th(class = 'dt-center', colspan = 10, 'Advanced Stats'),
             th(class = 'dt-center', colspan = 3, 'Red Zone Stats'),
             th(class = 'dt-center', colspan = 3, 'DFS Info')),
           tr(
@@ -1407,8 +1409,11 @@ server <- function(input, output) {
             th(colspan = 1, 'ADOT'),
             th(colspan = 1, 'Air Yards'),
             th(colspan = 1, 'RACR'),
-            th(colspan = 1, 'Drop %'),
-            th(colspan = 1, 'QB Rat'),
+            th(colspan = 1, 'Target %'),
+            th(colspan = 1, 'Air Yard %'),
+            th(colspan = 1, 'WOPR'),
+            #th(colspan = 1, 'Drop %'),
+            #th(colspan = 1, 'QB Rat'),
             th(colspan = 1, 'Passing DVOA'),
             th(colspan = 1, 'Tgt'),
             th(colspan = 1, 'TD'),
@@ -1430,8 +1435,9 @@ server <- function(input, output) {
                 rownames = F,
                 container = off_te_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
-                formatStyle(c("rec_dyar","rec_dvoa","rec_eyard_diff","adv_receiving_adot","air_yards","racr","adv_receiving_rat",
-                              "adv_receiving_drop_per","off_pass_dvoa","pricing_current","tgt_per_thousand","implied_total"),
+                formatStyle(c("rec_dyar","rec_dvoa","rec_eyard_diff","adv_receiving_adot","adv_receiving_air_yards","adv_receiving_racr",
+                              "adv_receiving_target_share","adv_receiving_air_yard_share","adv_receiving_wopr","off_pass_dvoa",
+                              "pricing_current","tgt_per_thousand","implied_total"),
                             backgroundColor = '#F2F3F4')
 
       })
