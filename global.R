@@ -6,10 +6,17 @@ library(lubridate)
 library(writexl)
 
 # Reading in complete data for week ----
-df <- readxl::read_xlsx("data/all_data_wk_7_2020.xlsx") %>%
+
+# Finding the most recent week's data by leveraging the largest week #
+data_files <- list.files(path = "C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/", pattern = "all_data_wk_\\d_2020\\.xlsx")
+weeks = as.numeric(str_extract(string = data_files, pattern = "\\d(?=_)"))
+this_week_file <- data_files[weeks == max(weeks)]
+
+# Reading in specific excel file
+df <- readxl::read_xlsx(paste0("data/", this_week_file)) %>%
       mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_7_2020.xlsx") # for use on computer
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_8_2020.xlsx") # for use on computer
 
 ###
 ### Data Frame Creation
@@ -191,9 +198,9 @@ rb_def <- filter(df, proj_pos == "RB" & is.na(line) == F) %>%
 rb_off <- filter(df, proj_pos == "RB" & ytd_rush_att >5 & is.na(line) == F) %>%
           # First, mutating a few columns
           mutate(ytd_rec_target = ifelse(is.na(ytd_rec_target) == T, 0, ytd_rec_target),
-                 total_touches = ytd_rush_att + ytd_rec_target,
-                 high_value_touches = ytd_rec_target + round(rushing_ten_att/ytd_rush_g,2),
-                 high_value_touches_per = round(high_value_touches / total_touches, 2),
+                 #total_touches = ytd_rush_att + ytd_rec_target,
+                 #high_value_touches = ytd_rec_target + round(rushing_ten_att/ytd_rush_g,2),
+                 #high_value_touches_per = round(high_value_touches / total_touches, 2),
                  tt_per_thousand = round(total_touches / (pricing_current/1000),2),
                  hv_per_thousand = round(high_value_touches / (pricing_current/1000),2),
                  rush_eyard_diff = round((rush_eyds - rush_yards)/ytd_rush_g,2),
@@ -269,9 +276,9 @@ wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 3) 
                  tgt_per_thousand = round(ytd_rec_target / (pricing_current/1000),2),
                  rec_eyard_diff = round((rec_eyds - rec_yards)/ytd_rec_g,2),
                  rec_dyar = round(rec_dyar/ytd_rec_g,2),
-                 air_yards = as.numeric(adv_receiving_adot)*ytd_rec_target,
-                 air_yds_per_thousand = round(air_yards / (pricing_current/1000),2),
-                 racr = round(ytd_rec_yds_per_gm/air_yards,2)) %>%
+                 #air_yards = as.numeric(adv_receiving_adot)*ytd_rec_target,
+                 air_yds_per_thousand = round(adv_receiving_air_yards / (pricing_current/1000),2)) %>%
+                 #racr = round(ytd_rec_yds_per_gm/air_yards,2)) %>%
          select(proj_player,
                 proj_opp,
                 ytd_rec_target,
@@ -281,12 +288,15 @@ wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 3) 
                 rec_dvoa,
                 rec_eyard_diff,
                 adv_receiving_adot,
-                air_yards,
-                racr,
-                adv_receiving_drop_per,
-                adv_receiving_rat,
+                adv_receiving_air_yards,
+                adv_receiving_racr,
+                adv_receiving_target_share,
+                #adv_receiving_drop_per,
+                adv_receiving_air_yard_share,
+                #adv_receiving_rat,
+                adv_receiving_wopr,
                 receiving_twenty_tgt,
-                receiving_twenty_td,
+                #receiving_twenty_td,
                 receiving_twenty_per_tgt,
                 #off_pass_dvoa,
                 vs_cb_tar,
@@ -367,10 +377,13 @@ te_off <- filter(df, proj_pos == "TE"  & is.na(line) == F & ytd_rec_target > 3) 
                  rec_dvoa,
                  rec_eyard_diff,
                  adv_receiving_adot,
-                 air_yards,
-                 racr,
-                 adv_receiving_drop_per,
-                 adv_receiving_rat,
+                 adv_receiving_air_yards,
+                 adv_receiving_racr,
+                 adv_receiving_target_share,
+                 adv_receiving_air_yard_share,
+                 adv_receiving_wopr,
+                 #adv_receiving_drop_per,
+                 #adv_receiving_rat,
                  off_pass_dvoa,
                  receiving_twenty_tgt,
                  receiving_twenty_td,
@@ -410,7 +423,7 @@ The simple version: DYAR means a wide receiver with more total value. DVOA means
 <strong>ADOT&nbsp;</strong>= average depth of target (in yds) ||
 <strong>Air Yards</strong> (yds/gm) = targets / gm * ADOT (yds/tgt); how many yards a player is targeted with, on average, per game. ||
 <strong>RACR</strong>= Receiver Air Conversion Ratio (Receiving Yards / Air Yards). RACR is an efficiency metric that rolls up catch rate and yards after the catch into one number. It can also be thought of as the number of receiving yards a player creates for every air yard thrown at him. ||
-<strong>Drop %</strong> = Number of balls dropped || <strong>QB Rat</strong> = QB rating when targeted.<br><br></span></font>'
+<strong>Target and Air Yard %</strong> = Share (%) of total passes (target) and air yards for the player || <strong>WOPR</strong> = Weighted opportunity rating that incorporates a players share of team targets and air yards (1.5 x Target Market Share + 0.7 x Air Yards Market Share). This essentially is trying to equate slot receivers (high target #, low air yards) with deep threats (low target #, high air yards) to get a better picture of usage.<br><br></span></font>'
 
 te_off_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</strong>
 <p><strong>DYAR</strong>= Defense-adjusted Yards Above Replacement (performance on plays with TE catch vs. replacement level, adjusted for situation and translated to yardage) ||
@@ -418,6 +431,7 @@ te_off_legend <- '<span style="color: #666666;"><font size=-1><strong>Legend:</s
 <strong>EYds - Yds</strong> = Difference between Effective Yards (translation of DVOA into a yards per attempt) and regular yards. Players with more Effective Yards vs standard yards played better than standard stats would otherwise indicate (this measure is dependent on usage than DYAR). ||
 <strong>ADOT</strong> = average depth of target (in yds) || <strong>Air Yards</strong> (yds/gm) = targets / gm * ADOT (yds/tgt); how many yards a player is targeted with, on average, per game. ||
 <strong>RACR</strong>= Receiver Air Conversion Ratio (Receiving Yards / Air Yards). RACR is an efficiency metric that rolls up catch rate and yards after the catch into one number. It can also be thought of as the number of receiving yards a player creates for every air yard thrown at him. ||
-<strong>Drop %</strong> = Number of balls dropped || <strong>QB Rat</strong> = QB rating when targeted. || <strong>Pass DVOA = team passing DVOA</strong><br><br></span></font>'
+<strong>Target and Air Yard %</strong> = Share (%) of total passes (target) and air yards for the player || <strong>WOPR</strong> = Weighted opportunity rating that incorporates a players share of team targets and air yards (1.5 x Target Market Share + 0.7 x Air Yards Market Share). This essentially is trying to equate slot receivers (high target #, low air yards) with deep threats (low target #, high air yards) to get a better picture of usage.
+|| <strong> Pass DVOA </strong> = team passing DVOA <br><br></span></font>'
 
 
