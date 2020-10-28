@@ -272,7 +272,7 @@ all_data_fo_pos_pace <- left_join(all_data_fo_pos, pace, by = c("proj_tm" = "off
 print("Pace of Play Successful")
 
 # Writing outexcel file
-fname <- copy_and_write(all_data_fo_pos_pace,7)
+fname <- copy_and_write(all_data_fo_pos_pace,wk_num)
 print("Data Written Succesfully")
 
 # Returning full DF ----
