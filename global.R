@@ -8,9 +8,12 @@ library(writexl)
 # Reading in complete data for week ----
 
 # Finding the most recent week's data by leveraging the largest week #
-data_files <- list.files(path = "C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/", pattern = "all_data_wk_\\d_2020\\.xlsx")
+data_files <- list.files(path = "/srv/connect/apps/ff_app/data/", pattern = "all_data_wk_\\d_2020\\.xlsx")
+print(data_files)
+
 weeks = as.numeric(str_extract(string = data_files, pattern = "\\d(?=_)"))
 this_week_file <- data_files[weeks == max(weeks)]
+cat(paste0("This weeks file is: ", this_week_file, " \n"))
 
 # Reading in specific excel file
 df <- readxl::read_xlsx(paste0("data/", this_week_file)) %>%
