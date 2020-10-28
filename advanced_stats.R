@@ -135,17 +135,80 @@ advanced_receiving_stats <- function() {
   # Selecting onl the relevant columns
   link_data2 <- link_data %>%
                 select(-adv_receiving_rk,
-                       -adv_receiving_tm,
                        -adv_receiving_age,
                        -adv_receiving_pos,
-                       -adv_receiving_g,
                        -adv_receiving_gs,
-                       -adv_receiving_tgt,
-                       -adv_receiving_yds,
                        -adv_receiving_td) %>%
                 filter(adv_receiving_player != "Player") %>%
                 mutate(adv_receiving_player = str_remove_all(adv_receiving_player, "[:punct:]"))
-  link_data2[,2:ncol(link_data2)] <- apply(link_data2[,2:ncol(link_data2)], 2, function(x) {as.numeric(x)})
+  link_data2[,3:ncol(link_data2)] <- apply(link_data2[,3:ncol(link_data2)], 2, function(x) {as.numeric(x)})
+
+  # Calculating a few advanced receiving metrics - air yards, RACR,
+  link_data3 <- link_data2 %>% mutate(
+                               adv_receiving_air_yards = as.numeric(adv_receiving_adot)*(adv_receiving_tgt/adv_receiving_g),
+                               adv_receiving_racr = round((adv_receiving_yds/adv_receiving_g)/adv_receiving_air_yards,2)) %>%
+                filter(adv_receiving_tm != "2TM")
+
+  # Getting team totals (target and air yards)
+  team_totals <- link_data3 %>%
+                 group_by(adv_receiving_tm) %>%
+                 summarize(team_air_yards = sum(adv_receiving_air_yards), team_targets = sum(adv_receiving_tgt)) %>%
+                 filter(adv_receiving_tm != "2TM")
+
+  # Looping through to get team share
+  link_data3$adv_receiving_target_share <- 0
+  link_data3$adv_receiving_air_yard_share <- 0
+
+  get_market_share <- function(stat_col, df, team_sum_col, new_col) {
+
+    for(player in 1:nrow(df)) {
+
+      # Getting a smaller DF
+      player_val <- df[player,stat_col]
+      print(player_val)
+      team <- as.character(df[player,2])
+      print(team)
+      team_sum <- as.numeric(team_totals[team_totals[,1] == team,team_sum_col])
+      print(team_sum)
+
+      # Calculating target share
+      market_share = round((player_val / team_sum)*100,2)
+      print(market_share)
+
+      # Putting back in DF
+      df[player,new_col] <- market_share
+
+    }
+
+  }
+
+
+
+
+  (player in 1:nrow(link_data3)) {
+
+      # Getting a smaller DF
+      targets <- link_data3[player,4]
+      ay <- link_data3[player,19]
+      team <- as.character(link_data3[player,2])
+      team_target <- team_totals[team_totals[,1] == team, 2]
+
+      taget_share = round((tgt / team_target)*100,2)
+
+      # Putting back in DF
+      d2[player,4] <- taget_share
+
+    }
+  #
+  #
+  # }
+
+
+
+
+
+
+
   return(link_data2)
 
 }
