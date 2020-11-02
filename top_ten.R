@@ -6,21 +6,23 @@
 library(tidyverse)
 library(googlesheets4)
 
-wk_num <- 7
+wk_num <- 8
 
-get_top_ten <- function(x) {
+get_top_ten <- function(wk_num) {
 
   # Read in last week's data
-  lw <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",(x-1),"_2020.xlsx")) %>%
+  lw <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",(wk_num-1),"_2020.xlsx")) %>%
         select(-prev_wk_fantasy_fdpt)
 
   # Read in this week's data (allows us to get the top fd points)
-  d <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",x,"_2020.xlsx")) %>%
+  d <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",wk_num,"_2020.xlsx")) %>%
        group_by(proj_pos) %>%
        slice_max(order_by = prev_wk_fantasy_fdpt, n = 10) %>%
        select(proj_player, prev_wk_fantasy_fdpt) %>%
        left_join(lw, by = c("proj_pos","proj_player"))
 }
+
+df <- get_top_ten(wk_num)
 
 get_positions <- function(df) {
 
@@ -56,7 +58,7 @@ get_positions <- function(df) {
     # adding some identifying information and then selecting the specific column
     cols2 <- c("proj_pos","proj_player","prev_wk_fantasy_fdpt","proj_week", cols)
 
-    d2 <- d[,cols2] %>% filter(proj_pos == pos)
+    df2 <- df[,cols2] %>% filter(proj_pos == pos)
 
   })
 
@@ -128,7 +130,48 @@ rr3 <- quintile_list_to_df(rrr2)
 
 # My "is the data meaningful" check. If the 40th percentile isn't above the median, not gaining any information
 for(ii in 1:nrow(rr3)) {n <- rr3[ii,1]; med <- median(qb2[[n]], na.rm = T); if(rr3[ii,3] > med) {print(n)} else {rr3[ii,1] <- NA}}
-rr3 <- filter(rr3, is.na(stat) == F)
+rr4 <- filter(rr3, is.na(stat) == F)
 
 # write_sheet(rr3, "https://docs.google.com/spreadsheets/d/1NOGl0Yo6BpOb2_jbxNxtZp8LZxyMbFlvuYn7OmEv5-Q/edit?usp=sharing", "qb2")
+
+
+## Trying to look at a binomial regression
+yy <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to7_combined.xlsx") %>%
+      filter(proj_pos == "QB" & proj_week > 3)
+
+## https://advstats.psychstat.org/book/factor/efa.php#:~:text=%20Exploratory%20factor%20analysis%20%201%20Preparing%20data.,factors%20is%20decided%2C%20we%20can%20conduct...%20More%20
+
+cormat <- cor(qb[,c(6:39)])
+
+uu <- psych::pca(cormat, nfactors = 5, n.obs = 40, scores = T)
+uu2 <- abs(uu$loadings) > 0.7
+
+tt = cbind(rr4, uu2)
+
+###
+### starting with the fill dataset ----
+
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_4to7_combined.xlsx") %>%
+     mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
+            pass_dyar = round(pass_dyar/as.numeric(pts_vs_g),2),
+            rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
+            pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(pts_vs_g),2),
+            rush_yds_diff = round((rush_eyds - rush_yards)/as.numeric(pts_vs_g),2),
+            DVOA_Diff = def_pass_dvoa - def_dvoa,
+            pts_vs_passing_att = round(as.numeric(pts_vs_passing_att) / as.numeric(pts_vs_g),2),
+            pts_vs_passing_yds = round(as.numeric(pts_vs_passing_yds) / as.numeric(pts_vs_g),2),
+            pts_vs_passing_td = round(as.numeric(pts_vs_passing_td) / as.numeric(pts_vs_g),2),
+            pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt)) %>%
+      filter(proj_pos == "QB")
+d2 <- select(d, colnames(qb))
+d3 <- d2 %>% slice_max(order_by = prev_wk_fantasy_fdpt, n = 40) %>% mutate(top_ten = factor(1))
+d4 <- d2 %>% slice_min(order_by = prev_wk_fantasy_fdpt, n = 77) %>% mutate(top_ten = factor(0))
+d5 <- cbind(d3, d4)
+
+for(ii in 3:39) {print(ii); qb_train[,ii][is.na(qb_train[,ii])] <- median(unlist(qb_train[,ii]), na.rm = T)}
+for(ii in 3:39) {print(ii); qb_test[,ii][is.na(qb_test[,ii])] <- median(unlist(qb_test[,ii]), na.rm = T)}
+
+
+
+
 
