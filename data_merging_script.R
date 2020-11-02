@@ -45,20 +45,44 @@ wk3 <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data
   mutate(vs_cb_ypr = as.numeric(vs_cb_ypr),
          vs_cb_fpt = as.numeric(vs_cb_fpt),
          adv_passing_iay_per_pa = as.numeric(adv_passing_iay_per_pa))
-wk3[,c(272:324)] <- apply(wk3[,c(272:324)], 2, function(x) {as.numeric(x)})
+wk3[,c(272:336)] <- apply(wk3[,c(272:336)], 2, function(x) {as.numeric(x)})
 
 pp4 <- full_join(pp3, wk3, by = colnames(wk3))
 colnames(pp4)[dupl_check(colnames(pp4))]
 writexl::write_xlsx(pp4, "C:/Users/mattw/Desktop/2020_weeks_3to7_combined.xlsx")
 
 # Week 2 -------
-wk2 <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_2_2020.xlsx") %>%
+wk2 <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/analysis_data/all_data_wk_2_2020_advanced_FO.xlsx") %>%
   mutate(vs_cb_ypr = as.numeric(vs_cb_ypr),
          vs_cb_fpt = as.numeric(vs_cb_fpt),
          adv_passing_iay_per_pa = as.numeric(adv_passing_iay_per_pa))
-wk2[,c(272:324)] <- apply(wk2[,c(272:324)], 2, function(x) {as.numeric(x)})
+wk2[,c(272:346)] <- apply(wk2[,c(272:346)], 2, function(x) {as.numeric(x)})
 
 pp5 <- full_join(pp4, wk2, by = colnames(wk2))
 colnames(pp5)[dupl_check(colnames(pp5))]
 writexl::write_xlsx(pp5, "C:/Users/mattw/Desktop/2020_weeks_2to7_combined.xlsx")
+
+# Week 8 ----
+
+data <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to7_combined.xlsx")
+
+wk8 <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_8_2020.xlsx") %>%
+       mutate(adv_passing_iay_per_pa = as.numeric(adv_passing_iay_per_pa))
+
+pp <- full_join(wk8, data, by = colnames(data))
+
+colnames(pp)[dupl_check(colnames(pp))]
+
+writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to8_combined.xlsx")
+
+
+
+
+
+
+
+
+
+
+
 
