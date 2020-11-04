@@ -9,7 +9,6 @@ library(ggrepel)
 library(reactable)
 
 source("./global.R")
-source("C:/Users/mattw/Desktop/slider.R")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -27,8 +26,6 @@ ui <- navbarPage("DFS Data",
 
         # Application title
         fluidRow(
-
-            column(3, sliderUI("salary", min(dfs_df$pricing_current), max(dfs_df$pricing_current), name = "Minimum FanDuel Salary:")),
             column(3,
                    selectInput("pos",
                                       h3("Position"),
@@ -38,13 +35,13 @@ ui <- navbarPage("DFS Data",
 
         # Sidebar with a slider input for number of bins
         fluidRow(
-            #column(3,
-                  #sliderInput("salary",
-                  #          "Minimum FanDuel Salary:",
-                  #          min = min(dfs_df$pricing_current),
-                  #          max = max(dfs_df$pricing_current),
-                  #          value = c(min,max)
-            #)),
+            column(3,
+            sliderInput("salary",
+                     "Minimum FanDuel Salary:",
+                     min = min(dfs_df$pricing_current),
+                     max = max(dfs_df$pricing_current),
+                     value = c(min,max)
+            )),
             column(3,
                    sliderInput("value",
                         "Points Per $1000",
@@ -558,16 +555,13 @@ tabPanel("TE",
 # Server Function ---------------------------------------------------------
 server <- function(input, output) {
 
-  sal <- sliderServer("salary")
-
-
 # Main Panel Server -------------------------------------------------------
 
     output$fanduel <- renderDataTable({
 
         # Editing table for rendering
         render_table <- subset(dfs_df,
-                               pricing_current >= sal$low & pricing_current <= sal$high & #input$salary[2] &
+                               pricing_current >= input$salary[1] & pricing_current <= input$salary[2] &
                                points_per_1k >= input$value[1] & points_per_1k <= input$value[2] &
                                fd_lev >= input$lev[1] & fd_lev <= input$lev[2] &
                                line >= input$line[1] & line <= input$line[2] &

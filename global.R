@@ -16,10 +16,10 @@ this_week_file <- data_files[weeks == max(weeks)]
 cat(paste0("This weeks file is: ", this_week_file, " \n"))
 
 # Reading in specific excel file
-#df <- readxl::read_xlsx(paste0("data/", this_week_file)) %>%
-#      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+df <- readxl::read_xlsx(paste0("data/", this_week_file)) %>%
+      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 
-df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_8_2020.xlsx") # for use on computer
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_8_2020.xlsx") # for use on computer
 
 ###
 ### Data Frame Creation
