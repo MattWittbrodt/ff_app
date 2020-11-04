@@ -270,25 +270,41 @@ d2 <- d %>% slice_max(order_by = prev_wk_fantasy_fdpt, n = 40) %>% mutate(top_te
 d3 <- d %>% slice_min(order_by = prev_wk_fantasy_fdpt, n = 77) %>% mutate(top_ten = factor(0))
 all_d <- rbind(d2, d3)
 
+# For now, doing a median replace for NA's
+# TODO - smarter NA replacement
+for(ii in 3:39) {print(ii); all_d[,ii][is.na(all_d[,ii])] <- median(unlist(all_d[,ii]), na.rm = T)}
 
 
+# Doing analysis -----
+pca <- prcomp(all_d[,c(5:39)], scale = T, center = T)
 
 
+screeplot(pca, type = "l", npcs = 15, main = "Screeplot of the first 10 PCs")
+abline(h = 1, col="red", lty=5)
+legend("topright", legend=c("Eigenvalue = 1"),
+       col=c("red"), lty=5, cex=0.6)
+
+cumpro <- cumsum(pca$sdev^2 / sum(pca$sdev^2))
+plot(cumpro[0:15], xlab = "PC #", ylab = "Amount of explained variance", main = "Cumulative variance plot")
+abline(v = 10, col="blue", lty=5)
+abline(h = 0.83114, col="blue", lty=5)
+legend("topleft", legend=c("Cut-off @ PC10"),
+       col=c("blue"), lty=5, cex=0.6)
 
 
-for(ii in 3:39) {print(ii); qb_train[,ii][is.na(qb_train[,ii])] <- median(unlist(qb_train[,ii]), na.rm = T)}
-for(ii in 3:39) {print(ii); qb_test[,ii][is.na(qb_test[,ii])] <- median(unlist(qb_test[,ii]), na.rm = T)}
-
-
-
-
-
-
-
-
-
-
-
+library(factoextra)
+fviz_pca_ind(pca, geom.ind = "point", pointshape = 21,
+             pointsize = 2,
+             fill.ind = all_d$top_ten,
+             col.ind = "black",
+             palette = "jco",
+             addEllipses = TRUE,
+             label = "var",
+             col.var = "black",
+             repel = TRUE,
+             legend.title = "Top 10 (1 = Yes)") +
+  ggtitle("2D PCA-plot") +
+  theme(plot.title = element_text(hjust = 0.5))
 
 
 
