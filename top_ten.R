@@ -171,6 +171,123 @@ d5 <- cbind(d3, d4)
 for(ii in 3:39) {print(ii); qb_train[,ii][is.na(qb_train[,ii])] <- median(unlist(qb_train[,ii]), na.rm = T)}
 for(ii in 3:39) {print(ii); qb_test[,ii][is.na(qb_test[,ii])] <- median(unlist(qb_test[,ii]), na.rm = T)}
 
+######### Trying to formalize the function with just QB for now -----
+
+# Reading in previous week's data to get the top 10
+wk_num <- 8
+
+get_top_ten <- function(wk_num) {
+
+  # Read in last week's data
+  lw <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",(wk_num-1),"_2020.xlsx")) %>%
+      select(-prev_wk_fantasy_fdpt)
+
+  # Read in this week's data (allows us to get the top fd points)
+  tw <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",wk_num,"_2020.xlsx")) %>%
+      group_by(proj_pos) %>%
+      slice_max(order_by = prev_wk_fantasy_fdpt, n = 10) %>%
+      select(proj_player, prev_wk_fantasy_fdpt) %>%
+      left_join(lw, by = c("proj_pos","proj_player"))
+}
+
+top_ten <- get_top_ten(wk_num)
+
+#get_positions <- function(df) {
+
+  # Making list of positions
+  #position <- as.list(unique(df$proj_pos))
+
+  # Looping over list to apply specific columns
+  position2 <- lapply("QB", function(pos) {
+
+    # Main switch function that returns the columns of interest
+    cols <- switch(pos,
+                   "QB" = c("pts_vs_g", "projected_own","proj_afpa_rk","line","total",
+                            "implied_total","pts_vs_passing_att", "pts_vs_passing_yds", "pts_vs_passing_td",
+                            "pts_vs_fantasy_per_game_fdpt","def_red_zone_td","def_red_zone_pct",
+                            "def_dvoa", "def_pass_dvoa", "def_dline_pass_rank",
+                            "def_dline_pass_adjusted_sack_rate","def_pass_qb_rating_allowed",
+                            "def_pass_adj_net_yds_per_att", "off_oline_pass_adjusted_sack_rate",
+                            "ytd_pass_yds_per_gm","ytd_pass_td","adv_passing_iay","pass_dyar",
+                            "adv_passing_ontgt_per","adv_passing_bad_per",
+                            "adv_passing_prss_per","pass_eyds","pass_yards","rush_eyds","rush_dyar","rush_yards",
+                            "passing_twenty_att","passing_twenty_td"),
+                   "RB" = c("pts_vs_g", "projected_own","proj_afpa_rk","line","total",
+                            "implied_total", "ytd_rush_att", "pts_vs_fantasy_per_game_fdpt",
+                            "pts_vs_rec_tgt","pts_vs_rec_yds","pts_vs_rec_td",
+                            "pts_vs_rush_att","pts_vs_rush_yds","pts_vs_rush_td",
+                            "def_rush_yds_per_att","def_red_zone_td","def_red_zone_pct",
+                            "def_dvoa","def_rush_dvoa","off_rush_dvoa","def_dline_power_success",
+                            "def_dline_adj_line_yards","def_dline_stuffed","def_dline_2nd_level_yards",
+                            "def_dline_open_field_yards","off_oline_adj_line_yards","off_oline_power_success",
+                            "off_oline_stuffed","off_oline_open_field_yards","off_oline_2nd_level_yards",
+                            "ytd_rec_target"))
+
+    # adding some identifying information and then selecting the specific column
+    cols2 <- c("proj_pos","proj_player","prev_wk_fantasy_fdpt","proj_week", cols)
+
+    top_ten2 <- top_ten[,cols2] %>% filter(proj_pos == pos)
+
+  })
+
+#}
+
+### Applying QB specific mutations ----
+qb2 <- as.data.frame(position2[[1]]) %>%
+      mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
+             pass_dyar = round(pass_dyar/as.numeric(pts_vs_g),2),
+             rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
+             pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(pts_vs_g),2),
+             rush_yds_diff = round((rush_eyds - rush_yards)/as.numeric(pts_vs_g),2),
+             DVOA_Diff = def_pass_dvoa - def_dvoa,
+             pts_vs_passing_att = round(as.numeric(pts_vs_passing_att) / as.numeric(pts_vs_g),2),
+             pts_vs_passing_yds = round(as.numeric(pts_vs_passing_yds) / as.numeric(pts_vs_g),2),
+             pts_vs_passing_td = round(as.numeric(pts_vs_passing_td) / as.numeric(pts_vs_g),2),
+             pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt)) %>%
+    select(-pts_vs_g)
+
+
+#First, reading in the full dataset and getting previous top 10 finishers
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_4to7_combined.xlsx") %>%
+  mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
+         pass_dyar = round(pass_dyar/as.numeric(pts_vs_g),2),
+         rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
+         pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(pts_vs_g),2),
+         rush_yds_diff = round((rush_eyds - rush_yards)/as.numeric(pts_vs_g),2),
+         DVOA_Diff = def_pass_dvoa - def_dvoa,
+         pts_vs_passing_att = round(as.numeric(pts_vs_passing_att) / as.numeric(pts_vs_g),2),
+         pts_vs_passing_yds = round(as.numeric(pts_vs_passing_yds) / as.numeric(pts_vs_g),2),
+         pts_vs_passing_td = round(as.numeric(pts_vs_passing_td) / as.numeric(pts_vs_g),2),
+         pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt)) %>%
+  filter(proj_pos == "QB") %>%
+  select(colnames(qb2))
+
+# TODO: MERGE THE NEW TOP 10 DATA IN AND SAVE OUT
+
+
+# Computing top 10 for each week and adding a one to that column
+d2 <- d %>% slice_max(order_by = prev_wk_fantasy_fdpt, n = 40) %>% mutate(top_ten = factor(1))
+d3 <- d %>% slice_min(order_by = prev_wk_fantasy_fdpt, n = 77) %>% mutate(top_ten = factor(0))
+all_d <- rbind(d2, d3)
+
+
+
+
+
+
+
+for(ii in 3:39) {print(ii); qb_train[,ii][is.na(qb_train[,ii])] <- median(unlist(qb_train[,ii]), na.rm = T)}
+for(ii in 3:39) {print(ii); qb_test[,ii][is.na(qb_test[,ii])] <- median(unlist(qb_test[,ii]), na.rm = T)}
+
+
+
+
+
+
+
+
+
+
 
 
 
