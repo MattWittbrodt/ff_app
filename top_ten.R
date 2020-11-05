@@ -174,7 +174,7 @@ for(ii in 3:39) {print(ii); qb_test[,ii][is.na(qb_test[,ii])] <- median(unlist(q
 ######### Trying to formalize the function with just QB for now -----
 
 # Reading in previous week's data to get the top 10
-wk_num <- 8
+wk_num <- 9
 
 get_top_ten <- function(wk_num) {
 
@@ -248,7 +248,7 @@ qb2 <- as.data.frame(position2[[1]]) %>%
 
 
 #First, reading in the full dataset and getting previous top 10 finishers
-d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_4to7_combined.xlsx") %>%
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to8_combined.xlsx") %>%
   mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
          pass_dyar = round(pass_dyar/as.numeric(pts_vs_g),2),
          rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
@@ -259,7 +259,7 @@ d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/m
          pts_vs_passing_yds = round(as.numeric(pts_vs_passing_yds) / as.numeric(pts_vs_g),2),
          pts_vs_passing_td = round(as.numeric(pts_vs_passing_td) / as.numeric(pts_vs_g),2),
          pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt)) %>%
-  filter(proj_pos == "QB") %>%
+  filter(proj_pos == "QB" & proj_week > 3) %>%
   select(colnames(qb2))
 
 # TODO: MERGE THE NEW TOP 10 DATA IN AND SAVE OUT
@@ -269,14 +269,16 @@ d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/m
 d2 <- d %>% slice_max(order_by = prev_wk_fantasy_fdpt, n = 40) %>% mutate(top_ten = factor(1))
 d3 <- d %>% slice_min(order_by = prev_wk_fantasy_fdpt, n = 77) %>% mutate(top_ten = factor(0))
 all_d <- rbind(d2, d3)
-
+write.csv(all_d, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/qb_top_top_4to8.csv", row.names = F)
 # For now, doing a median replace for NA's
 # TODO - smarter NA replacement
-for(ii in 3:39) {print(ii); all_d[,ii][is.na(all_d[,ii])] <- median(unlist(all_d[,ii]), na.rm = T)}
+for(ii in 3:39) {all_d[,ii][is.na(all_d[,ii])] <- median(unlist(all_d[,ii]), na.rm = T)}
 
 
 # Doing analysis -----
-pca <- prcomp(all_d[,c(5:39)], scale = T, center = T)
+all_d_wk8 <- filter(all_d, proj_week != 8)
+
+pca <- prcomp(all_d_wk8[,c(6:39)], scale = T, center = T)
 
 
 screeplot(pca, type = "l", npcs = 15, main = "Screeplot of the first 10 PCs")
@@ -295,6 +297,19 @@ legend("topleft", legend=c("Cut-off @ PC10"),
 library(factoextra)
 fviz_pca_ind(pca, geom.ind = "point", pointshape = 21,
              pointsize = 2,
+             fill.ind = all_d_wk8$top_ten,
+             col.ind = "black",
+             palette = "jco",
+             addEllipses = TRUE,
+             label = "var",
+             col.var = "black",
+             repel = TRUE,
+             legend.title = "Top 10 (1 = Yes)") +
+  ggtitle("2D PCA-plot") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+fviz_pca_biplot(pca, geom.ind = "point", pointshape = 21,
+             pointsize = 2,
              fill.ind = all_d$top_ten,
              col.ind = "black",
              palette = "jco",
@@ -305,6 +320,95 @@ fviz_pca_ind(pca, geom.ind = "point", pointshape = 21,
              legend.title = "Top 10 (1 = Yes)") +
   ggtitle("2D PCA-plot") +
   theme(plot.title = element_text(hjust = 0.5))
+
+
+pc1 <- abs(pca$rotation) %>% as.data.frame %>% rownames_to_column %>%
+            select(rowname, PC1) %>% arrange(desc(PC1)) %>% head(5)
+as.vector(pc1$rowname)
+
+pc2 <- abs(pca$rotation) %>% as.data.frame %>% rownames_to_column %>%
+       select(rowname, PC2) %>% arrange(desc(PC2)) %>% head(5)
+as.vector(pc2$rowname)
+
+# Working out the accuracy on the training data
+pca_pred <- as.data.frame(predict(pca, all_d_wk8)) %>% mutate(top_ten = all_d_wk8$top_ten)
+m <- glm(top_ten ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10, data = xx, family = "binomial")
+summary(m)
+pca_pred$binomial_pred <- predict.glm(m, pca_pred, type = "response")
+
+for(ii in c(0.30,0.40,0.45,0.50,0.55,0.60,0.65)) {
+
+  # Getting working version of df
+  wd <- pca_pred
+
+  # do accuracy calculation
+  wd$outcome_bi = ifelse(wd$binomial_pred > ii, 1, 0)
+  wd$tp = ifelse(wd$outcome_bi == 1 & wd$top_ten == 1,1,0)
+  wd$fp = ifelse(wd$outcome_bi == 1 & wd$top_ten == 0,1,0)
+  wd$fn = ifelse(wd$outcome_bi == 0 & wd$top_ten == 1,1,0)
+  wd$tn = ifelse(wd$outcome_bi == 0 & wd$top_ten == 0,1,0)
+
+  # Calculating Values
+  accuracy <- (sum(wd$tp) + sum(wd$tn)) / nrow(wd)
+  precision <- sum(wd$tp) / (sum(wd$tp) + sum(wd$fp))
+  recall <- sum(wd$tp) / (sum(wd$tp) + sum(wd$fn))
+  f1 <- 2 * ((precision * recall)/ (precision + recall))
+
+  # Print result
+  cat(paste0("Threshold of: ",ii,
+             " = Accuracy: ", round(accuracy*100,2),
+             " | Precision: ", round(precision*100,2),
+             " | Recall: ", round(recall*100,2),
+             " | F1: ", round(f1,2),
+             " \n"))
+
+}
+
+# Testing data
+test_data <- filter(all_d, proj_week == (wk_num-1))
+pca_test <- as.data.frame(predict(pca, test_data)) %>% mutate(top_ten = test_data$top_ten)
+pca_test$binomial_pred <- predict.glm(m, pca_test, type = "response")
+
+# Calculating Accuracy
+pca_test$outcome_bi = ifelse(pca_test$binomial_pred > 0.45, 1, 0)
+#pca_test$accuracy = ifelse(pca_test$outcome_bi == as.numeric(as.character(pca_test$top_ten)),1,0)
+pca_test$tp = ifelse(pca_test$outcome_bi == 1 & pca_test$top_ten == 1,1,0)
+pca_test$fp = ifelse(pca_test$outcome_bi == 1 & pca_test$top_ten == 0,1,0)
+pca_test$fn = ifelse(pca_test$outcome_bi == 0 & pca_test$top_ten == 1,1,0)
+pca_test$tn = ifelse(pca_test$outcome_bi == 0 & pca_test$top_ten == 0,1,0)
+
+# Calculating Values
+(accuracy <- (sum(pca_test$tp) + sum(pca_test$tn)) / nrow(pca_test))
+(precision <- sum(pca_test$tp) / (sum(pca_test$tp) + sum(pca_test$fp)))
+(recall <- sum(pca_test$tp) / (sum(pca_test$tp) + sum(pca_test$fn)))
+(f1 <- 2 * ((precision * recall)/ (precision + recall)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
