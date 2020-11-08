@@ -2,7 +2,11 @@
 
 # Finding what week it is ------
 # 8 is the next Sunday, so subtracting date # (1-7) from 8, then adding to date
-date <- as.character(Sys.Date() + (8 - lubridate::wday(Sys.Date())))
+# Checking if the day is Sunday. If so, return that date.
+date <- ifelse(lubridate::wday(Sys.Date()) == 1,
+               as.character(Sys.Date()),
+               as.character(Sys.Date() + (8 - lubridate::wday(Sys.Date())))
+               )
 
 wk_num <- switch(date,
                  "2020-11-01" = 8,
