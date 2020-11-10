@@ -6,64 +6,6 @@
 library(tidyverse)
 library(googlesheets4)
 
-wk_num <- 8
-
-get_top_ten <- function(wk_num) {
-
-  # Read in last week's data
-  lw <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",(wk_num-1),"_2020.xlsx")) %>%
-        select(-prev_wk_fantasy_fdpt)
-
-  # Read in this week's data (allows us to get the top fd points)
-  d <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",wk_num,"_2020.xlsx")) %>%
-       group_by(proj_pos) %>%
-       slice_max(order_by = prev_wk_fantasy_fdpt, n = 10) %>%
-       select(proj_player, prev_wk_fantasy_fdpt) %>%
-       left_join(lw, by = c("proj_pos","proj_player"))
-}
-
-df <- get_top_ten(wk_num)
-
-get_positions <- function(df) {
-
-  # Making list of positions
-  position <- as.list(unique(df$proj_pos))
-
-  # Looping over list to apply specific columns
-  position2 <- lapply("QB", function(pos) {
-
-    # Main switch function that returns the columns of interest
-    cols <- switch(pos,
-                   "QB" = c("pts_vs_g", "projected_own","proj_afpa_rk","line","total",
-                            "implied_total","pts_vs_passing_att", "pts_vs_passing_yds", "pts_vs_passing_td",
-                            "pts_vs_fantasy_per_game_fdpt","def_red_zone_td","def_red_zone_pct",
-                            "def_dvoa", "def_pass_dvoa", "def_dline_pass_rank",
-                            "def_dline_pass_adjusted_sack_rate","def_pass_qb_rating_allowed",
-                            "def_pass_adj_net_yds_per_att", "off_oline_pass_adjusted_sack_rate",
-                            "ytd_pass_yds_per_gm","ytd_pass_td","adv_passing_iay","pass_dyar",
-                            "adv_passing_ontgt_per","adv_passing_bad_per",
-                            "adv_passing_prss_per","pass_eyds","pass_yards","rush_eyds","rush_dyar","rush_yards",
-                            "passing_twenty_att","passing_twenty_td"),
-                   "RB" = c("pts_vs_g", "projected_own","proj_afpa_rk","line","total",
-                            "implied_total", "ytd_rush_att", "pts_vs_fantasy_per_game_fdpt",
-                            "pts_vs_rec_tgt","pts_vs_rec_yds","pts_vs_rec_td",
-                            "pts_vs_rush_att","pts_vs_rush_yds","pts_vs_rush_td",
-                            "def_rush_yds_per_att","def_red_zone_td","def_red_zone_pct",
-                            "def_dvoa","def_rush_dvoa","off_rush_dvoa","def_dline_power_success",
-                            "def_dline_adj_line_yards","def_dline_stuffed","def_dline_2nd_level_yards",
-                            "def_dline_open_field_yards","off_oline_adj_line_yards","off_oline_power_success",
-                            "off_oline_stuffed","off_oline_open_field_yards","off_oline_2nd_level_yards",
-                            "ytd_rec_target"))
-
-    # adding some identifying information and then selecting the specific column
-    cols2 <- c("proj_pos","proj_player","prev_wk_fantasy_fdpt","proj_week", cols)
-
-    df2 <- df[,cols2] %>% filter(proj_pos == pos)
-
-  })
-
-}
-
 ### Applying QB specific mutations ----
 qb2 <- as.data.frame(position2[[1]]) %>%
        mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
@@ -171,7 +113,9 @@ d5 <- cbind(d3, d4)
 for(ii in 3:39) {print(ii); qb_train[,ii][is.na(qb_train[,ii])] <- median(unlist(qb_train[,ii]), na.rm = T)}
 for(ii in 3:39) {print(ii); qb_test[,ii][is.na(qb_test[,ii])] <- median(unlist(qb_test[,ii]), na.rm = T)}
 
+#####################################################################
 ######### Trying to formalize the function with just QB for now -----
+#####################################################################
 
 # Reading in previous week's data to get the top 10
 wk_num <- 9
@@ -248,7 +192,8 @@ qb2 <- as.data.frame(position2[[1]]) %>%
 
 
 #First, reading in the full dataset and getting previous top 10 finishers
-d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to8_combined.xlsx") %>%
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to9_combined_vegas_fixes.xlsx") %>%
+     filter(proj_week <= wk_num - 1) %>%
   mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
          pass_dyar = round(pass_dyar/as.numeric(pts_vs_g),2),
          rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
@@ -276,7 +221,7 @@ for(ii in 3:39) {all_d[,ii][is.na(all_d[,ii])] <- median(unlist(all_d[,ii]), na.
 
 
 # Doing analysis -----
-all_d_wk8 <- filter(all_d, proj_week != 8)
+all_d_wk8 <- filter(all_d, proj_week != wk_num)
 
 pca <- prcomp(all_d_wk8[,c(6:39)], scale = T, center = T)
 
@@ -332,7 +277,7 @@ as.vector(pc2$rowname)
 
 # Working out the accuracy on the training data
 pca_pred <- as.data.frame(predict(pca, all_d_wk8)) %>% mutate(top_ten = all_d_wk8$top_ten)
-m <- glm(top_ten ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10, data = xx, family = "binomial")
+m <- glm(top_ten ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10, data = pca_pred, family = "binomial")
 summary(m)
 pca_pred$binomial_pred <- predict.glm(m, pca_pred, type = "response")
 
@@ -370,7 +315,7 @@ pca_test <- as.data.frame(predict(pca, test_data)) %>% mutate(top_ten = test_dat
 pca_test$binomial_pred <- predict.glm(m, pca_test, type = "response")
 
 # Calculating Accuracy
-pca_test$outcome_bi = ifelse(pca_test$binomial_pred > 0.45, 1, 0)
+pca_test$outcome_bi = ifelse(pca_test$binomial_pred > 0.4, 1, 0)
 #pca_test$accuracy = ifelse(pca_test$outcome_bi == as.numeric(as.character(pca_test$top_ten)),1,0)
 pca_test$tp = ifelse(pca_test$outcome_bi == 1 & pca_test$top_ten == 1,1,0)
 pca_test$fp = ifelse(pca_test$outcome_bi == 1 & pca_test$top_ten == 0,1,0)
@@ -383,10 +328,19 @@ pca_test$tn = ifelse(pca_test$outcome_bi == 0 & pca_test$top_ten == 0,1,0)
 (recall <- sum(pca_test$tp) / (sum(pca_test$tp) + sum(pca_test$fn)))
 (f1 <- 2 * ((precision * recall)/ (precision + recall)))
 
+# Calculate MSE
+pca_test$sq_error <- (as.numeric(as.character(pca_test$top_ten)) - pca_test$binomial_pred)^2
+mean(pca_test$sq_error)
+
+# Creating a plot to see where we missed worst
+errors <- cbind(test_data[,2], pca_test[,c(35,36,42)])
 
 
-
-
+ggplot(data = errors, aes(x = binomial_pred, y = sq_error)) + 
+  geom_point(shape = 21, size = 6, aes(fill = errors$top_ten)) +
+  geom_label(label = errors$proj_player, 
+             nudge_x = 0.01, nudge_y = 0.01) +
+  theme_bw() + ggtitle("Week 8; MSE = 0.502")
 
 
 
