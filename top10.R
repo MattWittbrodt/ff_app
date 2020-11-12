@@ -1,7 +1,7 @@
 ## Top 10
 library(tidyverse)
 
-wk_num <- 10
+wk_num <- 7
 
 d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to9_combined_vegas_fixes.xlsx") %>%
      filter(proj_week <= wk_num - 1 & proj_week > 3 & proj_pos == "QB")
@@ -81,14 +81,10 @@ test <- filter(processed_data, proj_week == wk_num - 1)
 #pca_test <- prcomp(train[,c(6:36, 38:40)], scale = T, rank = 10)
 pca_test <- psych::pca(train[,c(6:36, 38:40)], rotate = "varimax", scores = T, nfactors = 10)
 
-train_pred <- as.data.frame(predict(pca_test))
+#train_pred <- as.data.frame(predict(pca_test))
 train_pred <- as.data.frame(psych::predict.psych(yy, train[,c(6:36, 38:40)]))
 
 train_pred$top_ten <- train$top_ten
-
-formula <- "top_ten ~ "
-for(n in colnames(processed_data)[c(6:36,38:40)]) {if(n != 'DVOA_Diff') {formula <- paste0(formula,n," + ")} else {formula <- paste0(formula, n)}}
-formula <- as.formula(formula)
 
 classifier <- randomForest(top_ten ~ .,
                            data = train_pred,
@@ -99,6 +95,10 @@ classifier <- randomForest(top_ten ~ .,
 
 varImpPlot(classifier)
 classifier
+pca_test
+sort(pca_test$loadings[,3][abs(pca_test$loadings[,3]) > 0.4], decreasing = T)
+sort(pca_test$loadings[,4][abs(pca_test$loadings[,4]) > 0.4], decreasing = T)
+sort(pca_test$loadings[,5][abs(pca_test$loadings[,5]) > 0.4], decreasing = T)
 
 ## Getting metrics on training data
 training_pred <- predict(classifier, type = "prob")
@@ -139,7 +139,7 @@ for(ii in c(0.30,0.40,0.45,0.50,0.55,0.60,0.65)) {
 }
 
 ## Test dataset testing ----
-test_pca <- as.data.frame(predict(pca_test, newdata = test[,c(6:36, 38:40)]))
+test_pca <- as.data.frame(psych::predict.psych(pca_test, data = test[,c(6:36, 38:40)]))
 test_pred <- predict(classifier, newdata = test_pca, type = "prob")
 test$pred <- test_pred[,1]
 
@@ -159,15 +159,5 @@ test$tn = ifelse(test$pred_binomial == 0 & test$top_ten == 0,1,0)
 # Getting MSE
 test$sq_error <- (as.numeric(as.character(test$top_ten)) - test$pred)^2
 mean(test$sq_error)
-
-# Getting some output for the google sheet
-sort(pca_test$rotation[,4])
-sort(abs(pca_test$rotation[,4]), decreasing = T)[c(1:5)] #PC4
-sort(abs(pca_test$rotation[,3]), decreasing = T)[c(1:5)] #PC3
-sort(pca_test$rotation[,3])
-
-
-
-
 
 
