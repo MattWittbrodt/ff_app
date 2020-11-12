@@ -1204,7 +1204,7 @@ server <- function(input, output) {
              th(colspan = 1, 'Target / $1k'),
              th(colspan = 1, 'Implied Total'))
         )))
-
+      
       wr_off_render <- subset(wr_off,
                               (ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] | is.na(ytd_rec_target)) &
                               (receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] | is.na(receiving_twenty_per_tgt)) &
@@ -1218,7 +1218,7 @@ server <- function(input, output) {
       if(length(input$cb_matchup) == 1) {wr_off_render <- filter(wr_off_render, vs_cb_matchup == input$cb_matchup)
 
       } else if(length(input$cb_matchup) == 2)  {wr_off_render <- filter(wr_off_render, vs_cb_matchup == input$cb_matchup[1] | vs_cb_matchup == input$cb_matchup[2])
-        } else {wr_off_render <- filter(wr_off_render, vs_cb_matchup == input$cb_matchup[1] | vs_cb_matchup == input$cb_matchup[2] | vs_cb_matchup == input$cb_matchup[3])}
+        } else {wr_off_render <- filter(wr_off_render, vs_cb_matchup == input$cb_matchup[1] | vs_cb_matchup == input$cb_matchup[2] | vs_cb_matchup == input$cb_matchup[3] | is.na(vs_cb_matchup))}
 
       datatable(wr_off_render,
                 rownames = F,
