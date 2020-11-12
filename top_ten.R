@@ -118,23 +118,23 @@ for(ii in 3:39) {print(ii); qb_test[,ii][is.na(qb_test[,ii])] <- median(unlist(q
 #####################################################################
 
 # Reading in previous week's data to get the top 10
-wk_num <- 9
+wk_num <- 10
 
 get_top_ten <- function(wk_num) {
 
   # Read in last week's data
   lw <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",(wk_num-1),"_2020.xlsx")) %>%
-      select(-prev_wk_fantasy_fdpt)
+        select(-prev_wk_fantasy_fdpt) %>%
+        filter(proj_pos == "QB")
 
   # Read in this week's data (allows us to get the top fd points)
   tw <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",wk_num,"_2020.xlsx")) %>%
-      group_by(proj_pos) %>%
-      slice_max(order_by = prev_wk_fantasy_fdpt, n = 10) %>%
-      select(proj_player, prev_wk_fantasy_fdpt) %>%
-      left_join(lw, by = c("proj_pos","proj_player"))
+        select(proj_player, prev_wk_fantasy_fdpt)
+  
+  d <- left_join(lw, tw, by = "proj_player")
 }
 
-top_ten <- get_top_ten(wk_num)
+prev_wk <- get_top_ten(wk_num)
 
 #get_positions <- function(df) {
 
@@ -204,26 +204,34 @@ d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/m
          pts_vs_passing_yds = round(as.numeric(pts_vs_passing_yds) / as.numeric(pts_vs_g),2),
          pts_vs_passing_td = round(as.numeric(pts_vs_passing_td) / as.numeric(pts_vs_g),2),
          pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt)) %>%
-  filter(proj_pos == "QB" & proj_week > 3) %>%
+  filter(proj_pos == "QB" & proj_week > 3 & is.na(prev_wk_fantasy_fdpt) == F) %>%
   select(colnames(qb2))
 
 # TODO: MERGE THE NEW TOP 10 DATA IN AND SAVE OUT
+top <- lapply(as.list(unique(d$proj_week)), function(x) {
+  d2 <- filter(d, proj_week == x) %>% slice_max(order_by = prev_wk_fantasy_fdpt)}
+
+
+
+
+
+
 
 
 # Computing top 10 for each week and adding a one to that column
 d2 <- d %>% slice_max(order_by = prev_wk_fantasy_fdpt, n = 40) %>% mutate(top_ten = factor(1))
 d3 <- d %>% slice_min(order_by = prev_wk_fantasy_fdpt, n = 77) %>% mutate(top_ten = factor(0))
 all_d <- rbind(d2, d3)
-write.csv(all_d, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/qb_top_top_4to8.csv", row.names = F)
+write.csv(all_d, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/qb_top_top_4to9.csv", row.names = F)
 # For now, doing a median replace for NA's
 # TODO - smarter NA replacement
 for(ii in 3:39) {all_d[,ii][is.na(all_d[,ii])] <- median(unlist(all_d[,ii]), na.rm = T)}
 
 
-# Doing analysis -----
-all_d_wk8 <- filter(all_d, proj_week != wk_num)
+# Training PCA Model analysis -----
+all_d_wk <- filter(all_d, proj_week != wk_num)
 
-pca <- prcomp(all_d_wk8[,c(6:39)], scale = T, center = T)
+pca <- prcomp(all_d_wk[,c(6:39)], scale = T, center = T)
 
 
 screeplot(pca, type = "l", npcs = 15, main = "Screeplot of the first 10 PCs")
@@ -233,8 +241,8 @@ legend("topright", legend=c("Eigenvalue = 1"),
 
 cumpro <- cumsum(pca$sdev^2 / sum(pca$sdev^2))
 plot(cumpro[0:15], xlab = "PC #", ylab = "Amount of explained variance", main = "Cumulative variance plot")
-abline(v = 10, col="blue", lty=5)
-abline(h = 0.83114, col="blue", lty=5)
+abline(v = 8, col="blue", lty=5)
+abline(h = 0.7806, col="blue", lty=5)
 legend("topleft", legend=c("Cut-off @ PC10"),
        col=c("blue"), lty=5, cex=0.6)
 
@@ -242,7 +250,7 @@ legend("topleft", legend=c("Cut-off @ PC10"),
 library(factoextra)
 fviz_pca_ind(pca, geom.ind = "point", pointshape = 21,
              pointsize = 2,
-             fill.ind = all_d_wk8$top_ten,
+             fill.ind = all_d_wk$top_ten,
              col.ind = "black",
              palette = "jco",
              addEllipses = TRUE,
@@ -276,7 +284,7 @@ pc2 <- abs(pca$rotation) %>% as.data.frame %>% rownames_to_column %>%
 as.vector(pc2$rowname)
 
 # Working out the accuracy on the training data
-pca_pred <- as.data.frame(predict(pca, all_d_wk8)) %>% mutate(top_ten = all_d_wk8$top_ten)
+pca_pred <- as.data.frame(predict(pca, all_d_wk)) %>% mutate(top_ten = all_d_wk$top_ten)
 m <- glm(top_ten ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10, data = pca_pred, family = "binomial")
 summary(m)
 pca_pred$binomial_pred <- predict.glm(m, pca_pred, type = "response")
@@ -315,7 +323,7 @@ pca_test <- as.data.frame(predict(pca, test_data)) %>% mutate(top_ten = test_dat
 pca_test$binomial_pred <- predict.glm(m, pca_test, type = "response")
 
 # Calculating Accuracy
-pca_test$outcome_bi = ifelse(pca_test$binomial_pred > 0.4, 1, 0)
+pca_test$outcome_bi = ifelse(pca_test$binomial_pred > 0.45, 1, 0)
 #pca_test$accuracy = ifelse(pca_test$outcome_bi == as.numeric(as.character(pca_test$top_ten)),1,0)
 pca_test$tp = ifelse(pca_test$outcome_bi == 1 & pca_test$top_ten == 1,1,0)
 pca_test$fp = ifelse(pca_test$outcome_bi == 1 & pca_test$top_ten == 0,1,0)
@@ -340,7 +348,7 @@ ggplot(data = errors, aes(x = binomial_pred, y = sq_error)) +
   geom_point(shape = 21, size = 6, aes(fill = errors$top_ten)) +
   geom_label(label = errors$proj_player, 
              nudge_x = 0.01, nudge_y = 0.01) +
-  theme_bw() + ggtitle("Week 8; MSE = 0.502")
+  theme_bw() + ggtitle("Week 9; MSE = 0.61")
 
 
 
