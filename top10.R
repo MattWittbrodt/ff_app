@@ -1,5 +1,6 @@
 ## Top 10
 library(tidyverse)
+
 wk_num <- 10
 
 d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to9_combined_vegas_fixes.xlsx") %>%
@@ -70,20 +71,29 @@ for(ii in c(5:36,38:40)) {processed_data[,ii][is.na(processed_data[,ii])] <- med
 # Normalizing
 processed_data[,c(6:36,38:40)] <- apply(processed_data[,c(6:36,38:40)], 2, function(x) {m <- mean(x); sd = sd(x); x-m/sd})
 
-# Running Random Forest -----
+# Running Random Forest and PCA -----
 library(randomForest)
 
 train <- filter(processed_data, proj_week <= wk_num - 2)
 test <- filter(processed_data, proj_week == wk_num - 1)
 
+# Getting PCA on data
+#pca_test <- prcomp(train[,c(6:36, 38:40)], scale = T, rank = 10)
+pca_test <- psych::pca(train[,c(6:36, 38:40)], rotate = "varimax", scores = T, nfactors = 10)
+
+train_pred <- as.data.frame(predict(pca_test))
+train_pred <- as.data.frame(psych::predict.psych(yy, train[,c(6:36, 38:40)]))
+
+train_pred$top_ten <- train$top_ten
+
 formula <- "top_ten ~ "
 for(n in colnames(processed_data)[c(6:36,38:40)]) {if(n != 'DVOA_Diff') {formula <- paste0(formula,n," + ")} else {formula <- paste0(formula, n)}}
 formula <- as.formula(formula)
 
-classifier <- randomForest(formula,
-                           data = train,
+classifier <- randomForest(top_ten ~ .,
+                           data = train_pred,
                            ntree = 1000,
-                           mtry = 4,
+                           mtry = 10,
                            sampsize = 25,
                            importance = T)
 
@@ -129,7 +139,8 @@ for(ii in c(0.30,0.40,0.45,0.50,0.55,0.60,0.65)) {
 }
 
 ## Test dataset testing ----
-test_pred <- predict(classifier, newdata = test[,c(6:36,38:40)], type = "prob")
+test_pca <- as.data.frame(predict(pca_test, newdata = test[,c(6:36, 38:40)]))
+test_pred <- predict(classifier, newdata = test_pca, type = "prob")
 test$pred <- test_pred[,1]
 
 test$pred_binomial <- ifelse(test$pred > 0.5, 1, 0)
@@ -148,5 +159,15 @@ test$tn = ifelse(test$pred_binomial == 0 & test$top_ten == 0,1,0)
 # Getting MSE
 test$sq_error <- (as.numeric(as.character(test$top_ten)) - test$pred)^2
 mean(test$sq_error)
+
+# Getting some output for the google sheet
+sort(pca_test$rotation[,4])
+sort(abs(pca_test$rotation[,4]), decreasing = T)[c(1:5)] #PC4
+sort(abs(pca_test$rotation[,3]), decreasing = T)[c(1:5)] #PC3
+sort(pca_test$rotation[,3])
+
+
+
+
 
 
