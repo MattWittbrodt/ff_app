@@ -75,9 +75,33 @@ colnames(pp)[dupl_check(colnames(pp))]
 
 writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to8_combined.xlsx")
 
+# Week 9 ----
 
+data <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to8_combined.xlsx")
 
+wk9 <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_9_2020.xlsx") %>%
+       mutate(adv_passing_iay_per_pa = as.numeric(adv_passing_iay_per_pa))
 
+pp <- full_join(wk9, data, by = colnames(data))
+
+colnames(pp)[dupl_check(colnames(pp))]
+
+writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to9_combined.xlsx")
+
+# Week 10 ----
+
+data <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to9_combined_vegas_fixes.xlsx")
+
+cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_10_2020.xlsx") %>%
+        mutate(adv_passing_iay_per_pa = as.numeric(adv_passing_iay_per_pa),
+               vs_cb_ypr = as.numeric(vs_cb_ypr),
+               vs_cb_fpt = as.numeric(vs_cb_fpt))
+
+pp <- full_join(cur_wk, data, by = colnames(data))
+
+colnames(pp)[dupl_check(colnames(pp))]
+
+writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to10_combined.xlsx")
 
 
 
