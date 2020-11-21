@@ -6,9 +6,13 @@ library(rvest)
 library(tidyverse)
 library(mattDFS)
 
+# Path to tmp folder
+tmp <- "C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/tmp/"
+
 # Logging into stathead ----
 stathead <- stathead_login()
 fff <- fff_login()
+fo <- fo_login()
 
 # Download projections ----
 proj_data <- get_projections(wk_num)
@@ -21,7 +25,8 @@ vegas <- vegas_lines()
 print('Vegas Lines Successful')
 
 # DVOA Data ---------------------------------------------------------------
-dvoa <- dvoa(playoffs = FALSE)
+dvoa <- dvoa(playoffs = FALSE, fo)
+
 dvoa_defense <- dvoa$defense
 dvoa_offense <- dvoa$offense
 
@@ -76,6 +81,7 @@ all_qb <- full_join(qb_proj, qb_wk, by = c("proj_player" = "prev_wk_player", "pr
                  -ytd_pass_gwd,
                  -ytd_pass_qbrec) %>%
           filter(proj_ffpts > 0)
+write.csv(all_qb, paste0(tmp,"all_qb.csv"), row.names = F)
 
 # RB ----------------------------------------------------------------------
 # Getting relevant information for each position and the specific functions
@@ -100,6 +106,7 @@ all_rb <- full_join(rb_proj, rb_wk, by = c("proj_player" = "prev_wk_player","pro
           mutate(total_touches = ytd_rec_target + ytd_rush_att,
                  high_value_touches = ytd_rec_target + round(rushing_ten_att/ytd_rush_g,2),
                  high_value_touches_per = round(high_value_touches / total_touches, 2))
+write.csv(all_rb, paste0(tmp,"all_rb.csv"), row.names = F)
 
 # WR ----------------------------------------------------------------------
 # Getting relevant information for each position and the specific functions
@@ -124,6 +131,8 @@ all_wr <- full_join(wr_proj, wr_wk, by = c("proj_player" = "prev_wk_player","pro
 wr_matchup <- wr_matchups(wk_num,fff)
 all_wr <- left_join(all_wr, wr_matchup, by = c("proj_player" = "vs_cb_wr"))
 
+write.csv(all_wr, paste0(tmp,"all_wr.csv"), row.names = F)
+
 # TE ----------------------------------------------------------------------
 
 # Getting relevant information for each position and the specific functions
@@ -143,6 +152,7 @@ all_te <- full_join(te_proj, te_wk, by = c("proj_player" = "prev_wk_player","pro
           left_join(te_pts_vs, by = c("proj_opp" = "pts_vs_tm")) %>%
           filter(proj_ffpts > 0) %>% #, proj_pos != "RB", proj_pos != "TE", proj_pos != "HB")
           select(-ytd_rec_pos) # removing the position from before
+write.csv(all_te, paste0(tmp,"all_te.csv"), row.names = F)
 
 # Current Week Projections ------------------------------------------------
 
@@ -181,7 +191,7 @@ all_positions <- merge(all_qb,all_rb, all = TRUE) %>%
                  left_join(vegas, by = c("proj_tm" = "team")) %>%
                  left_join(dvoa_defense, by = c("proj_opp" = "def_team")) %>%
                  left_join(dvoa_offense, by = c("proj_tm" = "off_team"))
-
+write.csv(all_positions, paste0(tmp,"all_positions_one_df.csv"), row.names = F)
 
 # Adding previous week DVOA -----------------------------------------------
 
@@ -190,6 +200,7 @@ names(dvoa_previous) <- paste("prev_wk_dvoa", names(dvoa_previous), sep = "_")
 
 all_positions <- left_join(all_positions, dvoa_previous, by = c("prev_wk_opp" = "prev_wk_dvoa_def_team"))
 print("Previous Week DVOA Successful")
+write.csv(all_positions, paste0(tmp,"all_positions_prev_wk_dvoa.csv"), row.names = F)
 
 # Adding Leverage Scores --------------------------------------------------
 leverage <- get_leverage(wk_num, fff)
@@ -198,7 +209,7 @@ leverage <- get_leverage(wk_num, fff)
 all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "player",
                                                            "proj_pos" = "pos",
                                                            "proj_tm" = "tm"))
-
+write.csv(all_positions, paste0(tmp,"all_positions_leveraege.csv"), row.names = F)
 print("Leverage Score Successful")
 
 # Adding pricing information ----
@@ -207,6 +218,7 @@ pricing <- get_pricing(wk_num, fff)
 all_positions <- left_join(all_positions, pricing, by = c("proj_player" = "pricing_player",
                                                            "proj_pos" = "pricing_position",
                                                            "proj_tm" = "pricing_team"))
+write.csv(all_positions, paste0(tmp,"all_positions_pricing.csv"), row.names = F)
 print("Pricing Data Import Successful")
 
 # Adding in the advanced stats information ----
@@ -220,23 +232,24 @@ all_data <- all_positions %>%
             left_join(adv_pass, by = c("proj_player" = "adv_player")) %>%
             left_join(adv_rush, by = c("proj_player" = "adv_player")) %>%
             left_join(adv_rec, by = c("proj_player" = "adv_receiving_player"))
-
+write.csv(all_data, paste0(tmp,"all_data.csv"), row.names = F)
 print("Advanced Stats Successful")
 
 # Adding in individual information from Football Outsiders ----
 source("~/ff_shiny_app/ff_app/football_outsiders_advanced_position.R")
 
 # Running specific Data
-qb_df <- fo_qb()
-rb_df <- fo_rb()
-wr_df <- fo_pass_catchers("wr")
-te_df <- fo_pass_catchers("te")
+qb_df <- fo_qb(fo)
+rb_df <- fo_rb(fo)
+wr_df <- fo_pass_catchers("wr",fo)
+te_df <- fo_pass_catchers("te",fo)
 
 # Merging into 1 DF
 fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player",
                                                    "pass_team" = "rush_team",
                                                    "rush_dyar","rush_eyds", "rush_dvoa",
-                                                   "rush_yar","rush_voa","rush_yards")) %>%
+                                                   "rush_yar","rush_voa","rush_yards",
+                                                   "rush_voa_rk","rush_eyds_rk")) %>%
                     full_join(wr_df, by = c("pass_player" = "rec_player",
                                             "pass_team" = "rec_team",
                                             "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate",
@@ -252,7 +265,6 @@ fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player"
                     pass_player = str_remove_all(pass_player, "-"))
 
 fo_all_positions[["pass_team"]] <- sapply(fo_all_positions[["pass_team"]], function(x) find_names(x, "fff_abbreviation"))
-fo_all_positions[168,1] <- "C Wilson"
 
 # Merging with rest of data
 all_data2 <- all_data %>%
@@ -262,10 +274,12 @@ all_data2 <- all_data %>%
 # Combining
 all_data_fo_pos <- left_join(all_data2, fo_all_positions, by = c("proj_player_new" = "pass_player", "proj_tm" = "pass_team")) %>%
                    select(-proj_player_new)
+
+write.csv(all_data_fo_pos, paste0(tmp,"all_data_fo_pos.csv"), row.names = F)
 print("FO All Advanced Position Stats Combined")
 
 # Adding in pace of place stats ----
-pace <- get_pace()
+pace <- get_pace(fo)
 pace[["off_team"]] <- sapply(pace[["off_team"]], function(x) find_names(x, "fff_abbreviation"))
 all_data_fo_pos_pace <- left_join(all_data_fo_pos, pace, by = c("proj_tm" = "off_team"))
 
