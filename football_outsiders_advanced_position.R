@@ -90,7 +90,7 @@ fo_rb <- function(login) {
   df <- df %>% .[,-c(3,5,7,17)] %>% select(-Runs, -TD, -FUM)
 
   colnames(df) <- str_to_lower(paste('rush',colnames(df), sep = "_")) %>%
-                  str_remove_all("\t") %>% str_replace("\n", "_")
+                  str_remove_all("\t") %>% str_replace("[:space:]", "_")
 
   # Receiving Yards - main table (#3)
   df_rec <- df_list[[3]]
