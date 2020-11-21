@@ -86,7 +86,7 @@ def_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
 # QB Offense Stats ----
 
 off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
-          mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(ytd_pass_g ), 2),
+          mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(ytd_pass_g), 2),
                  pass_dyar = round(pass_dyar/as.numeric(ytd_pass_g),2),
                  rush_yards = round(rush_yards / as.numeric(ytd_pass_g),2),
                  pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(ytd_pass_g),2),
@@ -313,7 +313,7 @@ wr_off <- filter(df, proj_pos == "WR"  & is.na(line) == F & ytd_rec_target > 3) 
 
 # TE Panel Data ----
 
-# TE Defense ----
+### TE Defense ----
 
 te_def <- filter(df, proj_pos == "TE" & is.na(line) == F) %>%
   select(proj_player,

@@ -678,7 +678,8 @@ server <- function(input, output) {
           th(class = 'dt-center', colspan = 4, 'Passing Def / G'),
           th(class = 'dt-center', colspan = 2, 'RZ Defense'),
           th(class = 'dt-center', colspan = 3, 'DVOA'),
-          th(class = 'dt-center', colspan = 5, 'Defense Line Performance')
+          th(class = 'dt-center', colspan = 3, 'Defense Line Performance'),
+          th(class = 'dt-center', colspan = 2, 'Other Stats')
         ),
         tr(
           th(colspan = 1, 'Player'),
@@ -694,7 +695,7 @@ server <- function(input, output) {
           th(colspan = 1, 'Difference'),
           th(colspan = 1, 'Pass Rk'),
           th(colspan = 1, 'Adjust Sack Rate'),
-          th(colspan = 1, 'Rating Allowed'),
+          th(colspan = 1, 'QB Rating Allowed'),
           th(colspan = 1, 'Net Yds/Att'),
           th(colspan = 1, 'Oline Adj Sack Rate'))
       )
@@ -713,7 +714,8 @@ server <- function(input, output) {
                              lengthMenu = c(10,20,30),
                              columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
               formatStyle(c('pts_vs_passing_att','pts_vs_passing_yds','pts_vs_passing_td',
-                          'pts_vs_fantasy_per_game_fdpt','def_dvoa','def_pass_dvoa','DVOA_Diff'),
+                          'pts_vs_fantasy_per_game_fdpt','def_dvoa','def_pass_dvoa','DVOA_Diff',
+                          'def_pass_adj_net_yds_per_att','off_oline_adjusted_sack_rate'),
                           backgroundColor = '#F2F3F4') #%>%
               # formatStyle(
               #   'DVOA_Advantage',
@@ -760,7 +762,7 @@ server <- function(input, output) {
     })
 
     #
-    # Offense QB
+    # Offense QB ----
     #
 
     # Getting Subsetted Database Based on Sliders
@@ -936,7 +938,7 @@ server <- function(input, output) {
                                columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
                 formatStyle(c('pts_vs_total_touch','pts_vs_fantasy_per_game_fdpt','pts_vs_rush_att',
                               'pts_vs_rush_yds','pts_vs_rush_td','pts_vs_rec_tgt','pts_vs_rec_yds',
-                              'def_dline_power_success','power_success_diff','def_dline_adj_line_yards',
+                              'def_dline_power_success_rate','power_success_diff','def_dline_adjusted_line_yards',
                               'net_adj_line_yd_diff'), backgroundColor = '#F2F3F4') %>%
                 formatStyle(
                   'power_success_diff',
@@ -954,7 +956,7 @@ server <- function(input, output) {
                   color = styleInterval(c(-30, -10, 0, 30),
                                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
                 formatStyle(
-                  'def_dline_adj_line_yards',
+                  'def_dline_adjusted_line_yards',
                   fontWeight = styleInterval(.5, c('normal','bold')),
                   color = styleInterval(c(-1, -.5, 0, 1),
                                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
@@ -1143,7 +1145,7 @@ server <- function(input, output) {
                 options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
                 formatStyle(c('pts_vs_fantasy_per_game_fdpt','pts_vs_rec_tgt','pts_vs_rec_yds','pts_vs_rec_td',
                               'def_pass_adj_net_yds_per_att','def_pass_yds_per_gm','def_tot_yds_per_play',
-                              'dline_pass_rank','dline_pass_sacks','dline_pass_adjusted_sack_rate','sack_rate_diff'),
+                              'dline_rank','dline_sacks','dline_adjusted_sack_rate','sack_rate_diff'),
                             backgroundColor = '#F2F3F4') %>%
         formatStyle(
           'DVOA_Advantage',
@@ -1204,7 +1206,7 @@ server <- function(input, output) {
              th(colspan = 1, 'Target / $1k'),
              th(colspan = 1, 'Implied Total'))
         )))
-      
+
       wr_off_render <- subset(wr_off,
                               (ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] | is.na(ytd_rec_target)) &
                               (receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] | is.na(receiving_twenty_per_tgt)) &
@@ -1362,7 +1364,7 @@ server <- function(input, output) {
                 options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
         formatStyle(c('pts_vs_fantasy_per_game_fdpt','pts_vs_rec_tgt','pts_vs_rec_yds','pts_vs_rec_td',
                       'def_pass_adj_net_yds_per_att','def_pass_yds_per_gm','def_tot_yds_per_play',
-                      'dline_pass_rank','dline_pass_sacks','dline_pass_adjusted_sack_rate','sack_rate_diff'),
+                      'def_dline_adjusted_sack_rate_rk','def_dline_sacks','def_dline_adjusted_sack_rate','sack_rate_diff'),
                     backgroundColor = '#F2F3F4') %>%
         formatStyle(
           'DVOA_Advantage',
