@@ -238,7 +238,7 @@ print("Advanced Stats Successful")
 # Adding in individual information from Football Outsiders ----
 source("~/ff_shiny_app/ff_app/football_outsiders_advanced_position.R")
 
-# Running specific Data
+# Running specific Data ----
 qb_df <- fo_qb(fo)
 rb_df <- fo_rb(fo)
 wr_df <- fo_pass_catchers("wr",fo)
@@ -253,15 +253,17 @@ fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player"
                     full_join(wr_df, by = c("pass_player" = "rec_player",
                                             "pass_team" = "rec_team",
                                             "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate",
-                                            "rec_yar","rec_voa","rec_yards")) %>%
+                                            "rec_yar","rec_voa","rec_yards", "rec_voa_rk",
+                                            "rec_catch_rate_rk","rec_eyds_rk")) %>%
                     full_join(te_df, by = c("pass_player" = "rec_player",
                                             "pass_team" = "rec_team",
                                             "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate",
-                                            "rec_yar","rec_voa","rec_yards")) %>%
+                                            "rec_yar","rec_voa","rec_yards","rec_voa_rk",
+                                            "rec_catch_rate_rk","rec_eyds_rk")) %>%
                     mutate(pass_player = ifelse(is.na(str_extract(pass_player, "^[:upper:]\\.[:upper:]\\.")) == T,
                                         pass_player,
                                         str_remove(pass_player, "\\.")),
-                    pass_player = str_replace(pass_player, "[:punct:]", " "),
+                    pass_player = str_remove(pass_player, "[:punct:]"),
                     pass_player = str_remove_all(pass_player, "-"))
 
 fo_all_positions[["pass_team"]] <- sapply(fo_all_positions[["pass_team"]], function(x) find_names(x, "fff_abbreviation"))
