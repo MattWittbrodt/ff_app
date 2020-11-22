@@ -69,16 +69,27 @@ data = data.drop(['k_rank', 'k','def_rank','def'],axis = 1)
 data['team'] = find_names.find_names(data['team'], 'fff_abbreviation')
 data = data.rename(columns={'team':'team_id'})
 
+#%% Adding 2020 as column
+year = 2020
+data.insert(loc = 1, 
+          column = 'year', 
+          value = year) 
+
 # %% Connecting to Database and appending table
 engine = create_engine('postgresql://postgres:matt@localhost:5432/fantasy_football')
-data.to_sql('afpa', engine, if_exists = 'replace', index = False)
+# First we need to truncate the table
+engine.execute('TRUNCATE TABLE afpa')
+
+# Adding data
+data.to_sql('afpa', engine, if_exists = 'append', index = False)
 
 #%% CLosing window
 driver.quit()
 
 # %%
-#  sql = '''CREATE TABLE afpa
-#           (team_id CHAR (3) PRIMARY KEY NOT NULL,
+#  sql = '''CREATE TABLE afpa (
+#           team_id CHAR (3) NOT NULL,
+#           year NUMERIC (4) NOT NULL,
 #           qb_rank INT NOT NULL,
 #           qb NUMERIC NOT NULL,
 #           rb_rank INT NOT NULL,
@@ -104,6 +115,8 @@ driver.quit()
 #           off_half_rank INT NOT NULL,
 #           off_half NUMERIC NOT NULL,
 #           off_ppr_rank INT NOT NULL,
-#           off_ppr NUMERIC NOT NULL); '''
+#           off_ppr NUMERIC NOT NULL,
+#           PRIMARY KEY (team_id, year)
+#           ); '''
 
 # Open the file in write mode and store the content in file_object
