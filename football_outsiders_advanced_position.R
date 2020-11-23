@@ -2,22 +2,7 @@
 # Getting Advanced Football Outsiders Metrics for each player
 library(tidyverse)
 library(rvest)
-
-# Since Football Outsiders changed their formatting, this function will
-# take the first column that shares the name (their new format is; rank | value)
-# and give it the rank suffix
-# @param names: list of column names (can be done after pre-process)
-fo_col_to_rank <- function(names) {
-  n <- names # making a copy
-  duplicates <- duplicated(n) # checking for duplicates; same size as n
-  # Looping over the column names, and checking if the column has been duplicated
-  for(ii in 1:length(n)) {
-    if(duplicates[ii] == TRUE) {
-      n[ii-1] <- paste0(n[ii],"_rk")
-    }
-  }
-  return(n)
-}
+library(mattDFS)
 
 #
 # QB Football Outsider stats
@@ -38,14 +23,17 @@ fo_qb <- function(login) {
   df <- df_list[[1]]
   colnames(df) <- fo_col_to_rank(colnames(df)) # adding Rk to columns
 
-  df <- df %>% .[,-c(3,5,7)] %>% select(-DPI) %>% mutate(DYAR = as.numeric(str_remove_all(DYAR, ",")))
+  df <- df %>% .[,-c(3,5,7)] %>% select(-DPI) %>%
+    mutate(DYAR = as.numeric(str_remove_all(DYAR, ",")),
+           Yards = as.numeric(str_remove_all(Yards, ",")),
+           EYds = as.numeric(str_remove_all(EYds, ",")))
 
   # This is going to get some of the lower used QBs but they may still be relevant
   df_low_use <- df_list[[2]]
   colnames(df_low_use) <- fo_col_to_rank(colnames(df_low_use)) # adding Rk to columns
 
-  df_low_use <- df_low_use %>% select(-DPI) %>% mutate(Yards = as.character(Yards), # the main df reads in 1,344 as char, so fixing for now before join
-                                                       EYds = as.character(EYds),
+  df_low_use <- df_low_use %>% select(-DPI) %>% mutate(Yards = as.numeric(str_remove_all(Yards, ",")),
+                                                       EYds = as.numeric(str_remove_all(EYds, ",")),
                                                        DYAR = as.numeric(str_remove_all(DYAR, ",")))
 
   # Joining passing stats
@@ -63,7 +51,8 @@ fo_qb <- function(login) {
   colnames(df_rush) <- str_to_lower(paste('rush',colnames(df_rush), sep = "_"))
 
   # Merge ----
-  df_all <- left_join(df, df_rush, by = c("pass_player" = "rush_player", "pass_team" = "rush_team"))
+  df_all <- left_join(df, df_rush, by = c("pass_player" = "rush_player", "pass_team" = "rush_team")) %>%
+            select(-ends_with("_rk"))
 
   # Removing % from DVOA
   df_all[,c(3:ncol(df_all))] <- apply(df_all[,c(3:ncol(df_all))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
@@ -87,7 +76,10 @@ fo_rb <- function(login) {
   df <- df_list[[1]]
   colnames(df) <- fo_col_to_rank(colnames(df))
 
-  df <- df %>% .[,-c(3,5,7,17)] %>% select(-Runs, -TD, -FUM)
+  df <- df %>% .[,-c(3,5,7,17)] %>%
+        select(-Runs, -TD, -FUM) %>%
+        mutate(Yards = as.numeric(as.character(str_remove_all(Yards,","))),
+               EYds = as.numeric(as.character(str_remove_all(EYds, ","))))
 
   colnames(df) <- str_to_lower(paste('rush',colnames(df), sep = "_")) %>%
                   str_remove_all("\t") %>% str_replace("[:space:]", "_")
@@ -96,13 +88,18 @@ fo_rb <- function(login) {
   df_rec <- df_list[[3]]
   colnames(df_rec) <- fo_col_to_rank(colnames(df_rec))
 
-  df_rec <- df_rec %>% .[,-c(3,5,7)] %>% select(-Passes, -TD, -FUM)
+  df_rec <- df_rec %>% .[,-c(3,5,7)] %>%
+            select(-Passes, -TD, -FUM) %>%
+            mutate(Yards = as.numeric(as.character(str_remove_all(Yards,","))),
+                   EYds = as.numeric(as.character(str_remove_all(EYds, ","))))
+
 
   colnames(df_rec) <- str_to_lower(paste('rec', colnames(df_rec), sep = "_")) %>%
                       str_remove_all("\t") %>% str_replace_all("[:space:]", "_")
 
   # Merge ----
-  df_all <- left_join(df, df_rec, by = c("rush_player" = "rec_player", "rush_team" = "rec_team"))
+  df_all <- left_join(df, df_rec, by = c("rush_player" = "rec_player", "rush_team" = "rec_team")) %>%
+            select(-ends_with("_rk"))
 
   # Removing % from DVOA
   df_all[,c(3:ncol(df_all))] <- apply(df_all[,c(3:ncol(df_all))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
@@ -130,13 +127,19 @@ fo_pass_catchers <- function(position, login) {
   df2 <- df2[,-c(3,5,7)]
 
   # Adding in second table
-  df3 <- full_join(df, df2, by = colnames(df2)) %>% select(-Passes, -TD, -FUM, -DPI) %>% mutate(Player = str_replace(Player, "Jo\\.", "J."))
+  df3 <- full_join(df, df2, by = colnames(df2)) %>%
+         select(-Passes, -TD, -FUM, -DPI) %>%
+         mutate(Player = str_replace(Player, "Jo\\.", "J."),
+                Yards = as.numeric(as.character(str_remove_all(Yards,","))),
+                EYds = as.numeric(as.character(str_remove_all(EYds, ","))))
 
   colnames(df3) <- str_to_lower(paste('rec',colnames(df3), sep = "_")) %>%
                    str_remove_all("\t") %>% str_replace_all("[:space:]", "_")
 
   # Removing % from DVOA
   df3[,c(3:ncol(df3))] <- apply(df3[,c(3:ncol(df3))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
+
+  df3 <- select(df3, -ends_with("_rk"))
 
   return(df3)
 
