@@ -116,6 +116,20 @@ colnames(pp)[dupl_check(colnames(pp))]
 
 writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to11_combined.xlsx")
 
+# Week 12 ----
+data <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to11_combined.xlsx")
+data[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(data))] <- apply(data[,c(6:21,23:179,182:196,198:201,205:350, 352:ncol(data))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
+
+cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_12_2020.xlsx")
+cur_wk[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(cur_wk))] <- apply(cur_wk[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(cur_wk))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
+
+pp <- full_join(cur_wk, data, by = colnames(data))
+
+colnames(pp)[dupl_check(colnames(pp))]
+
+writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to12_combined.xlsx")
+
+
 
 
 
