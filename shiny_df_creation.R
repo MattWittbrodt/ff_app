@@ -236,9 +236,6 @@ write.csv(all_data, paste0(tmp,"all_data.csv"), row.names = F)
 print("Advanced Stats Successful")
 
 # Adding in individual information from Football Outsiders ----
-source("~/ff_shiny_app/ff_app/football_outsiders_advanced_position.R")
-
-# Running specific Data ----
 qb_df <- fo_qb(fo)
 rb_df <- fo_rb(fo)
 wr_df <- fo_pass_catchers("wr",fo)
@@ -248,18 +245,15 @@ te_df <- fo_pass_catchers("te",fo)
 fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player",
                                                    "pass_team" = "rush_team",
                                                    "rush_dyar","rush_eyds", "rush_dvoa",
-                                                   "rush_yar","rush_voa","rush_yards",
-                                                   "rush_voa_rk","rush_eyds_rk")) %>%
+                                                   "rush_yar","rush_voa","rush_yards")) %>%
                     full_join(wr_df, by = c("pass_player" = "rec_player",
                                             "pass_team" = "rec_team",
                                             "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate",
-                                            "rec_yar","rec_voa","rec_yards", "rec_voa_rk",
-                                            "rec_catch_rate_rk","rec_eyds_rk")) %>%
+                                            "rec_yar","rec_voa","rec_yards")) %>%
                     full_join(te_df, by = c("pass_player" = "rec_player",
                                             "pass_team" = "rec_team",
                                             "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate",
-                                            "rec_yar","rec_voa","rec_yards","rec_voa_rk",
-                                            "rec_catch_rate_rk","rec_eyds_rk")) %>%
+                                            "rec_yar","rec_voa","rec_yards")) %>%
                     mutate(pass_player = ifelse(is.na(str_extract(pass_player, "^[:upper:]\\.[:upper:]\\.")) == T,
                                         pass_player,
                                         str_remove(pass_player, "\\.")),
