@@ -112,8 +112,11 @@ cur_wk_processed[,c(6:ncol(cur_wk_processed))] <- apply(cur_wk_processed[,c(6:nc
 # Running Random Forest and PCA -----
 library(randomForest)
 
-train <- filter(processed_data, proj_week <= wk_num - 2)
-test <- filter(processed_data, proj_week == wk_num - 1)
+# Splitting into training set
+train_split <- sort(sample(nrow(processed_data),nrow(processed_data)*.8))
+
+train <- processed_data[train_split,]
+test <- processed_data[-train_split,]
 
 # Creating a formula for the RF
 formula <- "top_ten ~ "
@@ -173,10 +176,10 @@ test <- test[-4,]
 test_pred <- predict(classifier, newdata = test, type = "prob")
 test$pred <- test_pred[,2]
 
-cur_wk_pred <- predict(classifier, newdata = cur_wk_processed, type = "prob")
-cur_wk_processed$pred <- cur_wk_pred[,2]
-cur_wk_processed$top_ten <- ifelse(cur_wk_processed$pred > 0.5, 1, 0)
-predictions <- select(cur_wk_processed, proj_player, top_ten)
+# cur_wk_pred <- predict(classifier, newdata = cur_wk_processed, type = "prob")
+# cur_wk_processed$pred <- cur_wk_pred[,2]
+# cur_wk_processed$top_ten <- ifelse(cur_wk_processed$pred > 0.5, 1, 0)
+# predictions <- select(cur_wk_processed, proj_player, top_ten)
 
 test$pred_binomial <- ifelse(test$pred > 0.5, 1, 0)
 

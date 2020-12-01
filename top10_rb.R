@@ -97,8 +97,11 @@ processed_data$top_ten <- as.factor(processed_data$top_ten)
 # Running Random Forest and PCA -----
 library(randomForest)
 
-train <- filter(processed_data, proj_week <= wk_num - 2)
-test <- filter(processed_data, proj_week == wk_num - 1)
+# Splitting into training set
+train_split <- sort(sample(nrow(processed_data),nrow(processed_data)*.8))
+
+train <- processed_data[train_split,]
+test <- processed_data[-train_split,]
 
 # Creating a formula for the RF
 formula <- "top_ten ~ "
@@ -157,7 +160,7 @@ for(ii in c(0.30,0.40,0.45,0.50,0.55,0.60,0.65)) {
 test_pred <- predict(classifier, newdata = test, type = "prob")
 test$pred <- test_pred[,1]
 
-test$pred_binomial <- ifelse(test$pred > 0.55, 1, 0)
+test$pred_binomial <- ifelse(test$pred > 0.5, 1, 0)
 
 test$tp = ifelse(test$pred_binomial == 1 & test$top_ten == 1,1,0)
 test$fp = ifelse(test$pred_binomial == 1 & test$top_ten == 0,1,0)
