@@ -568,7 +568,7 @@ server <- function(input, output) {
                                pos == input$pos | is.na(pricing_current)) %>%
                         select(-implied_own)
 
-        # Selecting program
+                # Selecting program
         render_table <- render_table[,c("player", "pos", "tm", "opp",
                                         "ffpts","points_per_1k","fd_lev",
                                         "afpa","afpa_rk",
