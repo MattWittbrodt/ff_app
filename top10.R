@@ -2,14 +2,14 @@
 
 library(tidyverse)
 
-wk_num <- 11
+wk_num <- 12
 
 pos <- "QB"
 
-d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to10_combined.xlsx") %>%
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to11_combined.xlsx") %>%
      filter(proj_week <= wk_num - 1 & proj_week > 3 & proj_pos == pos)
 
-cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_10_2020.xlsx") %>%
+cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_12_2020.xlsx") %>%
           filter(proj_pos == pos)
 
 
@@ -18,30 +18,30 @@ tw <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/dat
       filter(proj_pos == pos) %>%
       select(proj_player, prev_wk_fantasy_fdpt)
 
-weeks <- unique(d$proj_week) 
+weeks <- unique(d$proj_week)
 
 compiled_data <- lapply(as.list(weeks), function(x) {
 
   # Getting last week and current week data
   wk <- filter(d, proj_week == x) %>% select(-prev_wk_fantasy_fdpt)
-  
+
   if(x < max(weeks)){
     lw <- filter(d, proj_week == (x+1)) %>% select(proj_player, prev_wk_fantasy_fdpt)
   } else {lw <- tw}
-  
+
   # Add last week data to current week
   combined <- left_join(wk, lw, by = "proj_player") %>% filter(is.na(prev_wk_fantasy_fdpt) == F)
-  
+
   # Adding whether they are top ten or not
   top <- combined %>% slice_max(order_by = prev_wk_fantasy_fdpt, n = 10) %>% mutate(top_ten = factor(1))
   not_top <- combined %>% slice_min(order_by = prev_wk_fantasy_fdpt, n = nrow(combined) - 10) %>% mutate(top_ten = factor(0))
-  
+
   if(nrow(top) + nrow(not_top) != nrow(combined)) {print(x); break}
   # Put back into one DF
   combined <- rbind(top, not_top)
-  
+
   return(combined)
-  
+
 })
 
 # Putting into a DF and doing some QB-specific processing
@@ -51,9 +51,9 @@ qb_col <- c("proj_pos","proj_player","prev_wk_fantasy_fdpt","proj_week",
             "pts_vs_g", "projected_own","proj_afpa_rk","line","total",
             "implied_total","pts_vs_passing_att", "pts_vs_passing_yds", "pts_vs_passing_td",
             "pts_vs_fantasy_per_game_fdpt","def_red_zone_td","def_red_zone_pct",
-            "def_dvoa", "def_pass_dvoa", "def_dline_pass_rank",
-            "def_dline_pass_adjusted_sack_rate","def_pass_qb_rating_allowed",
-            "def_pass_adj_net_yds_per_att", "off_oline_pass_adjusted_sack_rate",
+            "def_dvoa", "def_pass_dvoa", "def_dline_adjusted_sack_rate_rk",
+            "def_dline_adjusted_sack_rate","def_pass_qb_rating_allowed",
+            "def_pass_adj_net_yds_per_att", "off_oline_adjusted_sack_rate",
             "ytd_pass_yds_per_gm","ytd_pass_td","adv_passing_iay","pass_dyar",
             "adv_passing_ontgt_per","adv_passing_bad_per",
             "adv_passing_prss_per","pass_eyds","pass_yards","rush_eyds","rush_dyar","rush_yards",
@@ -137,23 +137,23 @@ train$pred <- training_pred[,2]
 ## Running a sensitivity analysis on decision marker
 # Sensitivity Analysis for threshold -----
 for(ii in c(0.30,0.40,0.45,0.50,0.55,0.60,0.65)) {
-  
+
   # Getting working version of df
   wd <- train
-  
+
   # do accuracy calculation
   wd$outcome_bi = ifelse(wd$pred > ii, 1, 0)
   wd$tp = ifelse(wd$outcome_bi == 1 & wd$top_ten == 1,1,0)
   wd$fp = ifelse(wd$outcome_bi == 1 & wd$top_ten == 0,1,0)
   wd$fn = ifelse(wd$outcome_bi == 0 & wd$top_ten == 1,1,0)
   wd$tn = ifelse(wd$outcome_bi == 0 & wd$top_ten == 0,1,0)
-  
+
   # Calculating Values
   accuracy <- (sum(wd$tp) + sum(wd$tn)) / nrow(wd)
   precision <- sum(wd$tp) / (sum(wd$tp) + sum(wd$fp))
   recall <- sum(wd$tp) / (sum(wd$tp) + sum(wd$fn))
   f1 <- 2 * ((precision * recall)/ (precision + recall))
-  
+
   # Getting MSE
   wd$sq_error <- (as.numeric(as.character(wd$top_ten)) - wd$pred)^2
 
@@ -165,10 +165,11 @@ for(ii in c(0.30,0.40,0.45,0.50,0.55,0.60,0.65)) {
              " | F1: ", round(f1,2),
              " | MSE: ", round(mean(wd$sq_error),4),
              " \n"))
-  
+
 }
 
 ## Test dataset testing ----
+test <- test[-4,]
 test_pred <- predict(classifier, newdata = test, type = "prob")
 test$pred <- test_pred[,2]
 
