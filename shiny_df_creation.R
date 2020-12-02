@@ -22,7 +22,7 @@ proj_data <- get_projections(wk_num)
 
 # Vegas Lines -------------------------------------------------------------
 vegas <- vegas_lines()
-print('Vegas Lines Successful')
+cat('Vegas Lines Successful\n')
 
 # DVOA Data ---------------------------------------------------------------
 dvoa <- dvoa(playoffs = FALSE, fo)
@@ -32,16 +32,16 @@ dvoa_offense <- dvoa$offense
 
 dvoa_defense[["def_team"]] <- sapply(dvoa_defense[["def_team"]], function(x) find_names(x, "fff_abbreviation"))
 dvoa_offense[["off_team"]] <- sapply(dvoa_offense[["off_team"]], function(x) find_names(x, "fff_abbreviation"))
-print('DVOA Successful')
+cat('DVOA Successful\n')
 
 # Last Week Data ----------------------------------------------------------
 
 wk_data <- get_last_wk_data(wk_num, stathead)
-print("Last Week Data Successful")
+cat("Last Week Data Successful\n")
 
 # Red Zone Data -----------------------------------------------------------
 rz_data <- get_red_zone()
-print("Red Zone Offensive Data Successful")
+cat("Red Zone Offensive Data Successful\n")
 
 # Year to Date Data -------------------------------------------------------
 ytd_df <- get_ytd_data()
@@ -181,7 +181,7 @@ write.csv(all_te, paste0(tmp,"all_te.csv"), row.names = F)
 #   mutate(proj_tm = ifelse(proj_tm == "character(0)", "LVE", proj_tm),
 #          proj_opp = ifelse(proj_opp == "character(0)", "LVE", proj_opp))
 
-print("Positional Data Successful")
+cat("Positional Data Successful\n")
 
 # Combing into one DF ----------------------------------------------------
 
@@ -199,7 +199,7 @@ dvoa_previous <- dvoa_defense
 names(dvoa_previous) <- paste("prev_wk_dvoa", names(dvoa_previous), sep = "_")
 
 all_positions <- left_join(all_positions, dvoa_previous, by = c("prev_wk_opp" = "prev_wk_dvoa_def_team"))
-print("Previous Week DVOA Successful")
+cat("Previous Week DVOA Successful\n")
 write.csv(all_positions, paste0(tmp,"all_positions_prev_wk_dvoa.csv"), row.names = F)
 
 # Adding Leverage Scores --------------------------------------------------
@@ -210,7 +210,7 @@ all_positions <- left_join(all_positions, leverage, by = c("proj_player" = "play
                                                            "proj_pos" = "pos",
                                                            "proj_tm" = "tm"))
 write.csv(all_positions, paste0(tmp,"all_positions_leveraege.csv"), row.names = F)
-print("Leverage Score Successful")
+cat("Leverage Score Successful\n")
 
 # Adding pricing information ----
 pricing <- get_pricing(wk_num, fff)
@@ -219,7 +219,7 @@ all_positions <- left_join(all_positions, pricing, by = c("proj_player" = "prici
                                                            "proj_pos" = "pricing_position",
                                                            "proj_tm" = "pricing_team"))
 write.csv(all_positions, paste0(tmp,"all_positions_pricing.csv"), row.names = F)
-print("Pricing Data Import Successful")
+cat("Pricing Data Import Successful\n")
 
 # Adding in the advanced stats information ----
 source("~/ff_shiny_app/ff_app/advanced_stats.R")
@@ -233,7 +233,7 @@ all_data <- all_positions %>%
             left_join(adv_rush, by = c("proj_player" = "adv_player")) %>%
             left_join(adv_rec, by = c("proj_player" = "adv_receiving_player"))
 write.csv(all_data, paste0(tmp,"all_data.csv"), row.names = F)
-print("Advanced Stats Successful")
+cat("Advanced Stats Successful\n")
 
 # Adding in individual information from Football Outsiders ----
 qb_df <- fo_qb(fo)
@@ -255,12 +255,11 @@ fo_all_positions <- full_join(qb_df, rb_df, by = c("pass_player" = "rush_player"
                                             "rec_dyar" , "rec_dvoa", "rec_eyds", "rec_catch_rate",
                                             "rec_yar","rec_voa","rec_yards")) %>%
                     mutate(pass_player = ifelse(is.na(str_extract(pass_player, "^[:upper:]\\.[:upper:]\\.")) == T,
-                                        pass_player,
-                                        str_remove(pass_player, "\\.")),
-                    pass_player = str_remove(pass_player, "[:punct:]"),
-                    pass_player = str_remove_all(pass_player, "-"))
+                                                pass_player, str_remove(pass_player, "\\.")),
+                           pass_player = str_remove(pass_player, "[:punct:]"),
+                           pass_player = str_remove_all(pass_player, "-"))
 
-fo_all_positions[["pass_team"]] <- sapply(fo_all_positions[["pass_team"]], function(x) find_names(x, "fff_abbreviation"))
+fo_all_positions[["pass_team"]] <- as.character(sapply(fo_all_positions[["pass_team"]], function(x) find_names(x, "fff_abbreviation")))
 
 # Merging with rest of data
 all_data2 <- all_data %>%
