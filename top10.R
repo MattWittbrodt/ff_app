@@ -2,16 +2,15 @@
 
 library(tidyverse)
 
-wk_num <- 12
+wk_num <- 13
 
 pos <- "QB"
 
-d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to11_combined.xlsx") %>%
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to12_combined.xlsx") %>%
      filter(proj_week <= wk_num - 1 & proj_week > 3 & proj_pos == pos)
 
-cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_12_2020.xlsx") %>%
+#cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_12_2020.xlsx") %>%
           filter(proj_pos == pos)
-
 
 # need previous week fantasy data, so reading in this week's data to look at
 tw <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",wk_num,"_2020.xlsx")) %>%
@@ -37,6 +36,7 @@ compiled_data <- lapply(as.list(weeks), function(x) {
   not_top <- combined %>% slice_min(order_by = prev_wk_fantasy_fdpt, n = nrow(combined) - 10) %>% mutate(top_ten = factor(0))
 
   if(nrow(top) + nrow(not_top) != nrow(combined)) {print(x); break}
+
   # Put back into one DF
   combined <- rbind(top, not_top)
 
@@ -72,25 +72,25 @@ processed_data <- select(processed_data, qb_col) %>%
                          pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt)) %>%
                   select(-pts_vs_g)
 
-cur_wk_processed <- select(cur_wk, qb_col[-length(qb_col)]) %>%
-                  mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
-                         pass_dyar = round(pass_dyar/as.numeric(pts_vs_g),2),
-                         rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
-                         pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(pts_vs_g),2),
-                         rush_yds_diff = round((rush_eyds - rush_yards)/as.numeric(pts_vs_g),2),
-                         DVOA_Diff = def_pass_dvoa - def_dvoa,
-                         pts_vs_passing_att = round(as.numeric(pts_vs_passing_att) / as.numeric(pts_vs_g),2),
-                         pts_vs_passing_yds = round(as.numeric(pts_vs_passing_yds) / as.numeric(pts_vs_g),2),
-                         pts_vs_passing_td = round(as.numeric(pts_vs_passing_td) / as.numeric(pts_vs_g),2),
-                         pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt)) %>%
-                  select(-pts_vs_g)
+# cur_wk_processed <- select(cur_wk, qb_col[-length(qb_col)]) %>%
+#                   mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(pts_vs_g), 2),
+#                          pass_dyar = round(pass_dyar/as.numeric(pts_vs_g),2),
+#                          rush_yards = round(rush_yards / as.numeric(pts_vs_g),2),
+#                          pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(pts_vs_g),2),
+#                          rush_yds_diff = round((rush_eyds - rush_yards)/as.numeric(pts_vs_g),2),
+#                          DVOA_Diff = def_pass_dvoa - def_dvoa,
+#                          pts_vs_passing_att = round(as.numeric(pts_vs_passing_att) / as.numeric(pts_vs_g),2),
+#                          pts_vs_passing_yds = round(as.numeric(pts_vs_passing_yds) / as.numeric(pts_vs_g),2),
+#                          pts_vs_passing_td = round(as.numeric(pts_vs_passing_td) / as.numeric(pts_vs_g),2),
+#                          pts_vs_fantasy_per_game_fdpt = as.numeric(pts_vs_fantasy_per_game_fdpt)) %>%
+#                   select(-pts_vs_g)
 
 # Cleaning up data (for entire dataset)
 processed_data[,-c(2:3)] <- apply(processed_data[,-c(2:3)], 2,
                             function(x) {c <- str_remove_all(as.character(x), "%") %>% as.numeric()})
 
-cur_wk_processed[,-c(2:3)] <- apply(cur_wk_processed[,-c(2:3)], 2,
-                                  function(x) {c <- str_remove_all(as.character(x), "%") %>% as.numeric()})
+# cur_wk_processed[,-c(2:3)] <- apply(cur_wk_processed[,-c(2:3)], 2,
+#                                   function(x) {c <- str_remove_all(as.character(x), "%") %>% as.numeric()})
 
 
 
@@ -98,14 +98,14 @@ cur_wk_processed[,-c(2:3)] <- apply(cur_wk_processed[,-c(2:3)], 2,
 # TODO - smarter NA replacement
 #for(ii in c(5:36,38:40)) {processed_data[,ii][is.na(processed_data[,ii])] <- median(unlist(processed_data[,ii]), na.rm = T)}
 for(ii in c(4:ncol(processed_data))) {processed_data[,ii][is.na(processed_data[,ii])] <- median(unlist(processed_data[,ii]), na.rm = T)}
-for(ii in c(4:ncol(cur_wk_processed))) {cur_wk_processed[,ii][is.na(cur_wk_processed[,ii])] <- median(unlist(cur_wk_processed[,ii]), na.rm = T)}
+#for(ii in c(4:ncol(cur_wk_processed))) {cur_wk_processed[,ii][is.na(cur_wk_processed[,ii])] <- median(unlist(cur_wk_processed[,ii]), na.rm = T)}
 
 # Normalizing
 processed_data[,c(6:36,38:40)] <- apply(processed_data[,c(6:36,38:40)], 2, function(x) {m <- mean(x); sd = sd(x); x-m/sd})
 processed_data$top_ten <- as.factor(processed_data$top_ten)
 
 
-cur_wk_processed[,c(6:ncol(cur_wk_processed))] <- apply(cur_wk_processed[,c(6:ncol(cur_wk_processed))], 2, function(x) {m <- mean(x); sd = sd(x); x-m/sd})
+#cur_wk_processed[,c(6:ncol(cur_wk_processed))] <- apply(cur_wk_processed[,c(6:ncol(cur_wk_processed))], 2, function(x) {m <- mean(x); sd = sd(x); x-m/sd})
 
 
 
@@ -181,7 +181,7 @@ test$pred <- test_pred[,2]
 # cur_wk_processed$top_ten <- ifelse(cur_wk_processed$pred > 0.5, 1, 0)
 # predictions <- select(cur_wk_processed, proj_player, top_ten)
 
-test$pred_binomial <- ifelse(test$pred > 0.5, 1, 0)
+test$pred_binomial <- ifelse(test$pred > 0.55, 1, 0)
 
 test$tp = ifelse(test$pred_binomial == 1 & test$top_ten == 1,1,0)
 test$fp = ifelse(test$pred_binomial == 1 & test$top_ten == 0,1,0)
