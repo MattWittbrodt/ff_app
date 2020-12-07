@@ -263,8 +263,9 @@ fo_all_positions[["pass_team"]] <- as.character(sapply(fo_all_positions[["pass_t
 
 # Merging with rest of data
 all_data2 <- all_data %>%
-             mutate(proj_player_new = str_remove(proj_player, "(?<=[:upper:])([:lower:]{1,}[:upper:][:lower:]{1,}|[:lower:]{1,}|[:upper:]{1}[:lower:]{1,})(?=[:space:]|[:upper:])"),
-                    proj_player_new = ifelse(proj_player == "Duke Johnson" & proj_tm == "HOU", "Duke Johnson", proj_player_new))
+             mutate(proj_player_new = str_remove(proj_player, "(?<=[:upper:])([:lower:]{1,}[:upper:][:lower:]{1,}|[:lower:]{1,}|[:upper:]{1}[:lower:]{1,}|[:upper:])(?=[:space:]|[:upper:])"),
+                    proj_player_new = ifelse(proj_player == "Duke Johnson" & proj_tm == "HOU", "Duke Johnson", proj_player_new),
+                    proj_player_new = str_remove(proj_player_new, "[:space:]Jr$"))
 
 
 # Combining
