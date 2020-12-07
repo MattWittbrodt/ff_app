@@ -76,12 +76,12 @@ ui <- navbarPage("DFS Data",
                    selectInput("y_axis",
                                h3("Y Axis"),
                                choices = as.list(names(dfs_df)),
-                               selected = "pricing_current")),
+                               selected = "points_per_1k")),
             column(2,
                    selectInput("x_axis",
                                h3("X Axis"),
                                choices = as.list(names(dfs_df)),
-                               selected = "gpp_odds")),
+                               selected = "implied_total")),
             column(6,
                    plotOutput('plot', height = 500))
         ),
@@ -623,7 +623,7 @@ server <- function(input, output) {
     # Graph Output
     dat <- reactive({
 
-        s1 <- input$fanduel_rows_selected
+        #s1 <- input$fanduel_rows_selected - for selection of players - currently turning off
 
         render_table <- subset(dfs_df,
                                pricing_current >= input$salary[1] & pricing_current <= input$salary[2] &
@@ -631,21 +631,11 @@ server <- function(input, output) {
                                    fd_lev >= input$lev[1] & fd_lev <= input$lev[2] &
                                    line >= input$line[1] & line <= input$line[2] &
                                    pos == input$pos) %>%
-                        select(-implied_own) %>%
-                        .[s1,]
+                        select(-implied_own)
 
         return(render_table)
     })
 
-    # Player pool (start for now)
-    output$player_pool <- renderPrint({
-
-      s1 <- input$fanduel_rows_selected
-
-           dat() %>%
-           .[s1,] %>%
-           select(player)
-    })
 
     output$plot = renderPlot({
 
