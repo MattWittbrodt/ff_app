@@ -2,15 +2,15 @@
 
 library(tidyverse)
 
-wk_num <- 13
+wk_num <- 14
 
 pos <- "QB"
 
-d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to12_combined.xlsx") %>%
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to13_combined.xlsx") %>%
      filter(proj_week <= wk_num - 1 & proj_week > 3 & proj_pos == pos)
 
 #cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_12_2020.xlsx") %>%
-          filter(proj_pos == pos)
+#          filter(proj_pos == pos)
 
 # need previous week fantasy data, so reading in this week's data to look at
 tw <- readxl::read_xlsx(paste0("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_",wk_num,"_2020.xlsx")) %>%
