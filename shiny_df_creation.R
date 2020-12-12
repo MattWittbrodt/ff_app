@@ -45,11 +45,11 @@ cat("Red Zone Offensive Data Successful\n")
 
 # Year to Date Data -------------------------------------------------------
 ytd_df <- get_ytd_data()
-cat("Year to Data Data Successful \n")
+cat("Year to Data Data Successful\n")
 
 # Team Defense ------------------------------------------------------------
 all_d_data <- get_team_defense()
-cat("Team Defense Successful \n")
+cat("Team Defense Successful\n")
 
 # Positions ---------------------------------------------------------------
 source("~/ff_shiny_app/ff_app/position_information.R", local = T)
@@ -273,18 +273,18 @@ all_data_fo_pos <- left_join(all_data2, fo_all_positions, by = c("proj_player_ne
                    select(-proj_player_new)
 
 write.csv(all_data_fo_pos, paste0(tmp,"all_data_fo_pos.csv"), row.names = F)
-print("FO All Advanced Position Stats Combined")
+cat("FO All Advanced Position Stats Combined\n")
 
 # Adding in pace of place stats ----
 pace <- get_pace(fo)
 pace[["off_team"]] <- sapply(pace[["off_team"]], function(x) find_names(x, "fff_abbreviation"))
 all_data_fo_pos_pace <- left_join(all_data_fo_pos, pace, by = c("proj_tm" = "off_team"))
 
-print("Pace of Play Successful")
+cat("Pace of Play Successful\n")
 
 # Writing outexcel file
 fname <- copy_and_write(all_data_fo_pos_pace,wk_num)
-print("Data Written Succesfully")
+cat("Data Written Succesfully\n")
 
 # Returning full DF ----
 #return(all_data_fo_pos_pace)

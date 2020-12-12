@@ -8,18 +8,21 @@ library(writexl)
 # Reading in complete data for week ----
 
 # Finding the most recent week's data by leveraging the largest week #
-# data_files <- list.files(path = "/srv/connect/apps/ff_app/data/", pattern = "all_data_wk_\\d{1,}_2020\\.xlsx")
-# print(data_files)
-#
-# weeks = as.numeric(str_extract(string = data_files, pattern = "\\d(?=_)"))
-# this_week_file <- data_files[weeks == max(weeks)]
-# cat(paste0("This weeks file is: ", this_week_file, " \n"))
-#
-# # Reading in specific excel file
-# df <- readxl::read_xlsx(paste0("data/", this_week_file)) %>%
-#      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+data_files <- list.files(path = "/srv/connect/apps/ff_app/data/", pattern = "all_data_wk_\\d{1,}_2020\\.xlsx")
+print(data_files)
 
-df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_13_2020.xlsx") # for use on computer
+weeks = as.numeric(str_extract(string = data_files, pattern = "\\d(?=_)"))
+this_week_file <- data_files[weeks == max(weeks)]
+cat(paste0("This weeks file is: ", this_week_file, " \n"))
+
+# # Reading in specific excel file
+#df <- readxl::read_xlsx(paste0("data/", this_week_file)) %>%
+#     mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
+
+df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_14_2020.xlsx") # for use on computer
+
+# Getting time
+day_time <- Sys.time()
 
 ###
 ### Data Frame Creation

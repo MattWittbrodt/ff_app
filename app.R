@@ -86,7 +86,7 @@ ui <- navbarPage("DFS Data",
                    plotOutput('plot', height = 500))
         ),
 
-        fluidRow(column(12,textOutput("player_pool")))
+        fluidRow(column(12,textOutput("publish_date")))
         ),
 
 
@@ -556,7 +556,10 @@ tabPanel("TE",
 server <- function(input, output) {
 
 # Main Panel Server -------------------------------------------------------
-
+    # Publish Date
+    output$publish_date <- renderText(paste0("App last updated on: ", day_time))
+  
+    # Main Table output
     output$fanduel <- renderDataTable({
 
         # Editing table for rendering
