@@ -22,7 +22,7 @@ df <- readxl::read_xlsx(paste0("data/", this_week_file)) %>%
 #df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_14_2020.xlsx") # for use on computer
 
 # Getting time
-day_time <- Sys.time()
+day_time <- Sys.time() - (60*60*6) # adjusting for time zone differences in shiny app
 
 ###
 ### Data Frame Creation
