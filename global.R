@@ -19,7 +19,7 @@ cat(paste0("This weeks file is: ", this_week_file, " \n"))
 df <- readxl::read_xlsx(paste0("data/", this_week_file)) %>%
      mutate(proj_opp = ifelse(proj_field == 2, paste("@",proj_opp, sep = ""), proj_opp))
 
-#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_14_2020.xlsx") # for use on computer
+#df <- readxl::read_xlsx("~/ff_shiny_app/ff_app/data/all_data_wk_15_2020.xlsx") # for use on computer
 
 # Getting time
 day_time <- Sys.time() - (60*60*6) # adjusting for time zone differences in shiny app
@@ -89,7 +89,7 @@ def_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
 # QB Offense Stats ----
 
 off_qb <- filter(df, proj_pos == "QB" & is.na(line) == F) %>%
-          mutate(adv_passing_iay = round(adv_passing_iay / as.numeric(ytd_pass_g), 2),
+          mutate(adv_passing_iay = round(as.numeric(adv_passing_iay) / as.numeric(ytd_pass_g), 2),
                  pass_dyar = round(pass_dyar/as.numeric(ytd_pass_g),2),
                  rush_yards = round(rush_yards / as.numeric(ytd_pass_g),2),
                  pass_yds_diff = round((pass_eyds - pass_yards)/as.numeric(ytd_pass_g),2),
