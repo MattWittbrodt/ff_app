@@ -2,11 +2,11 @@
 
 library(tidyverse)
 
-wk_num <- 14
+wk_num <- 15
 
 pos <- "QB"
 
-d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to13_combined.xlsx") %>%
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to14_combined.xlsx") %>%
      filter(proj_week <= wk_num - 1 & proj_week > 3 & proj_pos == pos)
 
 #cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_12_2020.xlsx") %>%
@@ -181,7 +181,7 @@ test$pred <- test_pred[,2]
 # cur_wk_processed$top_ten <- ifelse(cur_wk_processed$pred > 0.5, 1, 0)
 # predictions <- select(cur_wk_processed, proj_player, top_ten)
 
-test$pred_binomial <- ifelse(test$pred > 0.55, 1, 0)
+test$pred_binomial <- ifelse(test$pred > 0.5, 1, 0)
 
 test$tp = ifelse(test$pred_binomial == 1 & test$top_ten == 1,1,0)
 test$fp = ifelse(test$pred_binomial == 1 & test$top_ten == 0,1,0)
