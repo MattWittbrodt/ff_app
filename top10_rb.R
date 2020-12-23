@@ -1,11 +1,11 @@
 ## Top 10
 library(tidyverse)
 
-wk_num <- 15
+wk_num <- 16
 
 pos <- "RB"
 
-d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to14_combined.xlsx") %>%
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to15_combined.xlsx") %>%
   filter(proj_week <= wk_num - 1 & proj_week > 3 & proj_pos == pos)
 
 # need previous week fantasy data, so reading in this week's data to look at

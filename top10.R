@@ -2,11 +2,11 @@
 
 library(tidyverse)
 
-wk_num <- 15
+wk_num <- 16
 
 pos <- "QB"
 
-d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to14_combined.xlsx") %>%
+d <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to15_combined.xlsx") %>%
      filter(proj_week <= wk_num - 1 & proj_week > 3 & proj_pos == pos)
 
 #cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_12_2020.xlsx") %>%
