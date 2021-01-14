@@ -3,6 +3,7 @@
 #### Merging 2020 data
 ####
 dupl_check <- function(x) {str_detect(x, "\\.(y|x)")}
+library(tidyverse)
 
 wk7 <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_7_2020.xlsx") %>%
        mutate(adv_passing_iay_per_pa = as.numeric(adv_passing_iay_per_pa))
@@ -142,10 +143,55 @@ colnames(pp)[dupl_check(colnames(pp))]
 
 writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to13_combined.xlsx")
 
+# Week 14 ----
+data <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to13_combined.xlsx")
+data[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(data))] <- apply(data[,c(6:21,23:179,182:196,198:201,205:350, 352:ncol(data))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
+
+cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_14_2020.xlsx")
+cur_wk[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(cur_wk))] <- apply(cur_wk[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(cur_wk))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
+
+pp <- full_join(cur_wk, data, by = colnames(data))
+
+colnames(pp)[dupl_check(colnames(pp))]
+
+writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to14_combined.xlsx")
+
+# Week 15 ----
+data <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to14_combined.xlsx")
+data[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(data))] <- apply(data[,c(6:21,23:179,182:196,198:201,205:350, 352:ncol(data))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
+
+cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_15_2020.xlsx")
+cur_wk[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(cur_wk))] <- apply(cur_wk[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(cur_wk))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
+
+pp <- full_join(cur_wk, data, by = colnames(data))
+
+colnames(pp)[dupl_check(colnames(pp))]
+
+writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to15_combined.xlsx")
 
 
+# Week 16 ----
+data <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to15_combined.xlsx")
+data[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(data))] <- apply(data[,c(6:21,23:179,182:196,198:201,205:350, 352:ncol(data))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
 
+cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_16_2020.xlsx")
+cur_wk[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(cur_wk))] <- apply(cur_wk[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(cur_wk))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
 
+pp <- full_join(cur_wk, data, by = colnames(data))
 
+colnames(pp)[dupl_check(colnames(pp))]
 
+writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to16_combined.xlsx")
 
+# Week 17 ----
+data <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to16_combined.xlsx")
+data[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(data))] <- apply(data[,c(6:21,23:179,182:196,198:201,205:350, 352:ncol(data))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
+
+cur_wk <- readxl::read_xlsx("C:/Users/mattw/Documents/ff_shiny_app/ff_app/data/all_data_wk_17_2020.xlsx")
+cur_wk[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(cur_wk))] <- apply(cur_wk[,c(6:21,23:179,182:196,198:201,205:354,356:ncol(cur_wk))], 2, function(x) {as.numeric(str_remove_all(as.character(x), ",|%"))})
+
+pp <- full_join(cur_wk, data, by = colnames(data))
+
+colnames(pp)[dupl_check(colnames(pp))]
+
+writexl::write_xlsx(pp, "C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to17_combined.xlsx")
