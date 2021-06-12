@@ -39,19 +39,35 @@ d2$player_id <- c(1:nrow(d2))
 # Preparing for insert ----------------------------------------------------
 # Table Columns
 # CREATE TABLE players(
-#     id INT PRIMARY KEY,
+#     player_id INT PRIMARY KEY,
 #     first_name VARCHAR (50) NOT NULL,
 #     last_name VARCHAR (50) NOT NULL,
 #     full_name VARCHAR (50) NOT NULL,
-#     team CHAR (3) NOT NULL,
-#     position CHAR (2) NOT NULL,
+#     team_id INT NOT NULL,
+#     position_id INT(1) NOT NULL,
 #     year NUMERIC (4) NOT NULL)
 
-colnames(d2) <- c("position", "team", "first_name", "last_name", "full_name", "id", "year")
+colnames(d2) <- c("position_id", "team", "first_name", "last_name", "full_name", "player_id", "year")
 
 # Reorder columns
-col_order <- c("id", "first_name", "last_name", "full_name", "team", "position","year")
+col_order <- c("player_id", "first_name", "last_name", "full_name", "team", "position_id","year")
 d2 <- d2[, col_order]
+
+# Getting position_id
+d2 <- d2 %>% mutate(position_id = ifelse(position_id == "QB", 1, ifelse(position_id == "RB", 2, ifelse(position_id == "WR", 3, 4))))
+
+# Load in mysql team csv (to prep for import)
+team_sql <- read.csv("C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/team_mysql.csv") %>% select(pfr_abbreviation, team_id)
+
+# Merge d2 with team_sql to get the correct team ID
+d3 <- left_join(d2, team_sql, by = c("team" = "pfr_abbreviation")) %>% select(-team)
+
+# Reorder to match
+d3 <- d3[,c("player_id", "first_name", "last_name", "full_name", "team_id", "position_id","year")]
+
+write.csv(d3,"C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/player_table_2020.csv", row.names = False)
+
+
 
 # Importing into SQL ------------------------------------------------------
 dbWriteTable(con, "players",
