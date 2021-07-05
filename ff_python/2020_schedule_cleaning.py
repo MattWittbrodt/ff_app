@@ -65,4 +65,10 @@ c['away_implied'] = c.apply(lambda row: implied_calc(row.total, row.line, 1), ax
 # %% Write out
 c.to_csv('C:/Users/mattw/Desktop/2020_games.csv', index=True, header=True)
 
+# %% Needing to make some small changes to week 1 and odd game days
+#xx = pd.read_csv('C:/Users/mattw/Desktop/2020_games.csv')
+#xx['home_implied'] = xx.apply(lambda row: implied_calc(row.total, row.line, 0), axis = 1)
+#xx['away_implied'] = xx.apply(lambda row: implied_calc(row.total, row.line, 1), axis = 1)
+xx.to_csv('C:/Users/mattw/Desktop/2020_games.csv', index=True, header=True)
+
 # %%
