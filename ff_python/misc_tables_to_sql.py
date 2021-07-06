@@ -225,20 +225,22 @@ def_tot.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_def_tot.cs
 #### Team Passing Defense
 #### https://www.pro-football-reference.com/years/2020/opp.htm
 ##########################
-# NOT COMPLETED
+
 # Getting each team's data
-def_tot = d.loc[:,d.columns.str.startswith('def_tot_')]
+def_pass = d.loc[:,d.columns.str.startswith('def_pass_')]
 opponent = d['proj_opp']
 week = d['week']
-def_tot = pd.concat([opponent, week, def_tot], axis = 1).drop_duplicates()
-def_tot['season'] = 2020
+def_pass = pd.concat([opponent, week, def_pass], axis = 1).drop_duplicates()
+def_pass['season'] = 2020
 
 # Converting to player_id
-def_tot['proj_opp'] = def_tot.apply(lambda row: pfr[row.proj_opp], axis = 1)
+def_pass['proj_opp'] = def_pass.apply(lambda row: pfr[row.proj_opp], axis = 1)
 
 # Renaming columns
-def_tot.rename(columns = lambda x: re.sub("def_tot_", "", x), inplace = True)
-def_tot.rename(columns = {'proj_opp':'team_id'}, inplace = True)
+def_pass.rename(columns = lambda x: re.sub("def_pass_", "", x), inplace = True)
+def_pass.rename(columns = {'proj_opp':'team_id'}, inplace = True)
 
 # Write to csv
-def_tot.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_def_tot.csv', index=False, header=True)
+def_pass.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_def_pass.csv', index=False, header=True)
+
+# %%
