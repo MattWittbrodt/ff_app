@@ -22,8 +22,8 @@ pfr = tm[['pfr_abbreviation','team_id']]
 pfr.set_index('pfr_abbreviation', inplace = True)
 pfr = pfr['team_id'].to_dict()
 
-#%% Load team dictionary
-
+#%% Creating position dict
+pos_dict = {'QB':1, 'RB':2, 'WR':3, 'TE':4}
 
 #%%
 d = pd.read_excel('C:/Users/mattw/Documents/ff_shiny_app/ff_app/2020_data/merged_data/2020_weeks_2to17_combined.xlsx')
@@ -347,9 +347,14 @@ proj_rec['player_id'] = proj_rec.apply(lambda row: player_dict[row.player_id], a
 proj_rec.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_fff_projected_receiving.csv', index=False, header=True)
 
 
+#%% aFPA
+afpa = d.loc[:,['week','proj_pos','proj_opp', 'proj_afpa', 'proj_afpa_rk']]
+afpa = afpa.groupby(['week','proj_pos','proj_opp'], as_index = False).mean()
 
+afpa['proj_opp'] = afpa.apply(lambda row: pfr[row.proj_opp], axis = 1)
+afpa['proj_pos'] = afpa.apply(lambda row: pos_dict[row.proj_pos], axis = 1)
 
-
+afpa.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_fff_afpa.csv', index=False, header=True)
 
 
 
