@@ -12,15 +12,17 @@ d = d.drop(['location', 'winner', 'loser'], axis = 1)
 
 #%% Loading teams sheet to use 3 letter abbreviations for teams vs whole name for game_id
 teams = pd.read_csv("C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/team_mysql.csv")
-teams = teams[['full_name', 'pfr_abbreviation']].set_index('full_name')
+teams_pfr = teams[['full_name', 'pfr_abbreviation']].set_index('full_name')
+teams_id = teams[['pfr_abbreviation', 'team_id']].set_index('pfr_abbreviation')
 
 # Gets output like:
-# teams['Arizona Cardinals'] returns {'pfr_abbreviation': 'ARI'}
-teams = teams.to_dict('index')
+# teams['Arizona Cardinals'] returns {'pfr_abbreviation': 'ARI', 'team_id':1}
+teams_pfr = teams_pfr.to_dict('index')
+teams_id = teams_id.to_dict('index')
 
 #%% Switch out the names for abbreviations
-d['home_team'] = d.apply(lambda row: teams[row.home_team]['pfr_abbreviation'], axis = 1)
-d['away_team'] = d.apply(lambda row: teams[row.away_team]['pfr_abbreviation'], axis = 1)
+d['home_team'] = d.apply(lambda row: teams_pfr[row.home_team]['pfr_abbreviation'], axis = 1)
+d['away_team'] = d.apply(lambda row: teams_pfr[row.away_team]['pfr_abbreviation'], axis = 1)
 d['season'] = 2020
 d['reformat_week'] = d.apply(lambda row: f'0{row.week}' if row.week < 10 else f'{row.week}', axis = 1)
 
@@ -61,6 +63,11 @@ def implied_calc(total,line,away):
 
 c['home_implied'] = c.apply(lambda row: implied_calc(row.total, row.line, 0), axis = 1)
 c['away_implied'] = c.apply(lambda row: implied_calc(row.total, row.line, 1), axis = 1)
+
+#%% Fixing team names to Id's
+# Re-doing the teams to get the ID
+c['home_team'] = c.apply(lambda row: teams_id[row.home_team]['team_id'], axis = 1)
+c['away_team'] = c.apply(lambda row: teams_id[row.away_team]['team_id'], axis = 1)
 
 # %% Write out
 c.to_csv('C:/Users/mattw/Desktop/2020_games.csv', index=True, header=True)
