@@ -10,17 +10,6 @@ def no_names(col):
         except:
             print(f'{ii}')
 
-#%% Create pckl dictionary
-pl = pd.read_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/player_table_2020.csv')
-
-pl.set_index('full_name', inplace=True)
-pl = pl[['player_id']]
-pl_dict = pl['player_id'].to_dict()
-
-#%% Write to dictionary
-with open('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/player_dict_2020.pkl', 'wb') as f:
-    pickle.dump(pl_dict,f)
-
 #%% Load player dictionary
 player_file = open('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/player_dict_2020.pkl', 'rb')
 player_dict = pickle.load(player_file)
@@ -43,7 +32,10 @@ d['proj_player'] = d.apply(lambda row: re.sub(" Jr", "", row.proj_player), axis 
 
 d.rename(columns = {'proj_player':'player_id', 'proj_week':'week'}, inplace = True)
 players = d[['player_id', 'week']]
-# ----------------------------------------------------------------------------------------------
+# ==============================================================================================
+# ==============================================================================================
+# ==============================================================================================
+
 #%% ######################
 #### WR Matchup
 ##########################
@@ -242,5 +234,123 @@ def_pass.rename(columns = {'proj_opp':'team_id'}, inplace = True)
 
 # Write to csv
 def_pass.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_def_pass.csv', index=False, header=True)
+
+#%% ######################
+#### Team Conversion Defense
+#### https://www.pro-football-reference.com/years/2020/opp.htm
+##########################
+
+# Getting each team's data
+def_conv = d.loc[:,['def_third_d_per','def_fourth_d_per','def_red_zone_td','def_red_zone_pct']]
+opponent = d['proj_opp']
+week = d['week']
+def_conv = pd.concat([opponent, week, def_conv], axis = 1).drop_duplicates()
+def_conv['season'] = 2020
+
+# Converting to player_id
+def_conv['proj_opp'] = def_conv.apply(lambda row: pfr[row.proj_opp], axis = 1)
+
+# Renaming columns
+def_conv.rename(columns = lambda x: re.sub("def_pass_", "", x), inplace = True)
+def_conv.rename(columns = {'proj_opp':'team_id'}, inplace = True)
+
+# Write to csv
+def_conv.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_def_conv.csv', index=False, header=True)
+
+#%% ########################
+#### Previous Week Receiving
+############################
+
+# Getting each team's data
+prev_wk_rec = d.loc[:,d.columns.str.startswith('prev_wk_rec_')]
+player = d['player_id']
+week = d['week']-1 # Correct for the data being for last week
+prev_wk_rec = pd.concat([player, week, prev_wk_rec], axis = 1).drop_duplicates().dropna()
+prev_wk_rec['season'] = 2020
+
+# == Converting to player_id == #
+prev_wk_rec['player_id'] = prev_wk_rec.apply(lambda row: player_dict[row.player_id], axis = 1)
+
+# Renaming columns
+prev_wk_rec.rename(columns = lambda x: re.sub("prev_wk_rec_", "", x), inplace = True)
+
+# Write to csv
+prev_wk_rec.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_wk_rec.csv', index=False, header=True)
+
+
+#%% ########################
+#### Previous Week Passing
+############################
+
+# Getting each team's data
+prev_wk_pass = d.loc[:,d.columns.str.startswith('prev_wk_pass_')]
+player = d['player_id']
+week = d['week']-1 # Correct for the data being for last week
+prev_wk_pass = pd.concat([player, week, prev_wk_pass], axis = 1).drop_duplicates().dropna().drop(['prev_wk_pass_yds.1'], axis = 1)
+prev_wk_pass['season'] = 2020
+
+# == Converting to player_id == #
+prev_wk_pass['player_id'] = prev_wk_pass.apply(lambda row: player_dict[row.player_id], axis = 1)
+
+# Renaming columns
+prev_wk_pass.rename(columns = lambda x: re.sub("prev_wk_pass_", "", x), inplace = True)
+
+# Write to csv
+prev_wk_pass.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_wk_pass.csv', index=False, header=True)
+
+# %%#%% ########################
+#### Previous Week Rushing
+############################
+
+# Getting each team's data
+prev_wk_rush = d.loc[:,d.columns.str.startswith('prev_wk_rush_')]
+player = d['player_id']
+week = d['week']-1 # Correct for the data being for last week
+prev_wk_rush = pd.concat([player, week, prev_wk_rush], axis = 1).drop_duplicates().dropna()
+prev_wk_rush['season'] = 2020
+
+# == Converting to player_id == #
+prev_wk_rush['player_id'] = prev_wk_rush.apply(lambda row: player_dict[row.player_id], axis = 1)
+
+# Renaming columns
+prev_wk_rush.rename(columns = lambda x: re.sub("prev_wk_rush_", "", x), inplace = True)
+
+# Write to csv
+prev_wk_rush.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_wk_rush.csv', index=False, header=True)
+
+# %%
+## ===== Proj stats ===== ##
+# = Passing = #
+proj_passing = d.loc[:,['player_id','week','proj_ffpts', 'proj_comp', 'proj_pass_att', 'proj_pass_yds', 'proj_pass_td', 'proj_int']]
+proj_passing = proj_passing[proj_passing['proj_comp'] > 10]
+proj_passing = proj_passing[proj_passing['player_id'] != 'Robert Griffin III']
+proj_passing['player_id'] = proj_passing.apply(lambda row: player_dict[row.player_id], axis = 1)
+proj_passing.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_fff_projected_passing.csv', index=False, header=True)
+
+# = Rushing = #
+proj_rush = d.loc[:,['player_id','week','proj_ffpts', 'proj_rush_att', 'proj_rush_yds', 'proj_rush_td']]
+proj_rush = proj_rush[proj_rush['proj_ffpts'] > 5]
+proj_rush = proj_rush[proj_rush['proj_rush_att'] > 5]
+proj_rush = proj_rush[proj_rush['player_id'] != 'Robert Griffin III']
+proj_rush = proj_rush[proj_rush['player_id'] != 'Kendall Hinton']
+proj_rush = proj_rush[proj_rush['player_id'] != 'Ty Montgomery']
+proj_rush['player_id'] = proj_rush.apply(lambda row: player_dict[row.player_id], axis = 1)
+proj_rush.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_fff_projected_rushing.csv', index=False, header=True)
+
+# = Receiving = #
+proj_rec = d.loc[:,['player_id','week','proj_ffpts', 'proj_rec', 'proj_rec_yds', 'proj_rec_td']]
+proj_rec = proj_rec[proj_rec['proj_ffpts'] > 5]
+proj_rec = proj_rec[proj_rec['proj_rec'] > 2]
+proj_rec = proj_rec[proj_rec['player_id'] != 'Ty Montgomery']
+proj_rec = proj_rec[proj_rec['player_id'] != 'Rashaad Penny']
+proj_rec['player_id'] = proj_rec.apply(lambda row: player_dict[row.player_id], axis = 1)
+proj_rec.to_csv('C:/Users/mattw/Documents/ff_shiny_app/ff_app/sql/2020_fff_projected_receiving.csv', index=False, header=True)
+
+
+
+
+
+
+
 
 # %%
