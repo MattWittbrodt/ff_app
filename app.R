@@ -8,7 +8,7 @@ library(DT)
 library(ggrepel)
 library(reactable)
 
-source("./global.R")
+source("./global_new.R")
 
 #NOTE: 16 columns per table works relatively well
 
@@ -16,7 +16,6 @@ source("./global.R")
 
 # Fluidpage adjusts to window size
 ui <- navbarPage("DFS Data",
-
 
 # Main DFS Panel ------------------------------------------------------------
 
@@ -29,7 +28,7 @@ ui <- navbarPage("DFS Data",
             column(3,
                    selectInput("pos",
                                       h3("Position"),
-                                      choices = list("QB","RB","WR","TE","DEF"),
+                                      choices = list("QB","RB","WR","TE"),
                                       selected = "QB"))),
 
 
@@ -38,30 +37,30 @@ ui <- navbarPage("DFS Data",
             column(3,
             sliderInput("salary",
                      "Minimum FanDuel Salary:",
-                     min = min(dfs_df$pricing_current),
-                     max = max(dfs_df$pricing_current),
-                     value = c(min,max)
+                     min = min(dfs_df$fd_sal),
+                     max = max(dfs_df$fd_sal),
+                     value = c(min(dfs_df$fd_sal), max(dfs_df$fd_sal)),
             )),
             column(3,
                    sliderInput("value",
                         "Points Per $1000",
-                        min = min(dfs_df$points_per_1k, na.rm = T),
-                        max = max(dfs_df$points_per_1k, na.rm = T),
-                        value = c(min,max)
+                        min = min(dfs_df$pt_1k, na.rm = T),
+                        max = max(dfs_df$pt_1k, na.rm = T),
+                        value = c(min(dfs_df$pt_1k, na.rm = T), max(dfs_df$pt_1k, na.rm = T))
                    )),
             column(3,
                    sliderInput("lev",
                                "Leverage",
                                min = min(dfs_df$fd_lev, na.rm = T),
                                max = max(dfs_df$fd_lev, na.rm = T),
-                               value = c(min,max)
+                               value = c(min(dfs_df$fd_lev, na.rm = T), max(dfs_df$fd_lev, na.rm = T))
                    )),
             column(3,
                    sliderInput("line",
                                "Line",
-                               min = min(dfs_df[["line"]], na.rm = T),
-                               max = max(dfs_df[["line"]], na.rm = T),
-                               value = c(min,max)
+                               min = min(dfs_df$line, na.rm = T),
+                               max = max(dfs_df$line, na.rm = T),
+                               value = c(min(dfs_df$line, na.rm = T), max(dfs_df$line, na.rm = T))
                    ))),
 
             # Show a plot of the generated distribution
@@ -108,30 +107,30 @@ ui <- navbarPage("DFS Data",
                column(3,
                       sliderInput("td_g",
                                   "TD Surrendered to QB / Game",
-                                  min = min(def_qb[["pts_vs_passing_td"]], na.rm = T),
-                                  max = max(def_qb[["pts_vs_passing_td"]], na.rm = T),
-                                  value = c(min,max)
+                                  min = min(def_qb$td, na.rm = T),
+                                  max = max(def_qb$td, na.rm = T),
+                                  value = c(min(def_qb$td, na.rm = T),max(def_qb$td, na.rm = T))
                       )),
                column(3,
                       sliderInput("fd_pts_gm",
                                   "FD Pts / Gm to QB",
-                                  min = min(def_qb[["pts_vs_fantasy_per_game_fdpt"]], na.rm = T),
-                                  max = max(def_qb[["pts_vs_fantasy_per_game_fdpt"]], na.rm = T),
-                                  value = c(min,max)
+                                  min = min(def_qb$fd_pts, na.rm = T),
+                                  max = max(def_qb$fd_pts, na.rm = T),
+                                  value = c(min(def_qb$fd_pts, na.rm = T),max(def_qb$fd_pts, na.rm = T))
                       )),
                column(3,
                       sliderInput("qb_dvoa_diff",
                                   "DVOA Difference",
-                                  min = min(def_qb[["DVOA_Diff"]], na.rm = T),
-                                  max = max(def_qb[["DVOA_Diff"]], na.rm = T),
-                                  value = c(min,max)
+                                  min = min(def_qb$difference, na.rm = T),
+                                  max = max(def_qb$difference, na.rm = T),
+                                  value = c(min(def_qb$difference, na.rm = T), max(def_qb$difference, na.rm = T))
                       )),
                column(3,
                       sliderInput("adj_net_yd_att",
                                   "Adj Net Yd / Att",
-                                  min = min(def_qb[["def_pass_adj_net_yds_per_att"]], na.rm = T),
-                                  max = max(def_qb[["def_pass_adj_net_yds_per_att"]], na.rm = T),
-                                  value = c(min,max)
+                                  min = min(def_qb$net_yds_per_att, na.rm = T),
+                                  max = max(def_qb$net_yds_per_att, na.rm = T),
+                                  value = c(min(def_qb$net_yds_per_att, na.rm = T),max(def_qb$net_yds_per_att, na.rm = T))
                       ))),
 
 
@@ -147,30 +146,30 @@ ui <- navbarPage("DFS Data",
                column(3,
                       sliderInput("qb_salary",
                                   "Minimum FanDuel Salary:",
-                                  min = min(off_qb$pricing_current, na.rm = T),
-                                  max = max(off_qb$pricing_current, na.rm = T),
-                                  value = c(min,max)
+                                  min = min(off_qb$fd_sal, na.rm = T),
+                                  max = max(off_qb$fd_sal, na.rm = T),
+                                  value = c(min(off_qb$fd_sal, na.rm = T),max(off_qb$fd_sal, na.rm = T))
                       )),
                column(3,
                       sliderInput("qb_total",
                                   "Implied Total",
-                                  min = min(off_qb[["implied_total"]], na.rm = T),
-                                  max = max(off_qb[["implied_total"]], na.rm = T),
-                                  value = c(min,max)
+                                  min = min(off_qb$implied_total, na.rm = T),
+                                  max = max(off_qb$implied_total, na.rm = T),
+                                  value = c(min(off_qb$implied_total, na.rm = T),max(off_qb$implied_total, na.rm = T))
                       )),
                column(3,
                       sliderInput("qb_pass_yds_diff",
                                   "Passing EYds - Yds",
-                                  min = min(off_qb$pass_yds_diff, na.rm = T),
-                                  max = max(off_qb$pass_yds_diff, na.rm = T),
-                                  value = c(min,max)
+                                  min = min(off_qb$eyd_diff, na.rm = T),
+                                  max = max(off_qb$eyd_diff, na.rm = T),
+                                  value = c(min(off_qb$eyd_diff, na.rm = T),max(off_qb$eyd_diff, na.rm = T))
                       )),
                column(3,
                       sliderInput("qb_rush_yds",
                                   "Rushing Yds/Gm",
                                   min = 0,
-                                  max = max(off_qb$rush_yards,  na.rm = T),
-                                  value = c(min,max)
+                                  max = max(off_qb$rush_yds_gm,  na.rm = T),
+                                  value = c(0,max(off_qb$rush_yds_gm,  na.rm = T))
                       ))
                ),
 
@@ -184,7 +183,7 @@ ui <- navbarPage("DFS Data",
                       selectInput("qb_y_axis",
                                   h3("Y Axis"),
                                   choices = as.list(c(names(def_qb), names(off_qb))),
-                                  selected = "pts_vs_fantasy_per_game_fdpt")),
+                                  selected = "fd_pts")),
                column(2,
                       selectInput("qb_x_axis",
                                   h3("X Axis"),
@@ -200,9 +199,9 @@ ui <- navbarPage("DFS Data",
              )
 
 ),
-
-# RB Panel ----------------------------------------------------------------
-
+# 
+# # RB Panel ----------------------------------------------------------------
+# 
 tabPanel("RB",
 
          fluidRow(column(3,
@@ -214,32 +213,34 @@ tabPanel("RB",
            column(3,
                   sliderInput("rush_dvoa",
                               "Rushing DVOA",
-                              min = min(rb_def$def_rush_dvoa, na.rm = T),
-                              max = max(rb_def$def_rush_dvoa, na.rm = T),
-                              value = c(min,max),
+                              min = min(rb_def$rush_dvoa, na.rm = T),
+                              max = max(rb_def$rush_dvoa, na.rm = T),
+                              value = c(min(rb_def$rush_dvoa, na.rm = T),max(rb_def$rush_dvoa, na.rm = T)),
                               step = 0.1, round = -1
                   )),
            column(3,
                   sliderInput("net_yds_diff",
                               "Net Yards Differece",
-                              min = min(rb_def$net_adj_line_yd_diff, na.rm = T),
-                              max = max(rb_def$net_adj_line_yd_diff, na.rm = T),
-                              value = c(min,max)
+                              min = min(rb_def$net_adj_line_yd_diff_vs_off, na.rm = T),
+                              max = max(rb_def$net_adj_line_yd_diff_vs_off, na.rm = T),
+                              value = c(min(rb_def$net_adj_line_yd_diff_vs_off, na.rm = T),
+                                        max(rb_def$net_adj_line_yd_diff_vs_off, na.rm = T))
                   )),
            column(3,
                   sliderInput("dvoa_advantage",
                               "Rushing Advantage",
-                              min = min(rb_def$DVOA_Advantage,  na.rm = T),
-                              max = max(rb_def$DVOA_Advantage,  na.rm = T),
-                              value = c(min,max),
+                              min = min(rb_def$dvoa_advantage,  na.rm = T),
+                              max = max(rb_def$dvoa_advantage,  na.rm = T),
+                              value = c(min(rb_def$dvoa_advantage,  na.rm = T),
+                                        max(rb_def$dvoa_advantage,  na.rm = T)),
                               step = 0.1, round = -1
                   )),
            column(3,
                   sliderInput("total_touches",
                               "Total Touches by RB",
-                              min = min(rb_def$pts_vs_total_touch, na.rm = T),
-                              max = max(rb_def$pts_vs_total_touch, na.rm = T),
-                              value = c(min,max)
+                              min = min(rb_def$total_touches, na.rm = T),
+                              max = max(rb_def$total_touches, na.rm = T),
+                              value = c(min(rb_def$total_touches, na.rm = T),max(rb_def$total_touches, na.rm = T))
                   ))),
 
 
@@ -258,37 +259,38 @@ tabPanel("RB",
            column(2,
                   sliderInput("tot_touches",
                               "Total Touches",
-                              min = min(rb_off[["total_touches"]], na.rm = T),
-                              max = max(rb_off[["total_touches"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(rb_off$total_touches, na.rm = T),
+                              max = max(rb_off$total_touches, na.rm = T),
+                              value = c(min(rb_off$total_touches, na.rm = T),max(rb_off$total_touches, na.rm = T))
                   )),
            column(2,
                   sliderInput("rush_att",
                               "Rushing Attempts / Gm",
-                              min = min(rb_off[["ytd_rush_att"]], na.rm = T),
-                              max = max(rb_off[["ytd_rush_att"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(rb_off$att, na.rm = T),
+                              max = max(rb_off$att, na.rm = T),
+                              value = c(min(rb_off$att, na.rm = T),max(rb_off$att, na.rm = T))
                   )),
            column(2,
                   sliderInput("rush_10_per",
                               "% Rushing Att Inside 10y",
-                              min = min(rb_off[["rushing_ten_per_rush"]],  na.rm = T),
-                              max = max(rb_off[["rushing_ten_per_rush"]],  na.rm = T),
-                              value = c(min,max)
+                              min = min(rb_off$inside10_perrush,  na.rm = T),
+                              max = max(rb_off$inside10_perrush,  na.rm = T),
+                              value = c(min(rb_off$inside10_perrush,  na.rm = T),
+                                        max(rb_off$inside10_perrush,  na.rm = T))
                   )),
            column(2,
                   sliderInput("rb_off_line",
                               "Line",
-                              min = min(rb_off[["line"]], na.rm = T),
-                              max = max(rb_off[["line"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(rb_off$line, na.rm = T),
+                              max = max(rb_off$line, na.rm = T),
+                              value = c(min(rb_off$line, na.rm = T),max(rb_off$line, na.rm = T))
                   )),
            column(2,
                   sliderInput("rb_salary",
                               "Salary",
-                              min = min(rb_off[["pricing_current"]],  na.rm = T),
-                              max = max(rb_off[["pricing_current"]],  na.rm = T),
-                              value = c(min,max)))
+                              min = min(rb_off$fd_sal,  na.rm = T),
+                              max = max(rb_off$fd_sal,  na.rm = T),
+                              value = c(min(rb_off$fd_sal,  na.rm = T),max(rb_off$fd_sal,  na.rm = T))))
            ),
 
          ## RB Offense Table
@@ -305,7 +307,7 @@ tabPanel("RB",
                   selectInput("rb_y_axis",
                               h3("Y Axis"),
                               choices = as.list(c(names(rb_def), names(rb_off))),
-                              selected = "pts_vs_total_touch")),
+                              selected = "total_touches")),
            column(2,
                   selectInput("rb_x_axis",
                               h3("X Axis"),
@@ -315,12 +317,12 @@ tabPanel("RB",
                   selectInput("rb_size",
                               h3("Size"),
                               choices = as.list(c(names(rb_def), names(rb_off))),
-                              selected = "pricing_current")),
+                              selected = "fd_sal")),
            column(6,
                   plotOutput('rbplot', height = 500)))
 ),
-
-# WR Panel ----------------------------------------------------------------
+ 
+# # WR Panel ----------------------------------------------------------------
 tabPanel("WR",
 
          fluidRow(column(3,
@@ -332,30 +334,30 @@ tabPanel("WR",
            column(3,
                   sliderInput("fd_pts_gm_wr",
                               "Fantasy Pts/G to WR",
-                              min = min(wr_def[["pts_vs_fantasy_per_game_fdpt"]], na.rm = T),
-                              max = max(wr_def[["pts_vs_fantasy_per_game_fdpt"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(wr_def$fantasy_per_gm_fdpt, na.rm = T),
+                              max = max(wr_def$fantasy_per_gm_fdpt, na.rm = T),
+                              value = c(min(wr_def$fantasy_per_gm_fdpt, na.rm = T),max(wr_def$fantasy_per_gm_fdpt, na.rm = T))
                   )),
            column(3,
                   sliderInput("wr_tg_vs",
                               "Targets/Gm to WR",
-                              min = min(wr_def[["pts_vs_rec_tgt"]], na.rm = T),
-                              max = max(wr_def[["pts_vs_rec_tgt"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(wr_def$tgt, na.rm = T),
+                              max = max(wr_def$tgt, na.rm = T),
+                              value = c(min(wr_def$tgt, na.rm = T),max(wr_def$tgt, na.rm = T))
                   )),
            column(3,
                   sliderInput("pass_yds_gm",
                               "Pass Yds/Gm",
-                              min = min(wr_def[["def_pass_yds_per_gm"]],  na.rm = T),
-                              max = max(wr_def[["def_pass_yds_per_gm"]],  na.rm = T),
-                              value = c(min,max)
+                              min = min(wr_def$y_per_g,  na.rm = T),
+                              max = max(wr_def$y_per_g,  na.rm = T),
+                              value = c(min(wr_def$y_per_g,  na.rm = T),max(wr_def$y_per_g,  na.rm = T))
                   )),
            column(3,
                   sliderInput("wr_dvoa_advantage",
                               "DVOA Advantage",
-                              min = min(wr_def[["DVOA_Advantage"]], na.rm = T),
-                              max = max(wr_def[["DVOA_Advantage"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(wr_def$dvoa_advantage, na.rm = T),
+                              max = max(wr_def$dvoa_advantage, na.rm = T),
+                              value = c(min(wr_def$dvoa_advantage, na.rm = T),max(wr_def$dvoa_advantage, na.rm = T))
                   ))),
 
          fluidRow(column(12,
@@ -370,30 +372,30 @@ tabPanel("WR",
            column(2,
                   sliderInput("wr_tgt",
                               "YTD Targets Per Game",
-                              min = min(wr_off[["ytd_rec_target"]], na.rm = T),
-                              max = max(wr_off[["ytd_rec_target"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(wr_off$target, na.rm = T),
+                              max = max(wr_off$target, na.rm = T),
+                              value = c(min(wr_off$target, na.rm = T),max(wr_off$target, na.rm = T))
                   )),
            column(2,
                   sliderInput("wr_rz_20",
                               "% Targets Receiving Inside 20yd",
-                              min = min(wr_off[["receiving_twenty_per_tgt"]], na.rm = T),
-                              max = max(wr_off[["receiving_twenty_per_tgt"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(wr_off$inside20_pertgt, na.rm = T),
+                              max = max(wr_off$inside20_pertgt, na.rm = T),
+                              value = c(min(wr_off$inside20_pertgt, na.rm = T),max(wr_off$inside20_pertgt, na.rm = T))
                   )),
            column(2,
                   sliderInput("cb_pts_tgt",
                               "CB Matchup FD Pts/Tgt",
-                              min = min(wr_off[["vs_cb_fpt"]],  na.rm = T),
-                              max = max(wr_off[["vs_cb_fpt"]],  na.rm = T),
-                              value = c(min,max)
+                              min = min(wr_off$vs_cb_fpt,  na.rm = T),
+                              max = max(wr_off$vs_cb_fpt,  na.rm = T),
+                              value = c(min(wr_off$vs_cb_fpt,  na.rm = T),max(wr_off$vs_cb_fpt,  na.rm = T))
                   )),
            column(2,
                   sliderInput("wr_salary",
                               "Salary",
-                              min = min(wr_off[["pricing_current"]],  na.rm = T),
-                              max = max(wr_off[["pricing_current"]],  na.rm = T),
-                              value = c(min,max))),
+                              min = min(wr_off$fd_sal,  na.rm = T),
+                              max = max(wr_off$fd_sal,  na.rm = T),
+                              value = c(min(wr_off$fd_sal,  na.rm = T),max(wr_off$fd_sal,  na.rm = T)))),
            column(2,
                   checkboxGroupInput("cb_matchup",
                               "CB Matchup Advantage",
@@ -402,7 +404,7 @@ tabPanel("WR",
            column(2,
                   selectInput("wr_opponent",
                               "Opponent",
-                              choices = as.list(c("all", unique(wr_off$proj_opp))),
+                              choices = as.list(c("all", unique(wr_off$opp))),
                               selected = "all"))),
 
          fluidRow(column(12,
@@ -417,24 +419,24 @@ tabPanel("WR",
                   selectInput("wr_y_axis",
                               h3("Y Axis"),
                               choices = as.list(c(names(wr_def), names(wr_off))),
-                              selected = "pts_vs_rec_yds")),
+                              selected = "yds")),
            column(2,
                   selectInput("wr_x_axis",
                               h3("X Axis"),
                               choices = as.list(c(names(wr_def), names(wr_off))),
-                              selected = "adv_receiving_air_yards")),
+                              selected = "air_yards")),
            column(2,
                   selectInput("wr_size",
                               h3("Size"),
                               choices = as.list(c(names(wr_def), names(wr_off))),
-                              selected = "pricing_current")),
+                              selected = "fd_sal")),
            column(6,
                   plotOutput('wrplot', height = 500)))
 
 
 ),
-
-# TE Panel ----------------------------------------------------------------
+ 
+# # TE Panel ----------------------------------------------------------------
 tabPanel("TE",
 
          fluidRow(column(3,
@@ -451,30 +453,32 @@ tabPanel("TE",
            column(3,
                   sliderInput("fd_pts_gm_te",
                               "Fantasy Pts/G to TE",
-                              min = min(te_def[["pts_vs_fantasy_per_game_fdpt"]], na.rm = T),
-                              max = max(te_def[["pts_vs_fantasy_per_game_fdpt"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(te_def$fantasy_per_gm_fdpt, na.rm = T),
+                              max = max(te_def$fantasy_per_gm_fdpt, na.rm = T),
+                              value = c(min(te_def$fantasy_per_gm_fdpt, na.rm = T),
+                                        max(te_def$fantasy_per_gm_fdpt, na.rm = T))
                   )),
            column(3,
                   sliderInput("te_tg_vs",
                               "Targets/Gm to TE",
-                              min = min(te_def[["pts_vs_rec_tgt"]], na.rm = T),
-                              max = max(te_def[["pts_vs_rec_tgt"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(te_def$tgt, na.rm = T),
+                              max = max(te_def$tgt, na.rm = T),
+                              value = c(min(te_def$tgt, na.rm = T),max(te_def$tgt, na.rm = T))
                   )),
            column(3,
                   sliderInput("pass_yds_gm_te",
                               "Pass Yds/Gm",
-                              min = min(te_def[["def_pass_yds_per_gm"]],  na.rm = T),
-                              max = max(te_def[["def_pass_yds_per_gm"]],  na.rm = T),
-                              value = c(min,max)
+                              min = min(te_def$yds,  na.rm = T),
+                              max = max(te_def$yds,  na.rm = T),
+                              value = c(min(te_def$yds,  na.rm = T),max(te_def$yds,  na.rm = T))
                   )),
            column(3,
                   sliderInput("te_dvoa_advantage",
                               "DVOA Advantage",
-                              min = min(te_def[["DVOA_Advantage"]], na.rm = T),
-                              max = max(te_def[["DVOA_Advantage"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(te_def$dvoa_advantage, na.rm = T),
+                              max = max(te_def$dvoa_advantage, na.rm = T),
+                              value = c(min(te_def$dvoa_advantage, na.rm = T),
+                                        max(te_def$dvoa_advantage, na.rm = T))
                   ))),
 
          fluidRow(column(12,
@@ -489,36 +493,37 @@ tabPanel("TE",
            column(2,
                   sliderInput("te_tgt",
                               "YTD Targets Per Game",
-                              min = min(te_off[["ytd_rec_target"]], na.rm = T),
-                              max = max(te_off[["ytd_rec_target"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(te_off$target, na.rm = T),
+                              max = max(te_off$target, na.rm = T),
+                              value = c(min(te_off$target, na.rm = T),
+                                        max(te_off$target, na.rm = T))
                   )),
            column(2,
                   sliderInput("te_rec_td",
                               "Receiving TD",
-                              min = min(te_off[["ytd_rec_td"]],  na.rm = T),
-                              max = max(te_off[["ytd_rec_td"]],  na.rm = T),
-                              value = c(min,max)
+                              min = min(te_off$td,  na.rm = T),
+                              max = max(te_off$td,  na.rm = T),
+                              value = c(min(te_off$td,  na.rm = T),max(te_off$td,  na.rm = T))
                   )),
            column(2,
                   sliderInput("te_rz_20",
                               "% Targets Receiving Inside 20yd",
-                              min = min(te_off[["receiving_twenty_per_tgt"]], na.rm = T),
-                              max = max(te_off[["receiving_twenty_per_tgt"]], na.rm = T),
-                              value = c(min,max)
+                              min = min(te_off$inside20_pertgt, na.rm = T),
+                              max = max(te_off$inside20_pertgt, na.rm = T),
+                              value = c(min(te_off$inside20_pertgt, na.rm = T),max(te_off$inside20_pertgt, na.rm = T))
                   )),
            column(2,
                   sliderInput("te_salary",
                               "Salary",
-                              min = min(te_off[["pricing_current"]],  na.rm = T),
-                              max = max(te_off[["pricing_current"]],  na.rm = T),
-                              value = c(min,max))),
+                              min = min(te_off$fd_sal,  na.rm = T),
+                              max = max(te_off$fd_sal,  na.rm = T),
+                              value = c(min(te_off$fd_sal,  na.rm = T),max(te_off$fd_sal,  na.rm = T)))),
            column(2,
                   sliderInput("off_pass_dvoa_te",
                               "Pass Off DVOA",
-                              min = min(te_off[["off_pass_dvoa"]],  na.rm = T),
-                              max = max(te_off[["off_pass_dvoa"]],  na.rm = T),
-                              value = c(min,max),
+                              min = min(te_off$pass_dvoa,  na.rm = T),
+                              max = max(te_off$pass_dvoa,  na.rm = T),
+                              value = c(min(te_off$pass_dvoa,  na.rm = T),max(te_off$pass_dvoa,  na.rm = T)),
                               step = 0.1, round = -1
                   ))),
 
@@ -534,22 +539,24 @@ tabPanel("TE",
                   selectInput("te_y_axis",
                               h3("Y Axis"),
                               choices = as.list(c(names(te_def), names(te_off))),
-                              selected = "pts_vs_fantasy_per_game_fdpt")),
+                              selected = "fantasy_per_gm_fdpt")),
            column(2,
                   selectInput("te_x_axis",
                               h3("X Axis"),
                               choices = as.list(c(names(te_def), names(te_off))),
-                              selected = "adv_receiving_air_yards")),
+                              selected = "air_yards")),
            column(2,
                   selectInput("te_size",
                               h3("Size"),
                               choices = as.list(c(names(te_def), names(te_off))),
-                              selected = "pricing_current")),
+                              selected = "fd_sal")),
            column(6,
                   plotOutput('teplot', height = 500)))
 
 
-))
+)
+
+)
 
 
 # Server Function ---------------------------------------------------------
@@ -564,18 +571,17 @@ server <- function(input, output) {
 
         # Editing table for rendering
         render_table <- subset(dfs_df,
-                               pricing_current >= input$salary[1] & pricing_current <= input$salary[2] &
-                               points_per_1k >= input$value[1] & points_per_1k <= input$value[2] &
+                               fd_sal >= input$salary[1] & fd_sal <= input$salary[2] &
+                               pt_1k >= input$value[1] & pt_1k <= input$value[2] &
                                fd_lev >= input$lev[1] & fd_lev <= input$lev[2] &
                                line >= input$line[1] & line <= input$line[2] &
-                               pos == input$pos | is.na(pricing_current)) %>%
-                        select(-implied_own)
+                               position == input$pos | is.na(fd_sal))
 
                 # Selecting program
-        render_table <- render_table[,c("player", "pos", "tm", "opp",
-                                        "ffpts","points_per_1k","fd_lev",
+        render_table <- render_table[,c("full_name", "position", "team", "opp",
+                                        "proj_ffpts","pt_1k","fd_lev",
                                         "afpa","afpa_rk",
-                                        "pricing_current","pricing_season_change","projected_own", "cash_odds", "gpp_odds",
+                                        "fd_sal","price_change","projected_own", "cash_odds", "gpp_odds",
                                         "line","total","implied_total")]
 
         # Better Output - customizing column names
@@ -616,8 +622,8 @@ server <- function(input, output) {
                   options = list(pageLength = 20,
                                  lengthMenu = c(10,20,30),
                                  columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
-                  formatStyle(c('ffpts','points_per_1k','fd_lev',
-                                'pricing_current','projected_own','cash_odds','gpp_odds'),
+                  formatStyle(c('proj_ffpts','pt_1k','fd_lev',
+                                'fd_sal','projected_own','cash_odds','gpp_odds'),
                               backgroundColor = '#F2F3F4')
 
        })
@@ -626,15 +632,12 @@ server <- function(input, output) {
     # Graph Output
     dat <- reactive({
 
-        #s1 <- input$fanduel_rows_selected - for selection of players - currently turning off
-
         render_table <- subset(dfs_df,
-                               pricing_current >= input$salary[1] & pricing_current <= input$salary[2] &
-                                   points_per_1k >= input$value[1] & points_per_1k <= input$value[2] &
+                               fd_sal >= input$salary[1] & fd_sal <= input$salary[2] &
+                                   pt_1k >= input$value[1] & pt_1k <= input$value[2] &
                                    fd_lev >= input$lev[1] & fd_lev <= input$lev[2] &
                                    line >= input$line[1] & line <= input$line[2] &
-                                   pos == input$pos) %>%
-                        select(-implied_own)
+                                   position == input$pos)
 
         return(render_table)
     })
@@ -647,7 +650,7 @@ server <- function(input, output) {
               xlab(input$x_axis) +
               ylab(input$y_axis) +
               geom_point(size = 6, color = "#0000b7", alpha = 0.5) +
-              geom_text_repel(aes(label = player), hjust = 0, vjust = -1) +
+              geom_text_repel(aes(label = full_name), hjust = 0, vjust = -1) +
               theme_bw() +
               theme(
                 axis.title = element_text(size = 12, face = "bold")
@@ -695,10 +698,10 @@ server <- function(input, output) {
     ))
 
     render_def_qb <- subset(def_qb,
-                            pts_vs_passing_td >= input$td_g[1] & pts_vs_passing_td <= input$td_g[2] &
-                            pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm[2] &
-                            DVOA_Diff >= input$qb_dvoa_diff[1] & DVOA_Diff <= input$qb_dvoa_diff[2] &
-                            def_pass_adj_net_yds_per_att >= input$adj_net_yd_att[1] & def_pass_adj_net_yds_per_att <= input$adj_net_yd_att[2])
+                            td >= input$td_g[1] & td <= input$td_g[2] &
+                            fd_pts >= input$fd_pts_gm[1] & fd_pts <= input$fd_pts_gm[2] &
+                            difference >= input$qb_dvoa_diff[1] & difference <= input$qb_dvoa_diff[2] &
+                            net_yds_per_att >= input$adj_net_yd_att[1] & net_yds_per_att <= input$adj_net_yd_att[2])
 
     datatable(render_def_qb,
               rownames = F,
@@ -706,20 +709,9 @@ server <- function(input, output) {
               options = list(pageLength = 10,
                              lengthMenu = c(10,20,30),
                              columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
-              formatStyle(c('pts_vs_passing_att','pts_vs_passing_yds','pts_vs_passing_td',
-                          'pts_vs_fantasy_per_game_fdpt','def_dvoa','def_pass_dvoa','DVOA_Diff',
-                          'def_pass_adj_net_yds_per_att','off_oline_adjusted_sack_rate'),
-                          backgroundColor = '#F2F3F4') #%>%
-              # formatStyle(
-              #   'DVOA_Advantage',
-              #   fontWeight = styleInterval(0, c('normal','bold')),
-              #   color = styleInterval(c(-30, -10, 0, 30),
-              #                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
-              # formatStyle(
-              #   'DVOA_Diff',
-              #   fontWeight = styleInterval(0, c('normal','bold')),
-              #   color = styleInterval(c(-30, -10, 0, 30),
-              #                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f')))
+              formatStyle(c('att','yds','td', 'fd_pts','total_dvoa','pass_dvoa','difference',
+                            'net_yds_per_att','oline_adjsack_rate'), backgroundColor = '#F2F3F4')
+
     })
 
 
@@ -729,14 +721,14 @@ server <- function(input, output) {
       def_qb_s1 <- input$def_qb_rows_selected
 
       qb_def_render_table <- subset(def_qb,
-                                    pts_vs_passing_td >= input$td_g[1] & pts_vs_passing_td <= input$td_g[2] &
-                                    pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm[2] &
-                                    DVOA_Diff >= input$qb_dvoa_diff[1] & DVOA_Diff <= input$qb_dvoa_diff[2] &
-                                    def_pass_adj_net_yds_per_att >= input$adj_net_yd_att[1] & def_pass_adj_net_yds_per_att <= input$adj_net_yd_att[2])
+                                    td >= input$td_g[1] & td <= input$td_g[2] &
+                                    fd_pts >= input$fd_pts_gm[1] & fd_pts <= input$fd_pts_gm[2] &
+                                    difference >= input$qb_dvoa_diff[1] & difference <= input$qb_dvoa_diff[2] &
+                                    net_yds_per_att >= input$adj_net_yd_att[1] & net_yds_per_att <= input$adj_net_yd_att[2])
 
       if(length(input$qb_select) == 0) {qb_def_render_table <- qb_def_render_table[def_qb_s1,]}
 
-      return(qb_def_render_table) #datatable(test, rownames = F)
+      return(qb_def_render_table)
     })
 
     # Output variable creation for QB
@@ -795,12 +787,10 @@ server <- function(input, output) {
       ))
 
       render_qb <-  subset(off_qb,
-                           pricing_current >= input$qb_salary[1] & pricing_current <= input$qb_salary[2] &
+                           fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
                            implied_total >= input$qb_total[1] & implied_total <= input$qb_total[2] &
-                           pass_yds_diff >= input$qb_pass_yds_diff[1] & pass_yds_diff <= input$qb_pass_yds_diff[2] &
-                           is.na(rush_yards) | rush_yards >= input$qb_rush_yds[1] & rush_yards <= input$qb_rush_yds[2])
-
-      #DT::datatable(render_qb, rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
+                           eyd_diff >= input$qb_pass_yds_diff[1] & eyd_diff <= input$qb_pass_yds_diff[2] &
+                           is.na(rush_yds_gm) | rush_yds_gm >= input$qb_rush_yds[1] & rush_yds_gm <= input$qb_rush_yds[2])
 
       datatable(render_qb,
                 rownames = F,
@@ -808,10 +798,8 @@ server <- function(input, output) {
                 options = list(pageLength = 10,
                                lengthMenu = c(10,20,30),
                                columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
-        formatStyle(c('ytd_pass_yds_per_gm','ytd_pass_td',
-                      'rush_dyar','rush_yards','rush_yds_diff',
-                      'pricing_current', 'implied_total'), backgroundColor = '#F2F3F4')
-        #              'ytd_pass_net_yds_per_att','off_dvoa','off_pass_dvoa'), backgroundColor = '#F2F3F4')
+        formatStyle(c('yds_per_gm','td', 'rush_dyar','rush_yds_gm','rush_eyd_diff',
+                      'fd_sal', 'implied_total'), backgroundColor = '#F2F3F4')
 
     })
 
@@ -821,10 +809,10 @@ server <- function(input, output) {
       qb_s1 <- input$off_qb_rows_selected
 
       qb_render_table <- subset(off_qb,
-                                pricing_current >= input$qb_salary[1] & pricing_current <= input$qb_salary[2] &
+                                fd_sal >= input$qb_salary[1] & fd_sal <= input$qb_salary[2] &
                                 implied_total >= input$qb_total[1] & implied_total <= input$qb_total[2] &
-                                pass_yds_diff >= input$qb_pass_yds_diff[1] & pass_yds_diff <= input$qb_pass_yds_diff[2] &
-                                rush_yards >= input$qb_rush_yds[1] & rush_yards <= input$qb_rush_yds[2] | is.na(pricing_current))
+                                eyd_diff >= input$qb_pass_yds_diff[1] & eyd_diff <= input$qb_pass_yds_diff[2] &
+                                rush_yds_gm >= input$qb_rush_yds[1] & rush_yds_gm <= input$qb_rush_yds[2] | is.na(fd_sal))
 
       if(length(input$qb_select) == 0) {qb_render_table <- qb_render_table[qb_s1,]}
 
@@ -851,13 +839,13 @@ server <- function(input, output) {
     all_qb <- reactive({
 
       # Getting full dataframe
-      all <- full_join(off_qb, def_qb, by = c("proj_player", "proj_opp"))
+      all <- full_join(off_qb, def_qb, by = c("full_name", "opp"))
 
       off <- qb_def_reactive()
       def <- qb_off_reactive()
-      all_qb_plot <- full_join(def, off, by = c("proj_player", "proj_opp")) %>%
-                     select(proj_player, proj_opp) %>%
-                     left_join(all, by = c("proj_player", "proj_opp"))
+      all_qb_plot <- full_join(def, off, by = c("full_name", "opp")) %>%
+                     select(full_name, opp) %>%
+                     left_join(all, by = c("full_name", "opp"))
 
       return(all_qb_plot)
 
@@ -872,14 +860,14 @@ server <- function(input, output) {
           ylab(input$qb_y_axis) +
           geom_point(aes(size = qb_plot_data[[input$qb_size]]), color = "#0000b7", alpha = 0.5) +
           scale_size(name = input$qb_size) +
-          geom_text_repel(aes(label = proj_player), hjust = 0, vjust = -1) +
+          geom_text_repel(aes(label = full_name), hjust = 0, vjust = -1) +
           theme_bw() +
           theme(
             axis.title = element_text(size = 12, face = "bold")
           )
       })
-
-# RB Tab Data -------------------------------------------------------------
+ 
+# # RB Tab Data -------------------------------------------------------------
 
     #
     # Defense RB
@@ -918,10 +906,10 @@ server <- function(input, output) {
       ))
 
       render_def_rb <-  subset(rb_def,
-                               def_rush_dvoa >= input$rush_dvoa[1] & def_rush_dvoa <= input$rush_dvoa[2] &
-                               net_adj_line_yd_diff >= input$net_yds_diff[1] & net_adj_line_yd_diff <= input$net_yds_diff[2] &
-                               DVOA_Advantage >= input$dvoa_advantage[1] & DVOA_Advantage <= input$dvoa_advantage[2] &
-                               pts_vs_total_touch >= input$total_touches[1] & pts_vs_total_touch <= input$total_touches[2])
+                               rush_dvoa >= input$rush_dvoa[1] & rush_dvoa <= input$rush_dvoa[2] &
+                               net_adj_line_yd_diff_vs_off >= input$net_yds_diff[1] & net_adj_line_yd_diff_vs_off <= input$net_yds_diff[2] &
+                               dvoa_advantage >= input$dvoa_advantage[1] & dvoa_advantage <= input$dvoa_advantage[2] &
+                               total_touches >= input$total_touches[1] & total_touches <= input$total_touches[2])
 
       datatable(render_def_rb,
                 rownames = F,
@@ -929,32 +917,32 @@ server <- function(input, output) {
                 options = list(pageLength = 10,
                                lengthMenu = c(5,10,15,20),
                                columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
-                formatStyle(c('pts_vs_total_touch','pts_vs_fantasy_per_game_fdpt','pts_vs_rush_att',
-                              'pts_vs_rush_yds','pts_vs_rush_td','pts_vs_rec_tgt','pts_vs_rec_yds',
-                              'def_dline_power_success_rate','power_success_diff','def_dline_adjusted_line_yards',
-                              'net_adj_line_yd_diff'), backgroundColor = '#F2F3F4') %>%
+                formatStyle(c('total_touches','fantasy_per_gm_fdpt','rush_att',
+                              'rush_yds','rush_tds','targets','receiving_yards',
+                              'run_powersuccess','power_success_diff','dline_net_adj_line_yards',
+                              'net_adj_line_yd_diff_vs_off'), backgroundColor = '#F2F3F4') %>%
                 formatStyle(
                   'power_success_diff',
                   fontWeight = styleInterval(0, c('normal','bold')),
                   color = styleInterval(c(-30, -10, 0, 30),
                                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
                 formatStyle(
-                  'DVOA_Advantage',
+                  'dvoa_advantage',
                   fontWeight = styleInterval(0, c('normal','bold')),
                   color = styleInterval(c(-30, -10, 0, 30),
                                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
                 formatStyle(
-                  'DVOA_Difference',
+                  'dvoa_difference',
                   fontWeight = styleInterval(0, c('normal','bold')),
                   color = styleInterval(c(-30, -10, 0, 30),
                                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
                 formatStyle(
-                  'def_dline_adjusted_line_yards',
+                  'dline_net_adj_line_yards',
                   fontWeight = styleInterval(.5, c('normal','bold')),
                   color = styleInterval(c(-1, -.5, 0, 1),
                                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
                 formatStyle(
-                  'net_adj_line_yd_diff',
+                  'net_adj_line_yd_diff_vs_off',
                   fontWeight = styleInterval(.5, c('normal','bold')),
                   color = styleInterval(c(-1, -.5, 0, 1),
                                         c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f')))
@@ -1013,10 +1001,10 @@ server <- function(input, output) {
 
       render_off_rb <-  subset(rb_off,
                                  total_touches >= input$tot_touches[1] & total_touches <= input$tot_touches[2] &
-                                 ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
-                                 rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
+                                 att >= input$rush_att[1] & att <= input$rush_att[2] &
+                                 inside10_perrush >= input$rush_10_per[1] & inside10_perrush <= input$rush_10_per[2] &
                                  line >= input$rb_off_line[1] & line <= input$rb_off_line[2] &
-                                 pricing_current >= input$rb_salary[1] & pricing_current <= input$rb_salary[2 ]| is.na(total_touches) | is.na(rushing_ten_per_rush))
+                                 fd_sal >= input$rb_salary[1] & fd_sal <= input$rb_salary[2 ]| is.na(total_touches) | is.na(inside10_perrush))
 
       datatable(render_off_rb,
                 rownames = F,
@@ -1024,9 +1012,9 @@ server <- function(input, output) {
                 options = list(pageLength = 10,
                               lengthMenu = c(10,20,30),
                               columnDefs = list(list(className = 'dt-center', targets = 'all')))) %>%
-                formatStyle(c('ytd_rush_att','ytd_rush_td','ytd_rush_yds_per_gm',
-                              'ytd_rec_target','ytd_rec_yds_per_gm',
-                              'receiving_ten_tgt', 'rushing_ten_att','rushing_ten_td','rushing_ten_per_rush'),
+                formatStyle(c('att','td','yds',
+                              'target','rec_yds',
+                              'inside10_tgt', 'inside10_att','inside10_total_td','inside10_perrush'),
                             backgroundColor = '#F2F3F4')
 
     })
@@ -1041,9 +1029,9 @@ server <- function(input, output) {
 
       reactive_off_rb <-  subset(rb_off,
                           total_touches >= input$tot_touches[1] & total_touches <= input$tot_touches[2] &
-                          ytd_rush_att >= input$rush_att[1] & ytd_rush_att <= input$rush_att[2] &
-                          rushing_ten_per_rush >= input$rush_10_per[1] & rushing_ten_per_rush <= input$rush_10_per[2] &
-                          line >= input$rb_off_line[1] & line <= input$rb_off_line[2] | is.na(total_touches) | is.na(rushing_ten_per_rush))
+                          att >= input$rush_att[1] & att <= input$rush_att[2] &
+                          inside10_perrush >= input$rush_10_per[1] & inside10_perrush <= input$rush_10_per[2] &
+                          line >= input$rb_off_line[1] & line <= input$rb_off_line[2] | is.na(total_touches) | is.na(inside10_perrush))
 
       if(length(input$rb_select) == 0) {reactive_off_rb <- reactive_off_rb[rb_off_s1,]}
 
@@ -1051,20 +1039,19 @@ server <- function(input, output) {
       rb_def_s1 <- input$def_rb_rows_selected
 
       reactive_def_rb <-  subset(rb_def,
-                               def_rush_dvoa >= input$rush_dvoa[1] & def_rush_dvoa <= input$rush_dvoa[2] &
-                               net_adj_line_yd_diff >= input$net_yds_diff[1] & net_adj_line_yd_diff <= input$net_yds_diff[2] &
-                               DVOA_Advantage >= input$dvoa_advantage[1] & DVOA_Advantage <= input$dvoa_advantage[2] &
-                               pts_vs_total_touch >= input$total_touches[1] & pts_vs_total_touch <= input$total_touches[2])
+                                 rush_dvoa >= input$rush_dvoa[1] & rush_dvoa <= input$rush_dvoa[2] &
+                                 net_adj_line_yd_diff_vs_off >= input$net_yds_diff[1] & net_adj_line_yd_diff_vs_off <= input$net_yds_diff[2] &
+                                 dvoa_advantage >= input$dvoa_advantage[1] & dvoa_advantage <= input$dvoa_advantage[2] &
+                                 total_touches >= input$total_touches[1] & total_touches <= input$total_touches[2])
 
       if(length(input$rb_select) == 0) {reactive_def_rb <- reactive_def_rb[rb_def_s1,]}
 
       ## Join Togeather
-      all_rb <- full_join(rb_def, rb_off, by = c("proj_player", "proj_opp"))
+      all_rb <- full_join(rb_def, rb_off, by = c("full_name", "opp"))
 
-      all_rb_plot <- full_join(reactive_def_rb, reactive_off_rb, by = c("proj_player", "proj_opp")) %>%
-                     select(proj_player, proj_opp) %>%
-                     left_join(all_rb, by = c("proj_player", "proj_opp"))
-      #print(head(all_rb_plot))
+      all_rb_plot <- full_join(reactive_def_rb, reactive_off_rb, by = c("full_name", "opp")) %>%
+                     select(full_name, opp) %>%
+                     left_join(all_rb, by = c("full_name", "opp"))
       return(all_rb_plot)
     })
 
@@ -1078,7 +1065,7 @@ server <- function(input, output) {
         ylab(input$rb_y_axis) +
         geom_point(aes(size = rb_plot_data[[input$rb_size]]), color = "#0000b7", alpha = 0.5) +
         scale_size(name = input$rb_size) +
-        geom_text_repel(aes(label = proj_player), hjust = 0, vjust = -1) +
+        geom_text_repel(aes(label = full_name), hjust = 0, vjust = -1) +
         theme_bw() +
         theme(
           axis.title = element_text(size = 12, face = "bold")
@@ -1086,7 +1073,7 @@ server <- function(input, output) {
     })
 
 
-# WR Tab Data -------------------------------------------------------------
+# # WR Tab Data -------------------------------------------------------------
 
 
     # Def WR Table
@@ -1127,26 +1114,26 @@ server <- function(input, output) {
           )))
 
       wr_def_render <- subset(wr_def,
-                              pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm_wr[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm_wr[2] &
-                              pts_vs_rec_tgt >= input$wr_tg_vs[1] & pts_vs_rec_tgt <= input$wr_tg_vs[2] &
-                              def_pass_yds_per_gm >= input$pass_yds_gm[1] & def_pass_yds_per_gm <= input$pass_yds_gm[2] &
-                              DVOA_Advantage >= input$wr_dvoa_advantage[1] & DVOA_Advantage <= input$wr_dvoa_advantage[2])
+                              fantasy_per_gm_fdpt >= input$fd_pts_gm_wr[1] & fantasy_per_gm_fdpt <= input$fd_pts_gm_wr[2] &
+                              tgt >= input$wr_tg_vs[1] & tgt <= input$wr_tg_vs[2] &
+                              yds >= input$pass_yds_gm[1] & yds <= input$pass_yds_gm[2] &
+                              dvoa_advantage >= input$wr_dvoa_advantage[1] & dvoa_advantage <= input$wr_dvoa_advantage[2])
 
       datatable(wr_def_render,
                 rownames = F,
                 container = def_wr_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
-                formatStyle(c('pts_vs_fantasy_per_game_fdpt','pts_vs_rec_tgt','pts_vs_rec_yds','pts_vs_rec_td',
-                              'def_pass_adj_net_yds_per_att','def_pass_yds_per_gm','def_tot_yds_per_play',
-                              'dline_rank','dline_sacks','dline_adjusted_sack_rate','sack_rate_diff'),
+                formatStyle(c('fantasy_per_gm_fdpt','tgt','yds','td',
+                              'any_per_a','y_per_g','tot_y_per_p',
+                              'pass_rank','pass_sacks','pass_adjustedsack_rate','sack_rate_diff'),
                             backgroundColor = '#F2F3F4') %>%
         formatStyle(
-          'DVOA_Advantage',
+          'dvoa_advantage',
           fontWeight = styleInterval(0, c('normal','bold')),
           color = styleInterval(c(-30, -10, 0, 30),
                                 c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
         formatStyle(
-          'DVOA_Difference',
+          'dvoa_difference',
           fontWeight = styleInterval(0, c('normal','bold')),
           color = styleInterval(c(-30, -10, 0, 30),
                                 c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
@@ -1201,12 +1188,12 @@ server <- function(input, output) {
         )))
 
       wr_off_render <- subset(wr_off,
-                              (ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] | is.na(ytd_rec_target)) &
-                              (receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] | is.na(receiving_twenty_per_tgt)) &
+                              (target >= input$wr_tgt[1] & target <= input$wr_tgt[2] | is.na(target)) &
+                              (inside20_pertgt >= input$wr_rz_20[1] & inside20_pertgt <= input$wr_rz_20[2] | is.na(inside20_pertgt)) &
                               (vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2] | is.na(vs_cb_fpt)) &
-                              pricing_current >= input$wr_salary[1] & pricing_current <= input$wr_salary[2])
+                              fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2])
       # Team Selection
-      if(input$wr_opponent != 'all') {wr_off_render <- subset(wr_off_render, proj_opp == input$wr_opponent)}
+      if(input$wr_opponent != 'all') {wr_off_render <- subset(wr_off_render, opp == input$wr_opponent)}
 
 
       # for +/-/neutral CB pairings
@@ -1219,9 +1206,9 @@ server <- function(input, output) {
                 rownames = F,
                 container = off_wr_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
-                formatStyle(c("rec_dyar","rec_dvoa","rec_eyard_diff","adv_receiving_adot","adv_receiving_air_yards","adv_receiving_racr",
-                              "receiving_twenty_tgt", "receiving_twenty_per_tgt",
-                              "pricing_current","tgt_per_thousand","implied_total"), backgroundColor = '#f2f3f4')
+                formatStyle(c("dyar","dvoa","eyds_diff","adot","air_yards","racr",
+                              "inside20_tgt", "inside20_pertgt",
+                              "fd_sal","target_per_1k","implied_total"), backgroundColor = '#f2f3f4')
     })
 
 
@@ -1229,9 +1216,9 @@ server <- function(input, output) {
     output$wrtable <- renderDataTable({
 
       render_wr <-  subset(wr,
-                           pricing_current >= input$wr_salary[1] & pricing_current <= input$wr_salary[2] &
-                           defense_dvoa >= input$wr_dvoa[1] & defense_dvoa <= input$wr_dvoa[2] &
-                           pass_def_dvoa >= input$wr_pass_dvoa[1] & pass_def_dvoa <= input$wr_pass_dvoa[2] &
+                           fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2] &
+                           total_dvoa >= input$wr_dvoa[1] & total_dvoa <= input$wr_dvoa[2] &
+                           pass_dvoa >= input$wr_pass_dvoa[1] & pass_dvoa <= input$wr_pass_dvoa[2] &
                            line >= input$wr_line[1] & line <= input$wr_line[2])
 
       DT::datatable(render_wr[, input$wr_vars], rownames = F, options = list(pageLength = 15, lengthMenu = c(10,15,20)))
@@ -1244,9 +1231,9 @@ server <- function(input, output) {
       wr_s1 <- input$wrtable_rows_selected
 
       wr_render_table <- subset(wr,
-                                pricing_current >= input$wr_salary[1] & pricing_current <= input$wr_salary[2] &
-                                defense_dvoa >= input$wr_dvoa[1] & defense_dvoa <= input$wr_dvoa[2] &
-                                pass_def_dvoa >= input$wr_pass_dvoa[1] & pass_def_dvoa <= input$wr_pass_dvoa[2] &
+                                fd_sal >= input$wr_salary[1] & fd_sal <= input$wr_salary[2] &
+                                total_dvoa >= input$wr_dvoa[1] & total_dvoa <= input$wr_dvoa[2] &
+                                pass_dvoa >= input$wr_pass_dvoa[1] & pass_dvoa <= input$wr_pass_dvoa[2] &
                                 line >= input$wr_line[1] & line <= input$wr_line[2]) %>%
                         .[wr_s1,]
 
@@ -1258,11 +1245,10 @@ server <- function(input, output) {
 
       ## Offense
       wr_off_s1 <- input$off_wr_rows_selected
-      print(wr_off_s1)
 
       reactive_off_wr <-  subset(wr_off,
-                                 ytd_rec_target >= input$wr_tgt[1] & ytd_rec_target <= input$wr_tgt[2] &
-                                 receiving_twenty_per_tgt >= input$wr_rz_20[1] & receiving_twenty_per_tgt <= input$wr_rz_20[2] &
+                                 target >= input$wr_tgt[1] & target <= input$wr_tgt[2] &
+                                 inside20_pertgt >= input$wr_rz_20[1] & inside20_pertgt <= input$wr_rz_20[2] &
                                  vs_cb_fpt >= input$cb_pts_tgt[1] & vs_cb_fpt <= input$cb_pts_tgt[2])
 
       if(length(input$wr_select) == 0) {reactive_off_wr <- reactive_off_wr[wr_off_s1,]}
@@ -1271,19 +1257,19 @@ server <- function(input, output) {
       wr_def_s1 <- input$def_wr_rows_selected
 
       reactive_def_wr <-  subset(wr_def,
-                                 pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm_wr[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm_wr[2] &
-                                 pts_vs_rec_tgt >= input$wr_tg_vs[1] & pts_vs_rec_tgt <= input$wr_tg_vs[2] &
-                                 def_pass_yds_per_gm >= input$pass_yds_gm[1] & def_pass_yds_per_gm <= input$pass_yds_gm[2] &
-                                 DVOA_Advantage >= input$wr_dvoa_advantage[1] & DVOA_Advantage <= input$wr_dvoa_advantage[2])
+                                 fantasy_per_gm_fdpt >= input$fd_pts_gm_wr[1] & fantasy_per_gm_fdpt <= input$fd_pts_gm_wr[2] &
+                                 tgt >= input$wr_tg_vs[1] & tgt <= input$wr_tg_vs[2] &
+                                 yds >= input$pass_yds_gm[1] & yds <= input$pass_yds_gm[2] &
+                                 dvoa_advantage >= input$wr_dvoa_advantage[1] & dvoa_advantage <= input$wr_dvoa_advantage[2])
 
       if(length(input$wr_select) == 0) {reactive_def_wr <- reactive_def_wr[wr_def_s1,]}
 
       ## Join Togeather
-      all_wr <- full_join(wr_def, wr_off, by = c("proj_player", "proj_opp"))
+      all_wr <- full_join(wr_def, wr_off, by = c("full_name", "opp"))
 
-      all_wr_plot <- full_join(reactive_def_wr, reactive_off_wr, by = c("proj_player", "proj_opp")) %>%
-                     select(proj_player, proj_opp) %>%
-                     left_join(all_wr, by = c("proj_player", "proj_opp"))
+      all_wr_plot <- full_join(reactive_def_wr, reactive_off_wr, by = c("full_name", "opp")) %>%
+                     select(full_name, opp) %>%
+                     left_join(all_wr, by = c("full_name", "opp"))
 
       return(all_wr_plot)
     })
@@ -1298,14 +1284,14 @@ server <- function(input, output) {
         ylab(input$wr_y_axis) +
         geom_point(aes(size = wr_plot_data[[input$wr_size]]), color = "#0000b7", alpha = 0.5) +
         scale_size(name = input$wr_size) +
-        geom_text_repel(aes(label = proj_player), hjust = 0, vjust = -1) +
+        geom_text_repel(aes(label = full_name), hjust = 0, vjust = -1) +
         theme_bw() +
         theme(
           axis.title = element_text(size = 12, face = "bold")
         )
     })
-
-# TE Tab Data -------------------------------------------------------------
+ 
+# # TE Tab Data -------------------------------------------------------------
 
     # Def TE Table
 
@@ -1346,26 +1332,26 @@ server <- function(input, output) {
         )))
 
       te_def_render <- subset(te_def,
-                              pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm_te[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm_te[2] &
-                              pts_vs_rec_tgt >= input$te_tg_vs[1] & pts_vs_rec_tgt <= input$te_tg_vs[2] &
-                              def_pass_yds_per_gm >= input$pass_yds_gm_te[1] & def_pass_yds_per_gm <= input$pass_yds_gm_te[2] &
-                              DVOA_Advantage >= input$te_dvoa_advantage[1] & DVOA_Advantage <= input$te_dvoa_advantage[2])
+                              fantasy_per_gm_fdpt >= input$fd_pts_gm_te[1] & fantasy_per_gm_fdpt <= input$fd_pts_gm_te[2] &
+                              tgt >= input$te_tg_vs[1] & tgt <= input$te_tg_vs[2] &
+                              yds >= input$pass_yds_gm_te[1] & yds <= input$pass_yds_gm_te[2] &
+                              dvoa_advantage >= input$te_dvoa_advantage[1] & dvoa_advantage <= input$te_dvoa_advantage[2])
 
       datatable(te_def_render,
                 rownames = F,
                 container = def_te_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
-        formatStyle(c('pts_vs_fantasy_per_game_fdpt','pts_vs_rec_tgt','pts_vs_rec_yds','pts_vs_rec_td',
-                      'def_pass_adj_net_yds_per_att','def_pass_yds_per_gm','def_tot_yds_per_play',
-                      'def_dline_adjusted_sack_rate_rk','def_dline_sacks','def_dline_adjusted_sack_rate','sack_rate_diff'),
+        formatStyle(c('fantasy_per_gm_fdpt','tgt','yds','td',
+                      'any_per_a','y_per_g','tot_y_per_p',
+                      'pass_rank','pass_sacks','pass_adjustedsack_rate','sack_rate_diff'),
                     backgroundColor = '#F2F3F4') %>%
         formatStyle(
-          'DVOA_Advantage',
+          'dvoa_advantage',
           fontWeight = styleInterval(0, c('normal','bold')),
           color = styleInterval(c(-30, -10, 0, 30),
                                 c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
         formatStyle(
-          'DVOA_Difference',
+          'dvoa_difference',
           fontWeight = styleInterval(0, c('normal','bold')),
           color = styleInterval(c(-30, -10, 0, 30),
                                 c('#a50026', '#f16d43', 'black', '#64bc61', '#23964f'))) %>%
@@ -1405,8 +1391,6 @@ server <- function(input, output) {
             th(colspan = 1, 'Target %'),
             th(colspan = 1, 'Air Yard %'),
             th(colspan = 1, 'WOPR'),
-            #th(colspan = 1, 'Drop %'),
-            #th(colspan = 1, 'QB Rat'),
             th(colspan = 1, 'Passing DVOA'),
             th(colspan = 1, 'Tgt'),
             th(colspan = 1, 'TD'),
@@ -1418,19 +1402,19 @@ server <- function(input, output) {
 
       # Editing Table to render
       te_off_render <- subset(te_off,
-                              ytd_rec_target >= input$te_tgt[1] & ytd_rec_target <= input$te_tgt[2] &
-                              ytd_rec_td >= input$te_rec_td[1] & ytd_rec_td <= input$te_rec_td[2] &
-                              receiving_twenty_per_tgt >= input$te_rz_20[1] & receiving_twenty_per_tgt <= input$te_rz_20[2] &
-                              off_pass_dvoa >= input$off_pass_dvoa_te[1] & off_pass_dvoa <= input$off_pass_dvoa_te[2] &
-                              pricing_current >= input$te_salary[1] & pricing_current <= input$te_salary[2])
+                              target >= input$te_tgt[1] & target <= input$te_tgt[2] &
+                              td >= input$te_rec_td[1] & td <= input$te_rec_td[2] &
+                              inside20_pertgt >= input$te_rz_20[1] & inside20_pertgt <= input$te_rz_20[2] &
+                              pass_dvoa >= input$off_pass_dvoa_te[1] & pass_dvoa <= input$off_pass_dvoa_te[2] &
+                              fd_sal >= input$te_salary[1] & fd_sal <= input$te_salary[2])
 
       datatable(te_off_render,
                 rownames = F,
                 container = off_te_container,
                 options = list(pageLength = 15, lengthMenu = c(10,15,20))) %>%
-                formatStyle(c("rec_dyar","rec_dvoa","rec_eyard_diff","adv_receiving_adot","adv_receiving_air_yards","adv_receiving_racr",
-                              "adv_receiving_target_share","adv_receiving_air_yard_share","adv_receiving_wopr","off_pass_dvoa",
-                              "pricing_current","tgt_per_thousand","implied_total"),
+                formatStyle(c("dyar","dvoa","eyds_diff","adot","air_yards","racr",
+                              "target_per","air_yard_per","wopr","pass_dvoa",
+                              "fd_sal","inside20_pertgt","implied_total"),
                             backgroundColor = '#F2F3F4')
 
       })
@@ -1443,10 +1427,10 @@ server <- function(input, output) {
       te_off_s1 <- input$off_te_rows_selected
 
       reactive_off_te <-  subset(te_off,
-                                 ytd_rec_target >= input$te_tgt[1] & ytd_rec_target <= input$te_tgt[2] &
-                                 ytd_rec_td >= input$te_rec_td[1] & ytd_rec_td <= input$te_rec_td[2] &
-                                 receiving_twenty_per_tgt >= input$te_rz_20[1] & receiving_twenty_per_tgt <= input$te_rz_20[2] &
-                                 off_pass_dvoa >= input$off_pass_dvoa_te[1] & off_pass_dvoa <= input$off_pass_dvoa_te[2])
+                                 target >= input$te_tgt[1] & target <= input$te_tgt[2] &
+                                 td >= input$te_rec_td[1] & td <= input$te_rec_td[2] &
+                                 inside20_pertgt >= input$te_rz_20[1] & inside20_pertgt <= input$te_rz_20[2] &
+                                 dvoa >= input$off_pass_dvoa_te[1] & dvoa <= input$off_pass_dvoa_te[2])
 
       if(length(input$te_select) == 0) {reactive_off_te <- reactive_off_te[te_off_s1,]}
 
@@ -1454,19 +1438,19 @@ server <- function(input, output) {
       te_def_s1 <- input$def_te_rows_selected
 
       reactive_def_te <-  subset(te_def,
-                                 pts_vs_fantasy_per_game_fdpt >= input$fd_pts_gm_te[1] & pts_vs_fantasy_per_game_fdpt <= input$fd_pts_gm_te[2] &
-                                 pts_vs_rec_tgt >= input$te_tg_vs[1] & pts_vs_rec_tgt <= input$te_tg_vs[2] &
-                                 def_pass_yds_per_gm >= input$pass_yds_gm_te[1] & def_pass_yds_per_gm <= input$pass_yds_gm_te[2] &
-                                 DVOA_Advantage >= input$te_dvoa_advantage[1] & DVOA_Advantage <= input$te_dvoa_advantage[2])
+                                 fantasy_per_gm_fdpt >= input$fd_pts_gm_te[1] & fantasy_per_gm_fdpt <= input$fd_pts_gm_te[2] &
+                                 tgt >= input$te_tg_vs[1] & tgt <= input$te_tg_vs[2] &
+                                 y_per_g >= input$pass_yds_gm_te[1] & y_per_g <= input$pass_yds_gm_te[2] &
+                                 dvoa_advantage >= input$te_dvoa_advantage[1] & dvoa_advantage <= input$te_dvoa_advantage[2])
 
       if(length(input$te_select) == 0) {reactive_def_te <- reactive_def_te[te_def_s1,]}
 
       ## Join Togeather
-      all_te <- full_join(te_def, te_off, by = c("proj_player", "proj_opp"))
+      all_te <- full_join(te_def, te_off, by = c("full_name", "opp"))
 
-      all_te_plot <- full_join(reactive_def_te, reactive_off_te, by = c("proj_player", "proj_opp")) %>%
-                     select(proj_player, proj_opp) %>%
-                     left_join(all_te, by = c("proj_player", "proj_opp"))
+      all_te_plot <- full_join(reactive_def_te, reactive_off_te, by = c("full_name", "opp")) %>%
+                     select(full_name, opp) %>%
+                     left_join(all_te, by = c("full_name", "opp"))
 
 
       return(all_te_plot)
@@ -1482,7 +1466,7 @@ server <- function(input, output) {
         ylab(input$te_y_axis) +
         geom_point(aes(size = te_plot_data[[input$te_size]]), color = "#0000b7", alpha = 0.5) +
         scale_size(name = input$te_size) +
-        geom_text_repel(aes(label = proj_player), hjust = 0, vjust = -1) +
+        geom_text_repel(aes(label = full_name), hjust = 0, vjust = -1) +
         theme_bw() +
         theme(
           axis.title = element_text(size = 12, face = "bold")
